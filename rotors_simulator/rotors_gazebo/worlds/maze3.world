@@ -1,0 +1,4894 @@
+<sdf version='1.7'>
+  <world name='default'>
+    <gui fullscreen='0'>
+      <camera name='user_camera'>
+        <pose>-57.0546 8.75678 112.533 0 0.937796 0.353593</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
+    </gui>
+    <scene>
+      <sky>
+        <clouds>
+          <speed>3</speed>
+        </clouds>
+      </sky>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>1</shadows>
+    </scene>
+    <plugin name='ros_interface_plugin' filename='librotors_gazebo_ros_interface_plugin.so'/>
+    <physics name='default_physics' default='0' type='ode'>
+      <ode>
+        <solver>
+          <type>quick</type>
+          <iters>35</iters>
+          <sor>1.3</sor>
+          <use_dynamic_moi_rescaling>0</use_dynamic_moi_rescaling>
+        </solver>
+        <constraints>
+          <cfm>0</cfm>
+          <erp>0.2</erp>
+          <contact_max_correcting_vel>100</contact_max_correcting_vel>
+          <contact_surface_layer>0.001</contact_surface_layer>
+        </constraints>
+      </ode>
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+    <light name='sun_2' type='directional'>
+      <cast_shadows>1</cast_shadows>
+      <pose>0 0 500 0 -0 0</pose>
+      <diffuse>0.95 0.95 0.95 1</diffuse>
+      <specular>0.3 0.3 0.3 1</specular>
+      <attenuation>
+        <range>2000</range>
+        <constant>1</constant>
+        <linear>0</linear>
+        <quadratic>0</quadratic>
+      </attenuation>
+      <direction>-0.1 0.05 -1</direction>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+    <model name='smaze2d'>
+      <frame name='w1::__model__' attached_to='w1::link'>
+        <pose relative_to='__model__'>0 4 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='w1::link'>
+        <pose relative_to='w1::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w2::__model__' attached_to='w2::link'>
+        <pose relative_to='__model__'>0 12 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='w2::link'>
+        <pose relative_to='w2::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w3::__model__' attached_to='w3::link'>
+        <pose relative_to='__model__'>0 20 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='w3::link'>
+        <pose relative_to='w3::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w4::__model__' attached_to='w4::link'>
+        <pose relative_to='__model__'>0 26 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='w4::link'>
+        <pose relative_to='w4::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w5::__model__' attached_to='w5::link'>
+        <pose relative_to='__model__'>24 4 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='w5::link'>
+        <pose relative_to='w5::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w6::__model__' attached_to='w6::link'>
+        <pose relative_to='__model__'>24 12 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='w6::link'>
+        <pose relative_to='w6::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w7::__model__' attached_to='w7::link'>
+        <pose relative_to='__model__'>24 20 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='w7::link'>
+        <pose relative_to='w7::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w8::__model__' attached_to='w8::link'>
+        <pose relative_to='__model__'>24 26 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='w8::link'>
+        <pose relative_to='w8::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w11::__model__' attached_to='w11::link'>
+        <pose relative_to='__model__'>4 0 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='w11::link'>
+        <pose relative_to='w11::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w12::__model__' attached_to='w12::link'>
+        <pose relative_to='__model__'>12 0 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='w12::link'>
+        <pose relative_to='w12::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w13::__model__' attached_to='w13::link'>
+        <pose relative_to='__model__'>20 0 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='w13::link'>
+        <pose relative_to='w13::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w14::__model__' attached_to='w14::link'>
+        <pose relative_to='__model__'>4 28 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='w14::link'>
+        <pose relative_to='w14::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w15::__model__' attached_to='w15::link'>
+        <pose relative_to='__model__'>12 28 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='w15::link'>
+        <pose relative_to='w15::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w16::__model__' attached_to='w16::link'>
+        <pose relative_to='__model__'>20 28 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='w16::link'>
+        <pose relative_to='w16::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w17::__model__' attached_to='w17::link'>
+        <pose relative_to='__model__'>10 24 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='w17::link'>
+        <pose relative_to='w17::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w18::__model__' attached_to='w18::link'>
+        <pose relative_to='__model__'>10 12 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='w18::link'>
+        <pose relative_to='w18::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w19::__model__' attached_to='w19::link'>
+        <pose relative_to='__model__'>8 8 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='w19::link'>
+        <pose relative_to='w19::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w20::__model__' attached_to='w20::link'>
+        <pose relative_to='__model__'>5 4 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='w20::link'>
+        <pose relative_to='w20::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w21::__model__' attached_to='w21::link'>
+        <pose relative_to='__model__'>17 8 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='w21::link'>
+        <pose relative_to='w21::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w22::__model__' attached_to='w22::link'>
+        <pose relative_to='__model__'>20 12 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='w22::link'>
+        <pose relative_to='w22::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='w23::__model__' attached_to='w23::link'>
+        <pose relative_to='__model__'>16 24 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='w23::link'>
+        <pose relative_to='w23::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>8 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall/materials/scripts</uri>
+              <uri>model://smaze_wall/materials/textures</uri>
+              <name>vrc/smaze_wall</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='s1::__model__' attached_to='s1::link'>
+        <pose relative_to='__model__'>20 22 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='s1::link'>
+        <pose relative_to='s1::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='s2::__model__' attached_to='s2::link'>
+        <pose relative_to='__model__'>16 14 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='s2::link'>
+        <pose relative_to='s2::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='s3::__model__' attached_to='s3::link'>
+        <pose relative_to='__model__'>16 6 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='s3::link'>
+        <pose relative_to='s3::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='s4::__model__' attached_to='s4::link'>
+        <pose relative_to='__model__'>20 2 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='s4::link'>
+        <pose relative_to='s4::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='s5::__model__' attached_to='s5::link'>
+        <pose relative_to='__model__'>12 2 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='s5::link'>
+        <pose relative_to='s5::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='s6::__model__' attached_to='s6::link'>
+        <pose relative_to='__model__'>7 6 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='s6::link'>
+        <pose relative_to='s6::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='s7::__model__' attached_to='s7::link'>
+        <pose relative_to='__model__'>4 14 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='s7::link'>
+        <pose relative_to='s7::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='s8::__model__' attached_to='s8::link'>
+        <pose relative_to='__model__'>8 18 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='s8::link'>
+        <pose relative_to='s8::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='s9::__model__' attached_to='s9::link'>
+        <pose relative_to='__model__'>4 22 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='s9::link'>
+        <pose relative_to='s9::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='s10::__model__' attached_to='s10::link'>
+        <pose relative_to='__model__'>12 14 0 0 -0 1.5708</pose>
+      </frame>
+      <static>1</static>
+      <link name='s10::link'>
+        <pose relative_to='s10::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='v1::__model__' attached_to='v1::link'>
+        <pose relative_to='__model__'>2 12 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='v1::link'>
+        <pose relative_to='v1::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='v2::__model__' attached_to='v2::link'>
+        <pose relative_to='__model__'>2 20 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='v2::link'>
+        <pose relative_to='v2::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='v3::__model__' attached_to='v3::link'>
+        <pose relative_to='__model__'>6 16 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='v3::link'>
+        <pose relative_to='v3::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='v4::__model__' attached_to='v4::link'>
+        <pose relative_to='__model__'>10 20 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='v4::link'>
+        <pose relative_to='v4::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='v5::__model__' attached_to='v5::link'>
+        <pose relative_to='__model__'>18 16 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='v5::link'>
+        <pose relative_to='v5::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <frame name='v6::__model__' attached_to='v6::link'>
+        <pose relative_to='__model__'>18 20 0 0 -0 0</pose>
+      </frame>
+      <static>1</static>
+      <link name='v6::link'>
+        <pose relative_to='v6::__model__'>0 0 2.5 0 -0 0</pose>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <box>
+              <size>4 0.4 5</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://smaze_wall_short/materials/scripts</uri>
+              <uri>model://smaze_wall_short/materials/textures</uri>
+              <name>vrc/smaze_wall_short</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-0 0 0 0 -0 0</pose>
+    </model>
+    <gravity>0 0 -9.8066</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type='adiabatic'/>
+    <wind/>
+    <spherical_coordinates>
+      <surface_model>EARTH_WGS84</surface_model>
+      <latitude_deg>0</latitude_deg>
+      <longitude_deg>0</longitude_deg>
+      <elevation>0</elevation>
+      <heading_deg>0</heading_deg>
+    </spherical_coordinates>
+    <state world_name='default'>
+      <sim_time>167 840000000</sim_time>
+      <real_time>117 808093814</real_time>
+      <wall_time>1715426528 240853012</wall_time>
+      <iterations>28353</iterations>
+      <model name='ardrone_1'>
+        <pose>65.7242 -15.6031 -60655.2 2.08776 -0.417477 -0.617046</pose>
+        <scale>1 1 1</scale>
+        <link name='ardrone_1/base_link'>
+          <pose>65.7242 -15.6031 -60655.2 2.08776 -0.417477 -0.617046</pose>
+          <velocity>0.587829 -0.129154 -1090.63 0.447819 0.441707 -0.727176</velocity>
+          <acceleration>0.000268 -0.001313 -9.80444 -0.429049 0.287575 -0.11093</acceleration>
+          <wrench>0.000437 -0.002141 -15.9813 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_1/imu_link'>
+          <pose>65.7242 -15.6031 -60655.2 2.08776 -0.417477 -0.617046</pose>
+          <velocity>0.587815 -0.12915 -1090.63 0.447819 0.441707 -0.727176</velocity>
+          <acceleration>0.006511 -0.003433 -9.80074 -0.214837 0.143071 -0.055536</acceleration>
+          <wrench>9.8e-05 -5.2e-05 -0.147011 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_1/imugt_link'>
+          <pose>65.7242 -15.6031 -60655.2 2.08776 -0.417477 -0.617046</pose>
+          <velocity>0.587815 -0.12915 -1090.63 0.447819 0.441707 -0.727176</velocity>
+          <acceleration>0.006511 -0.003433 -9.80074 -0.214837 0.143071 -0.055536</acceleration>
+          <wrench>0 -0 -9.8e-05 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_1/odometry_sensor1_link'>
+          <pose>65.7242 -15.6031 -60655.2 2.08776 -0.417477 -0.617046</pose>
+          <velocity>0.587815 -0.12915 -1090.63 0.447819 0.441707 -0.727176</velocity>
+          <acceleration>0.006511 -0.003433 -9.80074 -0.214837 0.143071 -0.055536</acceleration>
+          <wrench>0 -0 -9.8e-05 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_1/odometry_sensorgt_link'>
+          <pose>65.7242 -15.6031 -60655.2 2.08776 -0.417477 -0.617046</pose>
+          <velocity>0.587815 -0.12915 -1090.63 0.447819 0.441707 -0.727176</velocity>
+          <acceleration>0.006511 -0.003433 -9.80074 -0.214837 0.143071 -0.055536</acceleration>
+          <wrench>0 -0 -9.8e-05 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_1/rotor_0'>
+          <pose>65.8843 -15.6641 -60655.3 2.14884 -0.597263 -0.742123</pose>
+          <velocity>0.51724 -0.218906 -1090.73 0.448216 0.442677 -0.726646</velocity>
+          <acceleration>-0.063263 0.0225 -9.81788 1.88037 1.32999 2.23139</acceleration>
+          <wrench>-0.000316 0.000112 -0.049089 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_1/rotor_1'>
+          <pose>65.5485 -15.5801 -60655.2 2.31105 0.836796 0.205537</pose>
+          <velocity>0.621593 -0.018791 -1090.55 0.447445 0.440793 -0.727676</velocity>
+          <acceleration>0.069338 -0.015455 -9.76371 0.088749 -0.096599 -0.971636</acceleration>
+          <wrench>0.000347 -7.7e-05 -0.048819 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_1/rotor_2'>
+          <pose>65.7383 -15.7148 -60655.1 2.14868 -0.5969 -0.741837</pose>
+          <velocity>0.569667 -0.203227 -1090.69 0.448215 0.442676 -0.726646</velocity>
+          <acceleration>-0.022339 0.046029 -9.79377 1.8799 1.33074 2.23202</acceleration>
+          <wrench>-0.000112 0.00023 -0.048969 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_1/rotor_3'>
+          <pose>65.6945 -15.5294 -60655.4 2.18934 -0.677478 -0.810113</pose>
+          <velocity>0.569166 -0.034469 -1090.59 0.448282 0.442839 -0.726557</velocity>
+          <acceleration>0.028414 -0.038985 -9.78783 2.00009 1.18362 2.09041</acceleration>
+          <wrench>0.000142 -0.000195 -0.048939 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_1/vi_sensor/ground_truth/odometry_sensor_link'>
+          <pose>65.8089 -15.6313 -60655.2 2.04618 -0.465125 -0.519789</pose>
+          <velocity>0.591415 -0.215041 -1090.68 0.447819 0.441707 -0.727176</velocity>
+          <acceleration>-0.071762 0.023148 -9.84708 -0.214837 0.143071 -0.055536</acceleration>
+          <wrench>-1e-06 0 -9.8e-05 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_1/vi_sensor/imu_link'>
+          <pose>65.8176 -15.6478 -60655.2 2.04618 -0.465125 -0.519789</pose>
+          <velocity>0.580344 -0.222307 -1090.69 0.447819 0.441707 -0.727176</velocity>
+          <acceleration>-0.082634 0.036198 -9.84317 -0.214837 0.143071 -0.055536</acceleration>
+          <wrench>-0.00124 0.000543 -0.147648 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='ardrone_2'>
+        <pose>3 -0 -62576 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='ardrone_2/base_link'>
+          <pose>3 -0 -62576 0 -0 0</pose>
+          <velocity>-0 -0 -1107.83 0 -0 0</velocity>
+          <acceleration>-0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>-0 0 -15.9849 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_2/imu_link'>
+          <pose>3 -0 -62576 0 -0 0</pose>
+          <velocity>-0 -0 -1107.83 0 -0 0</velocity>
+          <acceleration>0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>0 0 -0.147099 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_2/imugt_link'>
+          <pose>3 -0 -62576 0 -0 0</pose>
+          <velocity>-0 -0 -1107.83 0 -0 0</velocity>
+          <acceleration>0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>0 0 -9.8e-05 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_2/odometry_sensor1_link'>
+          <pose>3 -0 -62576 0 -0 0</pose>
+          <velocity>-0 -0 -1107.83 0 -0 0</velocity>
+          <acceleration>0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>0 0 -9.8e-05 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_2/odometry_sensorgt_link'>
+          <pose>3 -0 -62576 0 -0 0</pose>
+          <velocity>-0 -0 -1107.83 0 -0 0</velocity>
+          <acceleration>0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>0 0 -9.8e-05 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_2/rotor_0'>
+          <pose>3.12728 -0.127279 -62576 0 -0 0</pose>
+          <velocity>-0 -0 -1107.83 0 -0 0</velocity>
+          <acceleration>0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>0 0 -0.049033 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_2/rotor_1'>
+          <pose>2.87272 0.127279 -62576 0 -0 0</pose>
+          <velocity>-0 -0 -1107.83 0 -0 0</velocity>
+          <acceleration>0 -0 -9.8066 0 -0 0</acceleration>
+          <wrench>0 -0 -0.049033 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_2/rotor_2'>
+          <pose>3.12728 0.127279 -62576 0 -0 0</pose>
+          <velocity>-0 -0 -1107.83 0 -0 0</velocity>
+          <acceleration>0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>0 0 -0.049033 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_2/rotor_3'>
+          <pose>2.87272 -0.127279 -62576 0 -0 0</pose>
+          <velocity>-0 -0 -1107.83 0 -0 0</velocity>
+          <acceleration>0 -0 -9.8066 0 -0 0</acceleration>
+          <wrench>0 -0 -0.049033 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_2/vi_sensor/ground_truth/odometry_sensor_link'>
+          <pose>3.1 0 -62576 0 0.1 0</pose>
+          <velocity>0 0 -1107.83 0 -0 0</velocity>
+          <acceleration>-0 -0 -9.8066 0 -0 0</acceleration>
+          <wrench>-0 -0 -9.8e-05 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_2/vi_sensor/imu_link'>
+          <pose>3.11605 0 -62576 0 0.1 0</pose>
+          <velocity>0 0 -1107.83 0 -0 0</velocity>
+          <acceleration>-0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>-0 0 -0.147099 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='ardrone_3'>
+        <pose>6 -0 -62748.9 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='ardrone_3/base_link'>
+          <pose>6 -0 -62748.9 0 -0 0</pose>
+          <velocity>0 -0 -1109.36 0 -0 0</velocity>
+          <acceleration>0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>0 0 -15.9849 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_3/imu_link'>
+          <pose>6 -0 -62748.9 0 -0 0</pose>
+          <velocity>0 -0 -1109.36 0 -0 0</velocity>
+          <acceleration>-0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>-0 0 -0.147099 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_3/imugt_link'>
+          <pose>6 -0 -62748.9 0 -0 0</pose>
+          <velocity>0 -0 -1109.36 0 -0 0</velocity>
+          <acceleration>-0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>-0 0 -9.8e-05 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_3/odometry_sensor1_link'>
+          <pose>6 -0 -62748.9 0 -0 0</pose>
+          <velocity>0 -0 -1109.36 0 -0 0</velocity>
+          <acceleration>-0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>-0 0 -9.8e-05 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_3/odometry_sensorgt_link'>
+          <pose>6 -0 -62748.9 0 -0 0</pose>
+          <velocity>0 -0 -1109.36 0 -0 0</velocity>
+          <acceleration>-0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>-0 0 -9.8e-05 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_3/rotor_0'>
+          <pose>6.12728 -0.127279 -62748.9 0 -0 0</pose>
+          <velocity>0 -0 -1109.36 0 -0 0</velocity>
+          <acceleration>0 -0 -9.8066 0 -0 0</acceleration>
+          <wrench>0 -0 -0.049033 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_3/rotor_1'>
+          <pose>5.87272 0.127279 -62748.9 0 -0 0</pose>
+          <velocity>0 -0 -1109.36 0 -0 0</velocity>
+          <acceleration>-0 -0 -9.8066 0 -0 0</acceleration>
+          <wrench>-0 -0 -0.049033 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_3/rotor_2'>
+          <pose>6.12728 0.127279 -62748.9 0 -0 0</pose>
+          <velocity>0 -0 -1109.36 0 -0 0</velocity>
+          <acceleration>-0 -0 -9.8066 0 -0 0</acceleration>
+          <wrench>-0 -0 -0.049033 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_3/rotor_3'>
+          <pose>5.87272 -0.127279 -62748.9 0 -0 0</pose>
+          <velocity>0 -0 -1109.36 0 -0 0</velocity>
+          <acceleration>0 -0 -9.8066 0 -0 0</acceleration>
+          <wrench>0 -0 -0.049033 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_3/vi_sensor/ground_truth/odometry_sensor_link'>
+          <pose>6.1 0 -62749 0 0.1 0</pose>
+          <velocity>-0 0 -1109.36 0 -0 0</velocity>
+          <acceleration>-0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>-0 0 -9.8e-05 0 -0 0</wrench>
+        </link>
+        <link name='ardrone_3/vi_sensor/imu_link'>
+          <pose>6.11605 0 -62749 0 0.1 0</pose>
+          <velocity>-0 0 -1109.36 0 -0 0</velocity>
+          <acceleration>-0 0 -9.8066 0 -0 0</acceleration>
+          <wrench>-0 0 -0.147099 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='asphalt_plane'>
+        <pose>2.24225 5.43968 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>2.24225 5.43968 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='asphalt_plane_0'>
+        <pose>1.84294 -2.74467 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>1.84294 -2.74467 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='asphalt_plane_1'>
+        <pose>-1.87468 5.14484 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-1.87468 5.14484 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='asphalt_plane_2'>
+        <pose>-1.66367 -2.91551 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='link'>
+          <pose>-1.66367 -2.91551 0 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <model name='smaze2d'>
+        <pose>-12.014 -12.8578 0 0 -0 0</pose>
+        <scale>1 1 1</scale>
+        <link name='s10::link'>
+          <pose>-0.014025 1.14221 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='s1::link'>
+          <pose>7.98597 9.14221 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='s2::link'>
+          <pose>3.98597 1.14221 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='s3::link'>
+          <pose>3.98597 -6.85779 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='s4::link'>
+          <pose>7.98597 -10.8578 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='s5::link'>
+          <pose>-0.014025 -10.8578 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='s6::link'>
+          <pose>-5.01403 -6.85779 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='s7::link'>
+          <pose>-8.01403 1.14221 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='s8::link'>
+          <pose>-4.01403 5.14221 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='s9::link'>
+          <pose>-8.01403 9.14221 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='v1::link'>
+          <pose>-10.014 -0.857793 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='v2::link'>
+          <pose>-10.014 7.14221 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='v3::link'>
+          <pose>-6.01403 3.14221 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='v4::link'>
+          <pose>-2.01403 7.14221 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='v5::link'>
+          <pose>5.98597 3.14221 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='v6::link'>
+          <pose>5.98597 7.14221 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w11::link'>
+          <pose>-8.01403 -12.8578 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w12::link'>
+          <pose>-0.014025 -12.8578 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w13::link'>
+          <pose>7.98597 -12.8578 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w14::link'>
+          <pose>-8.01403 15.1422 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w15::link'>
+          <pose>-0.014025 15.1422 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w16::link'>
+          <pose>7.98597 15.1422 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w17::link'>
+          <pose>-2.01403 11.1422 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w18::link'>
+          <pose>-2.01403 -0.857793 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w19::link'>
+          <pose>-4.01403 -4.85779 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w1::link'>
+          <pose>-12.014 -8.85779 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w20::link'>
+          <pose>-7.01403 -8.85779 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w21::link'>
+          <pose>4.98597 -4.85779 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w22::link'>
+          <pose>7.98597 -0.857793 2.5 0 -0 0</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w23::link'>
+          <pose>3.98597 11.1422 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w2::link'>
+          <pose>-12.014 -0.857793 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w3::link'>
+          <pose>-12.014 7.14221 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w4::link'>
+          <pose>-12.014 13.1422 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w5::link'>
+          <pose>11.986 -8.85779 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w6::link'>
+          <pose>11.986 -0.857793 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w7::link'>
+          <pose>11.986 7.14221 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+        <link name='w8::link'>
+          <pose>11.986 13.1422 2.5 0 -0 1.5708</pose>
+          <velocity>0 0 0 0 -0 0</velocity>
+          <acceleration>0 0 0 0 -0 0</acceleration>
+          <wrench>0 0 0 0 -0 0</wrench>
+        </link>
+      </model>
+      <light name='sun_2'>
+        <pose>0 0 500 0 -0 0</pose>
+      </light>
+    </state>
+    <model name='ardrone_1'>
+      <link name='ardrone_1/base_link'>
+        <inertial>
+          <pose>0.007976 0 -0.002393 0 -0 0</pose>
+          <mass>1.63001</mass>
+          <inertia>
+            <ixx>0.034866</ixx>
+            <ixy>-5.91788e-08</ixy>
+            <ixz>0.00035892</ixz>
+            <iyy>0.047199</iyy>
+            <iyz>1.24505e-08</iyz>
+            <izz>0.0988985</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_1/base_link_inertia_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.16</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='ardrone_1/base_link_fixed_joint_lump__ardrone_1/vi_sensor/vi_sensor_link_collision_1'>
+          <pose>0.1 0 -0.03 0 0.1 0</pose>
+          <geometry>
+            <box>
+              <size>0.03 0.133 0.057</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='ardrone_1/base_link_fixed_joint_lump__ardrone_1/vi_sensor/camera_depth_link_collision_2'>
+          <pose>0.115574 0.055 -0.02503 0 0.1 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.01</length>
+              <radius>0.007</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_1/base_link_inertia_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/ardrone.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='ardrone_1/base_link_fixed_joint_lump__ardrone_1/vi_sensor/vi_sensor_link_visual_1'>
+          <pose>0.1 0 -0.03 0 0.1 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/vi_sensor.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <sensor name='ardrone_1/vi_sensor_camera_{camera_suffix}' type='depth'>
+          <always_on>1</always_on>
+          <update_rate>500</update_rate>
+          <camera>
+            <horizontal_fov>2</horizontal_fov>
+            <image>
+              <format>L8</format>
+              <width>640</width>
+              <height>480</height>
+            </image>
+            <clip>
+              <near>0.01</near>
+              <far>10</far>
+            </clip>
+          </camera>
+          <plugin name='ardrone_1/vi_sensor_camera_{camera_suffix}' filename='libgazebo_ros_openni_kinect.so'>
+            <robotNamespace>ardrone_1/vi_sensor</robotNamespace>
+            <alwaysOn>1</alwaysOn>
+            <baseline>0.11</baseline>
+            <updateRate>500.0</updateRate>
+            <cameraName>camera_depth</cameraName>
+            <cameraInfoTopicName>camera/camera_info</cameraInfoTopicName>
+            <depthImageTopicName>depth/disparity</depthImageTopicName>
+            <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
+            <frameName>camera_depth_optical_center_link</frameName>
+            <pointCloudCutoff>0.5</pointCloudCutoff>
+            <pointCloudCutoffMax>10.0</pointCloudCutoffMax>
+            <distortionK1>0.0</distortionK1>
+            <distortionK2>0.0</distortionK2>
+            <distortionK3>0.0</distortionK3>
+            <distortionT1>0.0</distortionT1>
+            <distortionT2>0.0</distortionT2>
+            <CxPrime>0</CxPrime>
+            <Cx>0</Cx>
+            <Cy>0</Cy>
+            <focalLength>0</focalLength>
+            <hackBaseline>0</hackBaseline>
+          </plugin>
+          <pose>0.115574 0.055 -0.02503 0 0.1 0</pose>
+        </sensor>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_1/imu_joint' type='revolute'>
+        <pose relative_to='ardrone_1/base_link'>0 0 0 0 -0 0</pose>
+        <parent>ardrone_1/base_link</parent>
+        <child>ardrone_1/imu_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_1/imu_link'>
+        <pose relative_to='ardrone_1/imu_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.015</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_1/imugt_joint' type='revolute'>
+        <pose relative_to='ardrone_1/base_link'>0 0 0 0 -0 0</pose>
+        <parent>ardrone_1/base_link</parent>
+        <child>ardrone_1/imugt_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_1/imugt_link'>
+        <pose relative_to='ardrone_1/imugt_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1e-05</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_1/odometry_sensor1_joint' type='revolute'>
+        <pose relative_to='ardrone_1/base_link'>0 0 0 0 -0 0</pose>
+        <parent>ardrone_1/base_link</parent>
+        <child>ardrone_1/odometry_sensor1_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_1/odometry_sensor1_link'>
+        <pose relative_to='ardrone_1/odometry_sensor1_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1e-05</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_1/odometry_sensorgt_joint' type='revolute'>
+        <pose relative_to='ardrone_1/base_link'>0 0 0 0 -0 0</pose>
+        <parent>ardrone_1/base_link</parent>
+        <child>ardrone_1/odometry_sensorgt_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_1/odometry_sensorgt_link'>
+        <pose relative_to='ardrone_1/odometry_sensorgt_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1e-05</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_1/rotor_0_joint' type='revolute'>
+        <pose relative_to='ardrone_1/base_link'>0.127279 -0.127279 0.023 0 -0 0</pose>
+        <parent>ardrone_1/base_link</parent>
+        <child>ardrone_1/rotor_0</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_1/rotor_0'>
+        <pose relative_to='ardrone_1/rotor_0_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.005</mass>
+          <inertia>
+            <ixx>9.75e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>4.17041e-05</iyy>
+            <iyz>0</iyz>
+            <izz>4.26041e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_1/rotor_0_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.005</length>
+              <radius>0.1</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_1/rotor_0_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/propeller_ccw.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Red</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_1/rotor_1_joint' type='revolute'>
+        <pose relative_to='ardrone_1/base_link'>-0.127279 0.127279 0.023 0 -0 0</pose>
+        <parent>ardrone_1/base_link</parent>
+        <child>ardrone_1/rotor_1</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_1/rotor_1'>
+        <pose relative_to='ardrone_1/rotor_1_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.005</mass>
+          <inertia>
+            <ixx>9.75e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>4.17041e-05</iyy>
+            <iyz>0</iyz>
+            <izz>4.26041e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_1/rotor_1_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.005</length>
+              <radius>0.1</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_1/rotor_1_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/propeller_ccw.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Blue</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_1/rotor_2_joint' type='revolute'>
+        <pose relative_to='ardrone_1/base_link'>0.127279 0.127279 0.023 0 -0 0</pose>
+        <parent>ardrone_1/base_link</parent>
+        <child>ardrone_1/rotor_2</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_1/rotor_2'>
+        <pose relative_to='ardrone_1/rotor_2_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.005</mass>
+          <inertia>
+            <ixx>9.75e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>4.17041e-05</iyy>
+            <iyz>0</iyz>
+            <izz>4.26041e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_1/rotor_2_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.005</length>
+              <radius>0.1</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_1/rotor_2_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/propeller_cw.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Red</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_1/rotor_3_joint' type='revolute'>
+        <pose relative_to='ardrone_1/base_link'>-0.127279 -0.127279 0.023 0 -0 0</pose>
+        <parent>ardrone_1/base_link</parent>
+        <child>ardrone_1/rotor_3</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_1/rotor_3'>
+        <pose relative_to='ardrone_1/rotor_3_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.005</mass>
+          <inertia>
+            <ixx>9.75e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>4.17041e-05</iyy>
+            <iyz>0</iyz>
+            <izz>4.26041e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_1/rotor_3_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.005</length>
+              <radius>0.1</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_1/rotor_3_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/propeller_cw.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Blue</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_1/vi_sensor/ground_truth/odometry_sensor_joint' type='revolute'>
+        <pose relative_to='ardrone_1/base_link'>0.1 0 -0.03 0 0.1 0</pose>
+        <parent>ardrone_1/base_link</parent>
+        <child>ardrone_1/vi_sensor/ground_truth/odometry_sensor_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_1/vi_sensor/ground_truth/odometry_sensor_link'>
+        <pose relative_to='ardrone_1/vi_sensor/ground_truth/odometry_sensor_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1e-05</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_1/vi_sensor/imu_joint' type='revolute'>
+        <pose relative_to='ardrone_1/base_link'>0.116053 0 -0.020254 0 0.1 0</pose>
+        <parent>ardrone_1/base_link</parent>
+        <child>ardrone_1/vi_sensor/imu_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_1/vi_sensor/imu_link'>
+        <pose relative_to='ardrone_1/vi_sensor/imu_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.015</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='multirotor_base_plugin' filename='librotors_gazebo_multirotor_base_plugin.so'>
+        <robotNamespace>ardrone_1</robotNamespace>
+        <linkName>ardrone_1/base_link</linkName>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='ardrone_1_front_right_motor_model' filename='librotors_gazebo_motor_model.so'>
+        <robotNamespace>ardrone_1</robotNamespace>
+        <jointName>ardrone_1/rotor_0_joint</jointName>
+        <linkName>ardrone_1/rotor_0</linkName>
+        <turningDirection>ccw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>838</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <motorNumber>0</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='ardrone_1_back_left_motor_model' filename='librotors_gazebo_motor_model.so'>
+        <robotNamespace>ardrone_1</robotNamespace>
+        <jointName>ardrone_1/rotor_1_joint</jointName>
+        <linkName>ardrone_1/rotor_1</linkName>
+        <turningDirection>ccw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>838</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <motorNumber>1</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/1</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='ardrone_1_front_left_motor_model' filename='librotors_gazebo_motor_model.so'>
+        <robotNamespace>ardrone_1</robotNamespace>
+        <jointName>ardrone_1/rotor_2_joint</jointName>
+        <linkName>ardrone_1/rotor_2</linkName>
+        <turningDirection>cw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>838</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <motorNumber>2</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/2</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='ardrone_1_back_right_motor_model' filename='librotors_gazebo_motor_model.so'>
+        <robotNamespace>ardrone_1</robotNamespace>
+        <jointName>ardrone_1/rotor_3_joint</jointName>
+        <linkName>ardrone_1/rotor_3</linkName>
+        <turningDirection>cw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>838</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <motorNumber>3</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/3</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='controller_interface' filename='librotors_gazebo_controller_interface.so'>
+        <robotNamespace>ardrone_1</robotNamespace>
+        <commandAttitudeThrustSubTopic>command/attitude</commandAttitudeThrustSubTopic>
+        <commandRateThrustSubTopic>command/rate</commandRateThrustSubTopic>
+        <commandMotorSpeedSubTopic>command/motor_speed</commandMotorSpeedSubTopic>
+        <imuSubTopic>imu</imuSubTopic>
+        <motorSpeedCommandPubTopic>gazebo/command/motor_speed</motorSpeedCommandPubTopic>
+      </plugin>
+      <plugin name='rotors_gazebo_imu_plugin' filename='librotors_gazebo_imu_plugin.so'>
+        <robotNamespace>ardrone_1</robotNamespace>
+        <linkName>ardrone_1/imu_link</linkName>
+        <imuTopic>imu</imuTopic>
+        <gyroscopeNoiseDensity>0.0003394</gyroscopeNoiseDensity>
+        <gyroscopeRandomWalk>3.8785e-05</gyroscopeRandomWalk>
+        <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
+        <gyroscopeTurnOnBiasSigma>0.0087</gyroscopeTurnOnBiasSigma>
+        <accelerometerNoiseDensity>0.004</accelerometerNoiseDensity>
+        <accelerometerRandomWalk>0.006</accelerometerRandomWalk>
+        <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
+        <accelerometerTurnOnBiasSigma>0.196</accelerometerTurnOnBiasSigma>
+      </plugin>
+      <plugin name='rotors_gazebo_imugt_plugin' filename='librotors_gazebo_imu_plugin.so'>
+        <robotNamespace>ardrone_1</robotNamespace>
+        <linkName>ardrone_1/imugt_link</linkName>
+        <imuTopic>ground_truth/imu</imuTopic>
+        <gyroscopeNoiseDensity>0.0</gyroscopeNoiseDensity>
+        <gyroscopeRandomWalk>0.0</gyroscopeRandomWalk>
+        <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
+        <gyroscopeTurnOnBiasSigma>0.0</gyroscopeTurnOnBiasSigma>
+        <accelerometerNoiseDensity>0.0</accelerometerNoiseDensity>
+        <accelerometerRandomWalk>0.0</accelerometerRandomWalk>
+        <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
+        <accelerometerTurnOnBiasSigma>0.0</accelerometerTurnOnBiasSigma>
+      </plugin>
+      <plugin name='odometry_sensorgt' filename='librotors_gazebo_odometry_plugin.so'>
+        <linkName>ardrone_1/odometry_sensorgt_link</linkName>
+        <robotNamespace>ardrone_1</robotNamespace>
+        <poseTopic>ground_truth/pose</poseTopic>
+        <poseWithCovarianceTopic>ground_truth/pose_with_covariance</poseWithCovarianceTopic>
+        <positionTopic>ground_truth/position</positionTopic>
+        <transformTopic>ground_truth/transform</transformTopic>
+        <odometryTopic>ground_truth/odometry</odometryTopic>
+        <parentFrameId>world</parentFrameId>
+        <childFrameId>ardrone_1/base_link</childFrameId>
+        <measurementDivisor>1</measurementDivisor>
+        <measurementDelay>0</measurementDelay>
+        <unknownDelay>0.0</unknownDelay>
+        <noiseNormalPosition>0 0 0</noiseNormalPosition>
+        <noiseNormalQuaternion>0 0 0</noiseNormalQuaternion>
+        <noiseNormalLinearVelocity>0 0 0</noiseNormalLinearVelocity>
+        <noiseNormalAngularVelocity>0 0 0</noiseNormalAngularVelocity>
+        <noiseUniformPosition>0 0 0</noiseUniformPosition>
+        <noiseUniformQuaternion>0 0 0</noiseUniformQuaternion>
+        <noiseUniformLinearVelocity>0 0 0</noiseUniformLinearVelocity>
+        <noiseUniformAngularVelocity>0 0 0</noiseUniformAngularVelocity>
+      </plugin>
+      <plugin name='odometry_sensor1' filename='librotors_gazebo_odometry_plugin.so'>
+        <linkName>ardrone_1/odometry_sensor1_link</linkName>
+        <robotNamespace>ardrone_1</robotNamespace>
+        <poseTopic>odometry_sensor1/pose</poseTopic>
+        <poseWithCovarianceTopic>odometry_sensor1/pose_with_covariance</poseWithCovarianceTopic>
+        <positionTopic>odometry_sensor1/position</positionTopic>
+        <transformTopic>odometry_sensor1/transform</transformTopic>
+        <odometryTopic>odometry_sensor1/odometry</odometryTopic>
+        <parentFrameId>world</parentFrameId>
+        <childFrameId>ardrone_1/odometry_sensor1</childFrameId>
+        <measurementDivisor>1</measurementDivisor>
+        <measurementDelay>0</measurementDelay>
+        <unknownDelay>0.0</unknownDelay>
+        <noiseNormalPosition>0 0 0</noiseNormalPosition>
+        <noiseNormalQuaternion>0 0 0</noiseNormalQuaternion>
+        <noiseNormalLinearVelocity>0 0 0</noiseNormalLinearVelocity>
+        <noiseNormalAngularVelocity>0 0 0</noiseNormalAngularVelocity>
+        <noiseUniformPosition>0 0 0</noiseUniformPosition>
+        <noiseUniformQuaternion>0 0 0</noiseUniformQuaternion>
+        <noiseUniformLinearVelocity>0 0 0</noiseUniformLinearVelocity>
+        <noiseUniformAngularVelocity>0 0 0</noiseUniformAngularVelocity>
+      </plugin>
+      <plugin name='odometry_sensor' filename='librotors_gazebo_odometry_plugin.so'>
+        <linkName>ardrone_1/vi_sensor/ground_truth/odometry_sensor_link</linkName>
+        <robotNamespace>ardrone_1/vi_sensor/ground_truth</robotNamespace>
+        <poseTopic>pose</poseTopic>
+        <poseWithCovarianceTopic>pose_with_covariance</poseWithCovarianceTopic>
+        <positionTopic>position</positionTopic>
+        <transformTopic>transform</transformTopic>
+        <odometryTopic>odometry</odometryTopic>
+        <parentFrameId>world</parentFrameId>
+        <childFrameId>ardrone_1/vi_sensor/base_link</childFrameId>
+        <measurementDivisor>1</measurementDivisor>
+        <measurementDelay>0</measurementDelay>
+        <unknownDelay>0.0</unknownDelay>
+        <noiseNormalPosition>0 0 0</noiseNormalPosition>
+        <noiseNormalQuaternion>0 0 0</noiseNormalQuaternion>
+        <noiseNormalLinearVelocity>0 0 0</noiseNormalLinearVelocity>
+        <noiseNormalAngularVelocity>0 0 0</noiseNormalAngularVelocity>
+        <noiseUniformPosition>0 0 0</noiseUniformPosition>
+        <noiseUniformQuaternion>0 0 0</noiseUniformQuaternion>
+        <noiseUniformLinearVelocity>0 0 0</noiseUniformLinearVelocity>
+        <noiseUniformAngularVelocity>0 0 0</noiseUniformAngularVelocity>
+      </plugin>
+      <plugin name='rotors_gazebo_imu_plugin' filename='librotors_gazebo_imu_plugin.so'>
+        <robotNamespace>ardrone_1/vi_sensor</robotNamespace>
+        <linkName>ardrone_1/vi_sensor/imu_link</linkName>
+        <imuTopic>imu</imuTopic>
+        <gyroscopeNoiseDensity>0.0003394</gyroscopeNoiseDensity>
+        <gyroscopeRandomWalk>3.8785e-05</gyroscopeRandomWalk>
+        <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
+        <gyroscopeTurnOnBiasSigma>0.0087</gyroscopeTurnOnBiasSigma>
+        <accelerometerNoiseDensity>0.004</accelerometerNoiseDensity>
+        <accelerometerRandomWalk>0.006</accelerometerRandomWalk>
+        <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
+        <accelerometerTurnOnBiasSigma>0.196</accelerometerTurnOnBiasSigma>
+      </plugin>
+      <frame name='ardrone_1/base_joint' attached_to='ardrone_1/base_link'>
+        <pose>0 0 0 0 -0 0</pose>
+      </frame>
+      <frame name='ardrone_1/base_link_inertia' attached_to='ardrone_1/base_joint'/>
+      <frame name='ardrone_1/vi_sensor/camera_depth_optical_center_joint' attached_to='ardrone_1/vi_sensor/camera_depth_link'>
+        <pose>0 0 0 -1.5708 -0 -1.5708</pose>
+      </frame>
+      <frame name='ardrone_1/vi_sensor/camera_depth_optical_center_link' attached_to='ardrone_1/vi_sensor/camera_depth_optical_center_joint'/>
+      <frame name='ardrone_1/vi_sensor/camera_depth_joint' attached_to='ardrone_1/vi_sensor/vi_sensor_link'>
+        <pose>0.015 0.055 0.0065 0 -0 0</pose>
+      </frame>
+      <frame name='ardrone_1/vi_sensor/camera_depth_link' attached_to='ardrone_1/vi_sensor/camera_depth_joint'/>
+      <frame name='ardrone_1/vi_sensor_vi_sensor_joint' attached_to='ardrone_1/base_link'>
+        <pose>0.1 0 -0.03 0 0.1 0</pose>
+      </frame>
+      <frame name='ardrone_1/vi_sensor/vi_sensor_link' attached_to='ardrone_1/vi_sensor_vi_sensor_joint'/>
+      <pose>0 0 1 0 -0 0</pose>
+    </model>
+    <model name='ardrone_3'>
+      <link name='ardrone_3/base_link'>
+        <inertial>
+          <pose>0.007976 0 -0.002393 0 -0 0</pose>
+          <mass>1.63001</mass>
+          <inertia>
+            <ixx>0.034866</ixx>
+            <ixy>-5.91788e-08</ixy>
+            <ixz>0.00035892</ixz>
+            <iyy>0.047199</iyy>
+            <iyz>1.24505e-08</iyz>
+            <izz>0.0988985</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_3/base_link_inertia_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.16</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='ardrone_3/base_link_fixed_joint_lump__ardrone_3/vi_sensor/vi_sensor_link_collision_1'>
+          <pose>0.1 0 -0.03 0 0.1 0</pose>
+          <geometry>
+            <box>
+              <size>0.03 0.133 0.057</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='ardrone_3/base_link_fixed_joint_lump__ardrone_3/vi_sensor/camera_depth_link_collision_2'>
+          <pose>0.115574 0.055 -0.02503 0 0.1 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.01</length>
+              <radius>0.007</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_3/base_link_inertia_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/ardrone.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='ardrone_3/base_link_fixed_joint_lump__ardrone_3/vi_sensor/vi_sensor_link_visual_1'>
+          <pose>0.1 0 -0.03 0 0.1 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/vi_sensor.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <sensor name='ardrone_3/vi_sensor_camera_{camera_suffix}' type='depth'>
+          <always_on>1</always_on>
+          <update_rate>500</update_rate>
+          <camera>
+            <horizontal_fov>2</horizontal_fov>
+            <image>
+              <format>L8</format>
+              <width>640</width>
+              <height>480</height>
+            </image>
+            <clip>
+              <near>0.01</near>
+              <far>10</far>
+            </clip>
+          </camera>
+          <plugin name='ardrone_3/vi_sensor_camera_{camera_suffix}' filename='libgazebo_ros_openni_kinect.so'>
+            <robotNamespace>ardrone_3/vi_sensor</robotNamespace>
+            <alwaysOn>1</alwaysOn>
+            <baseline>0.11</baseline>
+            <updateRate>500.0</updateRate>
+            <cameraName>camera_depth</cameraName>
+            <cameraInfoTopicName>camera/camera_info</cameraInfoTopicName>
+            <depthImageTopicName>depth/disparity</depthImageTopicName>
+            <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
+            <frameName>camera_depth_optical_center_link</frameName>
+            <pointCloudCutoff>0.5</pointCloudCutoff>
+            <pointCloudCutoffMax>10.0</pointCloudCutoffMax>
+            <distortionK1>0.0</distortionK1>
+            <distortionK2>0.0</distortionK2>
+            <distortionK3>0.0</distortionK3>
+            <distortionT1>0.0</distortionT1>
+            <distortionT2>0.0</distortionT2>
+            <CxPrime>0</CxPrime>
+            <Cx>0</Cx>
+            <Cy>0</Cy>
+            <focalLength>0</focalLength>
+            <hackBaseline>0</hackBaseline>
+          </plugin>
+          <pose>0.115574 0.055 -0.02503 0 0.1 0</pose>
+        </sensor>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_3/imu_joint' type='revolute'>
+        <pose relative_to='ardrone_3/base_link'>0 0 0 0 -0 0</pose>
+        <parent>ardrone_3/base_link</parent>
+        <child>ardrone_3/imu_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_3/imu_link'>
+        <pose relative_to='ardrone_3/imu_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.015</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_3/imugt_joint' type='revolute'>
+        <pose relative_to='ardrone_3/base_link'>0 0 0 0 -0 0</pose>
+        <parent>ardrone_3/base_link</parent>
+        <child>ardrone_3/imugt_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_3/imugt_link'>
+        <pose relative_to='ardrone_3/imugt_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1e-05</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_3/odometry_sensor1_joint' type='revolute'>
+        <pose relative_to='ardrone_3/base_link'>0 0 0 0 -0 0</pose>
+        <parent>ardrone_3/base_link</parent>
+        <child>ardrone_3/odometry_sensor1_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_3/odometry_sensor1_link'>
+        <pose relative_to='ardrone_3/odometry_sensor1_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1e-05</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_3/odometry_sensorgt_joint' type='revolute'>
+        <pose relative_to='ardrone_3/base_link'>0 0 0 0 -0 0</pose>
+        <parent>ardrone_3/base_link</parent>
+        <child>ardrone_3/odometry_sensorgt_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_3/odometry_sensorgt_link'>
+        <pose relative_to='ardrone_3/odometry_sensorgt_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1e-05</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_3/rotor_0_joint' type='revolute'>
+        <pose relative_to='ardrone_3/base_link'>0.127279 -0.127279 0.023 0 -0 0</pose>
+        <parent>ardrone_3/base_link</parent>
+        <child>ardrone_3/rotor_0</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_3/rotor_0'>
+        <pose relative_to='ardrone_3/rotor_0_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.005</mass>
+          <inertia>
+            <ixx>9.75e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>4.17041e-05</iyy>
+            <iyz>0</iyz>
+            <izz>4.26041e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_3/rotor_0_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.005</length>
+              <radius>0.1</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_3/rotor_0_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/propeller_ccw.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Red</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_3/rotor_1_joint' type='revolute'>
+        <pose relative_to='ardrone_3/base_link'>-0.127279 0.127279 0.023 0 -0 0</pose>
+        <parent>ardrone_3/base_link</parent>
+        <child>ardrone_3/rotor_1</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_3/rotor_1'>
+        <pose relative_to='ardrone_3/rotor_1_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.005</mass>
+          <inertia>
+            <ixx>9.75e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>4.17041e-05</iyy>
+            <iyz>0</iyz>
+            <izz>4.26041e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_3/rotor_1_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.005</length>
+              <radius>0.1</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_3/rotor_1_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/propeller_ccw.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Blue</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_3/rotor_2_joint' type='revolute'>
+        <pose relative_to='ardrone_3/base_link'>0.127279 0.127279 0.023 0 -0 0</pose>
+        <parent>ardrone_3/base_link</parent>
+        <child>ardrone_3/rotor_2</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_3/rotor_2'>
+        <pose relative_to='ardrone_3/rotor_2_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.005</mass>
+          <inertia>
+            <ixx>9.75e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>4.17041e-05</iyy>
+            <iyz>0</iyz>
+            <izz>4.26041e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_3/rotor_2_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.005</length>
+              <radius>0.1</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_3/rotor_2_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/propeller_cw.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Red</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_3/rotor_3_joint' type='revolute'>
+        <pose relative_to='ardrone_3/base_link'>-0.127279 -0.127279 0.023 0 -0 0</pose>
+        <parent>ardrone_3/base_link</parent>
+        <child>ardrone_3/rotor_3</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_3/rotor_3'>
+        <pose relative_to='ardrone_3/rotor_3_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.005</mass>
+          <inertia>
+            <ixx>9.75e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>4.17041e-05</iyy>
+            <iyz>0</iyz>
+            <izz>4.26041e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_3/rotor_3_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.005</length>
+              <radius>0.1</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_3/rotor_3_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/propeller_cw.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Blue</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_3/vi_sensor/ground_truth/odometry_sensor_joint' type='revolute'>
+        <pose relative_to='ardrone_3/base_link'>0.1 0 -0.03 0 0.1 0</pose>
+        <parent>ardrone_3/base_link</parent>
+        <child>ardrone_3/vi_sensor/ground_truth/odometry_sensor_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_3/vi_sensor/ground_truth/odometry_sensor_link'>
+        <pose relative_to='ardrone_3/vi_sensor/ground_truth/odometry_sensor_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1e-05</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_3/vi_sensor/imu_joint' type='revolute'>
+        <pose relative_to='ardrone_3/base_link'>0.116053 0 -0.020254 0 0.1 0</pose>
+        <parent>ardrone_3/base_link</parent>
+        <child>ardrone_3/vi_sensor/imu_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_3/vi_sensor/imu_link'>
+        <pose relative_to='ardrone_3/vi_sensor/imu_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.015</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='multirotor_base_plugin' filename='librotors_gazebo_multirotor_base_plugin.so'>
+        <robotNamespace>ardrone_3</robotNamespace>
+        <linkName>ardrone_3/base_link</linkName>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='ardrone_3_front_right_motor_model' filename='librotors_gazebo_motor_model.so'>
+        <robotNamespace>ardrone_3</robotNamespace>
+        <jointName>ardrone_3/rotor_0_joint</jointName>
+        <linkName>ardrone_3/rotor_0</linkName>
+        <turningDirection>ccw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>838</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <motorNumber>0</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='ardrone_3_back_left_motor_model' filename='librotors_gazebo_motor_model.so'>
+        <robotNamespace>ardrone_3</robotNamespace>
+        <jointName>ardrone_3/rotor_1_joint</jointName>
+        <linkName>ardrone_3/rotor_1</linkName>
+        <turningDirection>ccw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>838</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <motorNumber>1</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/1</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='ardrone_3_front_left_motor_model' filename='librotors_gazebo_motor_model.so'>
+        <robotNamespace>ardrone_3</robotNamespace>
+        <jointName>ardrone_3/rotor_2_joint</jointName>
+        <linkName>ardrone_3/rotor_2</linkName>
+        <turningDirection>cw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>838</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <motorNumber>2</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/2</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='ardrone_3_back_right_motor_model' filename='librotors_gazebo_motor_model.so'>
+        <robotNamespace>ardrone_3</robotNamespace>
+        <jointName>ardrone_3/rotor_3_joint</jointName>
+        <linkName>ardrone_3/rotor_3</linkName>
+        <turningDirection>cw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>838</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <motorNumber>3</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/3</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='controller_interface' filename='librotors_gazebo_controller_interface.so'>
+        <robotNamespace>ardrone_3</robotNamespace>
+        <commandAttitudeThrustSubTopic>command/attitude</commandAttitudeThrustSubTopic>
+        <commandRateThrustSubTopic>command/rate</commandRateThrustSubTopic>
+        <commandMotorSpeedSubTopic>command/motor_speed</commandMotorSpeedSubTopic>
+        <imuSubTopic>imu</imuSubTopic>
+        <motorSpeedCommandPubTopic>gazebo/command/motor_speed</motorSpeedCommandPubTopic>
+      </plugin>
+      <plugin name='rotors_gazebo_imu_plugin' filename='librotors_gazebo_imu_plugin.so'>
+        <robotNamespace>ardrone_3</robotNamespace>
+        <linkName>ardrone_3/imu_link</linkName>
+        <imuTopic>imu</imuTopic>
+        <gyroscopeNoiseDensity>0.0003394</gyroscopeNoiseDensity>
+        <gyroscopeRandomWalk>3.8785e-05</gyroscopeRandomWalk>
+        <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
+        <gyroscopeTurnOnBiasSigma>0.0087</gyroscopeTurnOnBiasSigma>
+        <accelerometerNoiseDensity>0.004</accelerometerNoiseDensity>
+        <accelerometerRandomWalk>0.006</accelerometerRandomWalk>
+        <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
+        <accelerometerTurnOnBiasSigma>0.196</accelerometerTurnOnBiasSigma>
+      </plugin>
+      <plugin name='rotors_gazebo_imugt_plugin' filename='librotors_gazebo_imu_plugin.so'>
+        <robotNamespace>ardrone_3</robotNamespace>
+        <linkName>ardrone_3/imugt_link</linkName>
+        <imuTopic>ground_truth/imu</imuTopic>
+        <gyroscopeNoiseDensity>0.0</gyroscopeNoiseDensity>
+        <gyroscopeRandomWalk>0.0</gyroscopeRandomWalk>
+        <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
+        <gyroscopeTurnOnBiasSigma>0.0</gyroscopeTurnOnBiasSigma>
+        <accelerometerNoiseDensity>0.0</accelerometerNoiseDensity>
+        <accelerometerRandomWalk>0.0</accelerometerRandomWalk>
+        <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
+        <accelerometerTurnOnBiasSigma>0.0</accelerometerTurnOnBiasSigma>
+      </plugin>
+      <plugin name='odometry_sensorgt' filename='librotors_gazebo_odometry_plugin.so'>
+        <linkName>ardrone_3/odometry_sensorgt_link</linkName>
+        <robotNamespace>ardrone_3</robotNamespace>
+        <poseTopic>ground_truth/pose</poseTopic>
+        <poseWithCovarianceTopic>ground_truth/pose_with_covariance</poseWithCovarianceTopic>
+        <positionTopic>ground_truth/position</positionTopic>
+        <transformTopic>ground_truth/transform</transformTopic>
+        <odometryTopic>ground_truth/odometry</odometryTopic>
+        <parentFrameId>world</parentFrameId>
+        <childFrameId>ardrone_3/base_link</childFrameId>
+        <measurementDivisor>1</measurementDivisor>
+        <measurementDelay>0</measurementDelay>
+        <unknownDelay>0.0</unknownDelay>
+        <noiseNormalPosition>0 0 0</noiseNormalPosition>
+        <noiseNormalQuaternion>0 0 0</noiseNormalQuaternion>
+        <noiseNormalLinearVelocity>0 0 0</noiseNormalLinearVelocity>
+        <noiseNormalAngularVelocity>0 0 0</noiseNormalAngularVelocity>
+        <noiseUniformPosition>0 0 0</noiseUniformPosition>
+        <noiseUniformQuaternion>0 0 0</noiseUniformQuaternion>
+        <noiseUniformLinearVelocity>0 0 0</noiseUniformLinearVelocity>
+        <noiseUniformAngularVelocity>0 0 0</noiseUniformAngularVelocity>
+      </plugin>
+      <plugin name='odometry_sensor1' filename='librotors_gazebo_odometry_plugin.so'>
+        <linkName>ardrone_3/odometry_sensor1_link</linkName>
+        <robotNamespace>ardrone_3</robotNamespace>
+        <poseTopic>odometry_sensor1/pose</poseTopic>
+        <poseWithCovarianceTopic>odometry_sensor1/pose_with_covariance</poseWithCovarianceTopic>
+        <positionTopic>odometry_sensor1/position</positionTopic>
+        <transformTopic>odometry_sensor1/transform</transformTopic>
+        <odometryTopic>odometry_sensor1/odometry</odometryTopic>
+        <parentFrameId>world</parentFrameId>
+        <childFrameId>ardrone_3/odometry_sensor1</childFrameId>
+        <measurementDivisor>1</measurementDivisor>
+        <measurementDelay>0</measurementDelay>
+        <unknownDelay>0.0</unknownDelay>
+        <noiseNormalPosition>0 0 0</noiseNormalPosition>
+        <noiseNormalQuaternion>0 0 0</noiseNormalQuaternion>
+        <noiseNormalLinearVelocity>0 0 0</noiseNormalLinearVelocity>
+        <noiseNormalAngularVelocity>0 0 0</noiseNormalAngularVelocity>
+        <noiseUniformPosition>0 0 0</noiseUniformPosition>
+        <noiseUniformQuaternion>0 0 0</noiseUniformQuaternion>
+        <noiseUniformLinearVelocity>0 0 0</noiseUniformLinearVelocity>
+        <noiseUniformAngularVelocity>0 0 0</noiseUniformAngularVelocity>
+      </plugin>
+      <plugin name='odometry_sensor' filename='librotors_gazebo_odometry_plugin.so'>
+        <linkName>ardrone_3/vi_sensor/ground_truth/odometry_sensor_link</linkName>
+        <robotNamespace>ardrone_3/vi_sensor/ground_truth</robotNamespace>
+        <poseTopic>pose</poseTopic>
+        <poseWithCovarianceTopic>pose_with_covariance</poseWithCovarianceTopic>
+        <positionTopic>position</positionTopic>
+        <transformTopic>transform</transformTopic>
+        <odometryTopic>odometry</odometryTopic>
+        <parentFrameId>world</parentFrameId>
+        <childFrameId>ardrone_3/vi_sensor/base_link</childFrameId>
+        <measurementDivisor>1</measurementDivisor>
+        <measurementDelay>0</measurementDelay>
+        <unknownDelay>0.0</unknownDelay>
+        <noiseNormalPosition>0 0 0</noiseNormalPosition>
+        <noiseNormalQuaternion>0 0 0</noiseNormalQuaternion>
+        <noiseNormalLinearVelocity>0 0 0</noiseNormalLinearVelocity>
+        <noiseNormalAngularVelocity>0 0 0</noiseNormalAngularVelocity>
+        <noiseUniformPosition>0 0 0</noiseUniformPosition>
+        <noiseUniformQuaternion>0 0 0</noiseUniformQuaternion>
+        <noiseUniformLinearVelocity>0 0 0</noiseUniformLinearVelocity>
+        <noiseUniformAngularVelocity>0 0 0</noiseUniformAngularVelocity>
+      </plugin>
+      <plugin name='rotors_gazebo_imu_plugin' filename='librotors_gazebo_imu_plugin.so'>
+        <robotNamespace>ardrone_3/vi_sensor</robotNamespace>
+        <linkName>ardrone_3/vi_sensor/imu_link</linkName>
+        <imuTopic>imu</imuTopic>
+        <gyroscopeNoiseDensity>0.0003394</gyroscopeNoiseDensity>
+        <gyroscopeRandomWalk>3.8785e-05</gyroscopeRandomWalk>
+        <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
+        <gyroscopeTurnOnBiasSigma>0.0087</gyroscopeTurnOnBiasSigma>
+        <accelerometerNoiseDensity>0.004</accelerometerNoiseDensity>
+        <accelerometerRandomWalk>0.006</accelerometerRandomWalk>
+        <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
+        <accelerometerTurnOnBiasSigma>0.196</accelerometerTurnOnBiasSigma>
+      </plugin>
+      <frame name='ardrone_3/base_joint' attached_to='ardrone_3/base_link'>
+        <pose>0 0 0 0 -0 0</pose>
+      </frame>
+      <frame name='ardrone_3/base_link_inertia' attached_to='ardrone_3/base_joint'/>
+      <frame name='ardrone_3/vi_sensor/camera_depth_optical_center_joint' attached_to='ardrone_3/vi_sensor/camera_depth_link'>
+        <pose>0 0 0 -1.5708 -0 -1.5708</pose>
+      </frame>
+      <frame name='ardrone_3/vi_sensor/camera_depth_optical_center_link' attached_to='ardrone_3/vi_sensor/camera_depth_optical_center_joint'/>
+      <frame name='ardrone_3/vi_sensor/camera_depth_joint' attached_to='ardrone_3/vi_sensor/vi_sensor_link'>
+        <pose>0.015 0.055 0.0065 0 -0 0</pose>
+      </frame>
+      <frame name='ardrone_3/vi_sensor/camera_depth_link' attached_to='ardrone_3/vi_sensor/camera_depth_joint'/>
+      <frame name='ardrone_3/vi_sensor_vi_sensor_joint' attached_to='ardrone_3/base_link'>
+        <pose>0.1 0 -0.03 0 0.1 0</pose>
+      </frame>
+      <frame name='ardrone_3/vi_sensor/vi_sensor_link' attached_to='ardrone_3/vi_sensor_vi_sensor_joint'/>
+      <pose>6 0 1 0 -0 0</pose>
+    </model>
+    <model name='ardrone_2'>
+      <link name='ardrone_2/base_link'>
+        <inertial>
+          <pose>0.007976 0 -0.002393 0 -0 0</pose>
+          <mass>1.63001</mass>
+          <inertia>
+            <ixx>0.034866</ixx>
+            <ixy>-5.91788e-08</ixy>
+            <ixz>0.00035892</ixz>
+            <iyy>0.047199</iyy>
+            <iyz>1.24505e-08</iyz>
+            <izz>0.0988985</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_2/base_link_inertia_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <box>
+              <size>0.3 0.3 0.16</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='ardrone_2/base_link_fixed_joint_lump__ardrone_2/vi_sensor/vi_sensor_link_collision_1'>
+          <pose>0.1 0 -0.03 0 0.1 0</pose>
+          <geometry>
+            <box>
+              <size>0.03 0.133 0.057</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <collision name='ardrone_2/base_link_fixed_joint_lump__ardrone_2/vi_sensor/camera_depth_link_collision_2'>
+          <pose>0.115574 0.055 -0.02503 0 0.1 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.01</length>
+              <radius>0.007</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_2/base_link_inertia_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/ardrone.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <visual name='ardrone_2/base_link_fixed_joint_lump__ardrone_2/vi_sensor/vi_sensor_link_visual_1'>
+          <pose>0.1 0 -0.03 0 0.1 0</pose>
+          <geometry>
+            <mesh>
+              <scale>1 1 1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/vi_sensor.dae</uri>
+            </mesh>
+          </geometry>
+        </visual>
+        <sensor name='ardrone_2/vi_sensor_camera_{camera_suffix}' type='depth'>
+          <always_on>1</always_on>
+          <update_rate>500</update_rate>
+          <camera>
+            <horizontal_fov>2</horizontal_fov>
+            <image>
+              <format>L8</format>
+              <width>640</width>
+              <height>480</height>
+            </image>
+            <clip>
+              <near>0.01</near>
+              <far>10</far>
+            </clip>
+          </camera>
+          <plugin name='ardrone_2/vi_sensor_camera_{camera_suffix}' filename='libgazebo_ros_openni_kinect.so'>
+            <robotNamespace>ardrone_2/vi_sensor</robotNamespace>
+            <alwaysOn>1</alwaysOn>
+            <baseline>0.11</baseline>
+            <updateRate>500.0</updateRate>
+            <cameraName>camera_depth</cameraName>
+            <cameraInfoTopicName>camera/camera_info</cameraInfoTopicName>
+            <depthImageTopicName>depth/disparity</depthImageTopicName>
+            <depthImageCameraInfoTopicName>depth/camera_info</depthImageCameraInfoTopicName>
+            <frameName>camera_depth_optical_center_link</frameName>
+            <pointCloudCutoff>0.5</pointCloudCutoff>
+            <pointCloudCutoffMax>10.0</pointCloudCutoffMax>
+            <distortionK1>0.0</distortionK1>
+            <distortionK2>0.0</distortionK2>
+            <distortionK3>0.0</distortionK3>
+            <distortionT1>0.0</distortionT1>
+            <distortionT2>0.0</distortionT2>
+            <CxPrime>0</CxPrime>
+            <Cx>0</Cx>
+            <Cy>0</Cy>
+            <focalLength>0</focalLength>
+            <hackBaseline>0</hackBaseline>
+          </plugin>
+          <pose>0.115574 0.055 -0.02503 0 0.1 0</pose>
+        </sensor>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_2/imu_joint' type='revolute'>
+        <pose relative_to='ardrone_2/base_link'>0 0 0 0 -0 0</pose>
+        <parent>ardrone_2/base_link</parent>
+        <child>ardrone_2/imu_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_2/imu_link'>
+        <pose relative_to='ardrone_2/imu_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.015</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_2/imugt_joint' type='revolute'>
+        <pose relative_to='ardrone_2/base_link'>0 0 0 0 -0 0</pose>
+        <parent>ardrone_2/base_link</parent>
+        <child>ardrone_2/imugt_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_2/imugt_link'>
+        <pose relative_to='ardrone_2/imugt_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1e-05</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_2/odometry_sensor1_joint' type='revolute'>
+        <pose relative_to='ardrone_2/base_link'>0 0 0 0 -0 0</pose>
+        <parent>ardrone_2/base_link</parent>
+        <child>ardrone_2/odometry_sensor1_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_2/odometry_sensor1_link'>
+        <pose relative_to='ardrone_2/odometry_sensor1_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1e-05</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_2/odometry_sensorgt_joint' type='revolute'>
+        <pose relative_to='ardrone_2/base_link'>0 0 0 0 -0 0</pose>
+        <parent>ardrone_2/base_link</parent>
+        <child>ardrone_2/odometry_sensorgt_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_2/odometry_sensorgt_link'>
+        <pose relative_to='ardrone_2/odometry_sensorgt_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1e-05</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_2/rotor_0_joint' type='revolute'>
+        <pose relative_to='ardrone_2/base_link'>0.127279 -0.127279 0.023 0 -0 0</pose>
+        <parent>ardrone_2/base_link</parent>
+        <child>ardrone_2/rotor_0</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_2/rotor_0'>
+        <pose relative_to='ardrone_2/rotor_0_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.005</mass>
+          <inertia>
+            <ixx>9.75e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>4.17041e-05</iyy>
+            <iyz>0</iyz>
+            <izz>4.26041e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_2/rotor_0_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.005</length>
+              <radius>0.1</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_2/rotor_0_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/propeller_ccw.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Red</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_2/rotor_1_joint' type='revolute'>
+        <pose relative_to='ardrone_2/base_link'>-0.127279 0.127279 0.023 0 -0 0</pose>
+        <parent>ardrone_2/base_link</parent>
+        <child>ardrone_2/rotor_1</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_2/rotor_1'>
+        <pose relative_to='ardrone_2/rotor_1_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.005</mass>
+          <inertia>
+            <ixx>9.75e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>4.17041e-05</iyy>
+            <iyz>0</iyz>
+            <izz>4.26041e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_2/rotor_1_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.005</length>
+              <radius>0.1</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_2/rotor_1_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/propeller_ccw.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Blue</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_2/rotor_2_joint' type='revolute'>
+        <pose relative_to='ardrone_2/base_link'>0.127279 0.127279 0.023 0 -0 0</pose>
+        <parent>ardrone_2/base_link</parent>
+        <child>ardrone_2/rotor_2</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_2/rotor_2'>
+        <pose relative_to='ardrone_2/rotor_2_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.005</mass>
+          <inertia>
+            <ixx>9.75e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>4.17041e-05</iyy>
+            <iyz>0</iyz>
+            <izz>4.26041e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_2/rotor_2_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.005</length>
+              <radius>0.1</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_2/rotor_2_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/propeller_cw.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Red</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_2/rotor_3_joint' type='revolute'>
+        <pose relative_to='ardrone_2/base_link'>-0.127279 -0.127279 0.023 0 -0 0</pose>
+        <parent>ardrone_2/base_link</parent>
+        <child>ardrone_2/rotor_3</child>
+        <axis>
+          <xyz>0 0 1</xyz>
+          <limit>
+            <lower>-1e+16</lower>
+            <upper>1e+16</upper>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_2/rotor_3'>
+        <pose relative_to='ardrone_2/rotor_3_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.005</mass>
+          <inertia>
+            <ixx>9.75e-07</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>4.17041e-05</iyy>
+            <iyz>0</iyz>
+            <izz>4.26041e-05</izz>
+          </inertia>
+        </inertial>
+        <collision name='ardrone_2/rotor_3_collision'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <cylinder>
+              <length>0.005</length>
+              <radius>0.1</radius>
+            </cylinder>
+          </geometry>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <friction>
+              <ode/>
+              <torsional>
+                <ode/>
+              </torsional>
+            </friction>
+            <bounce/>
+          </surface>
+          <max_contacts>10</max_contacts>
+        </collision>
+        <visual name='ardrone_2/rotor_3_visual'>
+          <pose>0 0 0 0 -0 0</pose>
+          <geometry>
+            <mesh>
+              <scale>0.1 0.1 0.1</scale>
+              <uri>/home/coolas-fly/project/multi_exploration/src/multi_exploration/gazebo_simulator/rotors_simulator/rotors_description/meshes/propeller_cw.dae</uri>
+            </mesh>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Blue</name>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_2/vi_sensor/ground_truth/odometry_sensor_joint' type='revolute'>
+        <pose relative_to='ardrone_2/base_link'>0.1 0 -0.03 0 0.1 0</pose>
+        <parent>ardrone_2/base_link</parent>
+        <child>ardrone_2/vi_sensor/ground_truth/odometry_sensor_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_2/vi_sensor/ground_truth/odometry_sensor_link'>
+        <pose relative_to='ardrone_2/vi_sensor/ground_truth/odometry_sensor_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1e-05</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <joint name='ardrone_2/vi_sensor/imu_joint' type='revolute'>
+        <pose relative_to='ardrone_2/base_link'>0.116053 0 -0.020254 0 0.1 0</pose>
+        <parent>ardrone_2/base_link</parent>
+        <child>ardrone_2/vi_sensor/imu_link</child>
+        <axis>
+          <xyz>1 0 0</xyz>
+          <limit>
+            <lower>0</lower>
+            <upper>0</upper>
+            <effort>0</effort>
+            <velocity>0</velocity>
+          </limit>
+          <dynamics>
+            <spring_reference>0</spring_reference>
+            <spring_stiffness>0</spring_stiffness>
+          </dynamics>
+        </axis>
+      </joint>
+      <link name='ardrone_2/vi_sensor/imu_link'>
+        <pose relative_to='ardrone_2/vi_sensor/imu_joint'>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>0.015</mass>
+          <inertia>
+            <ixx>1e-05</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1e-05</iyy>
+            <iyz>0</iyz>
+            <izz>1e-05</izz>
+          </inertia>
+        </inertial>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <plugin name='multirotor_base_plugin' filename='librotors_gazebo_multirotor_base_plugin.so'>
+        <robotNamespace>ardrone_2</robotNamespace>
+        <linkName>ardrone_2/base_link</linkName>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='ardrone_2_front_right_motor_model' filename='librotors_gazebo_motor_model.so'>
+        <robotNamespace>ardrone_2</robotNamespace>
+        <jointName>ardrone_2/rotor_0_joint</jointName>
+        <linkName>ardrone_2/rotor_0</linkName>
+        <turningDirection>ccw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>838</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <motorNumber>0</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/0</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='ardrone_2_back_left_motor_model' filename='librotors_gazebo_motor_model.so'>
+        <robotNamespace>ardrone_2</robotNamespace>
+        <jointName>ardrone_2/rotor_1_joint</jointName>
+        <linkName>ardrone_2/rotor_1</linkName>
+        <turningDirection>ccw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>838</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <motorNumber>1</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/1</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='ardrone_2_front_left_motor_model' filename='librotors_gazebo_motor_model.so'>
+        <robotNamespace>ardrone_2</robotNamespace>
+        <jointName>ardrone_2/rotor_2_joint</jointName>
+        <linkName>ardrone_2/rotor_2</linkName>
+        <turningDirection>cw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>838</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <motorNumber>2</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/2</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='ardrone_2_back_right_motor_model' filename='librotors_gazebo_motor_model.so'>
+        <robotNamespace>ardrone_2</robotNamespace>
+        <jointName>ardrone_2/rotor_3_joint</jointName>
+        <linkName>ardrone_2/rotor_3</linkName>
+        <turningDirection>cw</turningDirection>
+        <timeConstantUp>0.0125</timeConstantUp>
+        <timeConstantDown>0.025</timeConstantDown>
+        <maxRotVelocity>838</maxRotVelocity>
+        <motorConstant>8.54858e-06</motorConstant>
+        <momentConstant>0.016</momentConstant>
+        <commandSubTopic>gazebo/command/motor_speed</commandSubTopic>
+        <motorNumber>3</motorNumber>
+        <rotorDragCoefficient>8.06428e-05</rotorDragCoefficient>
+        <rollingMomentCoefficient>1e-06</rollingMomentCoefficient>
+        <motorSpeedPubTopic>motor_speed/3</motorSpeedPubTopic>
+        <rotorVelocitySlowdownSim>10</rotorVelocitySlowdownSim>
+      </plugin>
+      <plugin name='controller_interface' filename='librotors_gazebo_controller_interface.so'>
+        <robotNamespace>ardrone_2</robotNamespace>
+        <commandAttitudeThrustSubTopic>command/attitude</commandAttitudeThrustSubTopic>
+        <commandRateThrustSubTopic>command/rate</commandRateThrustSubTopic>
+        <commandMotorSpeedSubTopic>command/motor_speed</commandMotorSpeedSubTopic>
+        <imuSubTopic>imu</imuSubTopic>
+        <motorSpeedCommandPubTopic>gazebo/command/motor_speed</motorSpeedCommandPubTopic>
+      </plugin>
+      <plugin name='rotors_gazebo_imu_plugin' filename='librotors_gazebo_imu_plugin.so'>
+        <robotNamespace>ardrone_2</robotNamespace>
+        <linkName>ardrone_2/imu_link</linkName>
+        <imuTopic>imu</imuTopic>
+        <gyroscopeNoiseDensity>0.0003394</gyroscopeNoiseDensity>
+        <gyroscopeRandomWalk>3.8785e-05</gyroscopeRandomWalk>
+        <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
+        <gyroscopeTurnOnBiasSigma>0.0087</gyroscopeTurnOnBiasSigma>
+        <accelerometerNoiseDensity>0.004</accelerometerNoiseDensity>
+        <accelerometerRandomWalk>0.006</accelerometerRandomWalk>
+        <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
+        <accelerometerTurnOnBiasSigma>0.196</accelerometerTurnOnBiasSigma>
+      </plugin>
+      <plugin name='rotors_gazebo_imugt_plugin' filename='librotors_gazebo_imu_plugin.so'>
+        <robotNamespace>ardrone_2</robotNamespace>
+        <linkName>ardrone_2/imugt_link</linkName>
+        <imuTopic>ground_truth/imu</imuTopic>
+        <gyroscopeNoiseDensity>0.0</gyroscopeNoiseDensity>
+        <gyroscopeRandomWalk>0.0</gyroscopeRandomWalk>
+        <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
+        <gyroscopeTurnOnBiasSigma>0.0</gyroscopeTurnOnBiasSigma>
+        <accelerometerNoiseDensity>0.0</accelerometerNoiseDensity>
+        <accelerometerRandomWalk>0.0</accelerometerRandomWalk>
+        <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
+        <accelerometerTurnOnBiasSigma>0.0</accelerometerTurnOnBiasSigma>
+      </plugin>
+      <plugin name='odometry_sensorgt' filename='librotors_gazebo_odometry_plugin.so'>
+        <linkName>ardrone_2/odometry_sensorgt_link</linkName>
+        <robotNamespace>ardrone_2</robotNamespace>
+        <poseTopic>ground_truth/pose</poseTopic>
+        <poseWithCovarianceTopic>ground_truth/pose_with_covariance</poseWithCovarianceTopic>
+        <positionTopic>ground_truth/position</positionTopic>
+        <transformTopic>ground_truth/transform</transformTopic>
+        <odometryTopic>ground_truth/odometry</odometryTopic>
+        <parentFrameId>world</parentFrameId>
+        <childFrameId>ardrone_2/base_link</childFrameId>
+        <measurementDivisor>1</measurementDivisor>
+        <measurementDelay>0</measurementDelay>
+        <unknownDelay>0.0</unknownDelay>
+        <noiseNormalPosition>0 0 0</noiseNormalPosition>
+        <noiseNormalQuaternion>0 0 0</noiseNormalQuaternion>
+        <noiseNormalLinearVelocity>0 0 0</noiseNormalLinearVelocity>
+        <noiseNormalAngularVelocity>0 0 0</noiseNormalAngularVelocity>
+        <noiseUniformPosition>0 0 0</noiseUniformPosition>
+        <noiseUniformQuaternion>0 0 0</noiseUniformQuaternion>
+        <noiseUniformLinearVelocity>0 0 0</noiseUniformLinearVelocity>
+        <noiseUniformAngularVelocity>0 0 0</noiseUniformAngularVelocity>
+      </plugin>
+      <plugin name='odometry_sensor1' filename='librotors_gazebo_odometry_plugin.so'>
+        <linkName>ardrone_2/odometry_sensor1_link</linkName>
+        <robotNamespace>ardrone_2</robotNamespace>
+        <poseTopic>odometry_sensor1/pose</poseTopic>
+        <poseWithCovarianceTopic>odometry_sensor1/pose_with_covariance</poseWithCovarianceTopic>
+        <positionTopic>odometry_sensor1/position</positionTopic>
+        <transformTopic>odometry_sensor1/transform</transformTopic>
+        <odometryTopic>odometry_sensor1/odometry</odometryTopic>
+        <parentFrameId>world</parentFrameId>
+        <childFrameId>ardrone_2/odometry_sensor1</childFrameId>
+        <measurementDivisor>1</measurementDivisor>
+        <measurementDelay>0</measurementDelay>
+        <unknownDelay>0.0</unknownDelay>
+        <noiseNormalPosition>0 0 0</noiseNormalPosition>
+        <noiseNormalQuaternion>0 0 0</noiseNormalQuaternion>
+        <noiseNormalLinearVelocity>0 0 0</noiseNormalLinearVelocity>
+        <noiseNormalAngularVelocity>0 0 0</noiseNormalAngularVelocity>
+        <noiseUniformPosition>0 0 0</noiseUniformPosition>
+        <noiseUniformQuaternion>0 0 0</noiseUniformQuaternion>
+        <noiseUniformLinearVelocity>0 0 0</noiseUniformLinearVelocity>
+        <noiseUniformAngularVelocity>0 0 0</noiseUniformAngularVelocity>
+      </plugin>
+      <plugin name='odometry_sensor' filename='librotors_gazebo_odometry_plugin.so'>
+        <linkName>ardrone_2/vi_sensor/ground_truth/odometry_sensor_link</linkName>
+        <robotNamespace>ardrone_2/vi_sensor/ground_truth</robotNamespace>
+        <poseTopic>pose</poseTopic>
+        <poseWithCovarianceTopic>pose_with_covariance</poseWithCovarianceTopic>
+        <positionTopic>position</positionTopic>
+        <transformTopic>transform</transformTopic>
+        <odometryTopic>odometry</odometryTopic>
+        <parentFrameId>world</parentFrameId>
+        <childFrameId>ardrone_2/vi_sensor/base_link</childFrameId>
+        <measurementDivisor>1</measurementDivisor>
+        <measurementDelay>0</measurementDelay>
+        <unknownDelay>0.0</unknownDelay>
+        <noiseNormalPosition>0 0 0</noiseNormalPosition>
+        <noiseNormalQuaternion>0 0 0</noiseNormalQuaternion>
+        <noiseNormalLinearVelocity>0 0 0</noiseNormalLinearVelocity>
+        <noiseNormalAngularVelocity>0 0 0</noiseNormalAngularVelocity>
+        <noiseUniformPosition>0 0 0</noiseUniformPosition>
+        <noiseUniformQuaternion>0 0 0</noiseUniformQuaternion>
+        <noiseUniformLinearVelocity>0 0 0</noiseUniformLinearVelocity>
+        <noiseUniformAngularVelocity>0 0 0</noiseUniformAngularVelocity>
+      </plugin>
+      <plugin name='rotors_gazebo_imu_plugin' filename='librotors_gazebo_imu_plugin.so'>
+        <robotNamespace>ardrone_2/vi_sensor</robotNamespace>
+        <linkName>ardrone_2/vi_sensor/imu_link</linkName>
+        <imuTopic>imu</imuTopic>
+        <gyroscopeNoiseDensity>0.0003394</gyroscopeNoiseDensity>
+        <gyroscopeRandomWalk>3.8785e-05</gyroscopeRandomWalk>
+        <gyroscopeBiasCorrelationTime>1000.0</gyroscopeBiasCorrelationTime>
+        <gyroscopeTurnOnBiasSigma>0.0087</gyroscopeTurnOnBiasSigma>
+        <accelerometerNoiseDensity>0.004</accelerometerNoiseDensity>
+        <accelerometerRandomWalk>0.006</accelerometerRandomWalk>
+        <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
+        <accelerometerTurnOnBiasSigma>0.196</accelerometerTurnOnBiasSigma>
+      </plugin>
+      <frame name='ardrone_2/base_joint' attached_to='ardrone_2/base_link'>
+        <pose>0 0 0 0 -0 0</pose>
+      </frame>
+      <frame name='ardrone_2/base_link_inertia' attached_to='ardrone_2/base_joint'/>
+      <frame name='ardrone_2/vi_sensor/camera_depth_optical_center_joint' attached_to='ardrone_2/vi_sensor/camera_depth_link'>
+        <pose>0 0 0 -1.5708 -0 -1.5708</pose>
+      </frame>
+      <frame name='ardrone_2/vi_sensor/camera_depth_optical_center_link' attached_to='ardrone_2/vi_sensor/camera_depth_optical_center_joint'/>
+      <frame name='ardrone_2/vi_sensor/camera_depth_joint' attached_to='ardrone_2/vi_sensor/vi_sensor_link'>
+        <pose>0.015 0.055 0.0065 0 -0 0</pose>
+      </frame>
+      <frame name='ardrone_2/vi_sensor/camera_depth_link' attached_to='ardrone_2/vi_sensor/camera_depth_joint'/>
+      <frame name='ardrone_2/vi_sensor_vi_sensor_joint' attached_to='ardrone_2/base_link'>
+        <pose>0.1 0 -0.03 0 0.1 0</pose>
+      </frame>
+      <frame name='ardrone_2/vi_sensor/vi_sensor_link' attached_to='ardrone_2/vi_sensor_vi_sensor_joint'/>
+      <pose>3 0 1 0 -0 0</pose>
+    </model>
+    <model name='asphalt_plane'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>20 20 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <box>
+              <size>20 20 0.1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://asphalt_plane/materials/scripts</uri>
+              <uri>model://asphalt_plane/materials/textures</uri>
+              <name>vrc/asphalt</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>2.24225 5.43968 0 0 -0 0</pose>
+    </model>
+    <model name='asphalt_plane_0'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>20 20 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <box>
+              <size>20 20 0.1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://asphalt_plane/materials/scripts</uri>
+              <uri>model://asphalt_plane/materials/textures</uri>
+              <name>vrc/asphalt</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>1.84294 -2.74467 0 0 -0 0</pose>
+    </model>
+    <model name='asphalt_plane_1'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>20 20 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <box>
+              <size>20 20 0.1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://asphalt_plane/materials/scripts</uri>
+              <uri>model://asphalt_plane/materials/textures</uri>
+              <name>vrc/asphalt</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-1.87468 5.14484 0 0 -0 0</pose>
+    </model>
+    <model name='asphalt_plane_2'>
+      <static>1</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <box>
+              <size>20 20 0.1</size>
+            </box>
+          </geometry>
+          <max_contacts>10</max_contacts>
+          <surface>
+            <contact>
+              <ode/>
+            </contact>
+            <bounce/>
+            <friction>
+              <torsional>
+                <ode/>
+              </torsional>
+              <ode/>
+            </friction>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <cast_shadows>0</cast_shadows>
+          <geometry>
+            <box>
+              <size>20 20 0.1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://asphalt_plane/materials/scripts</uri>
+              <uri>model://asphalt_plane/materials/textures</uri>
+              <name>vrc/asphalt</name>
+            </script>
+          </material>
+        </visual>
+        <self_collide>0</self_collide>
+        <enable_wind>0</enable_wind>
+        <kinematic>0</kinematic>
+      </link>
+      <pose>-1.34813 -2.5563 0 0 -0 0</pose>
+    </model>
+  </world>
+</sdf>

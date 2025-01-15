@@ -1,0 +1,6 @@
+<launch>
+  <arg name="world_name" default="empty"/>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find rotors_gazebo)/worlds/$(arg world_name).world"/>
+  </include>
+</launch>

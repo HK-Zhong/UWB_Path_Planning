@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="rotors_gazebo" type="uwb_distance_calculator.py" name="uwb_distance_calculator" output="screen">
+    <param name="noise_stddev" value="0.5"/> <!-- 随机扰动标准差 -->
+    <param name="publish_frequency" value="10"/> <!-- 设置发布频率为 10Hz -->
+  </node>
+</launch>

@@ -1,0 +1,209 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="indoor_environment">
+    <!-- 增加更大的地面 -->
+    <link name="floor">
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>50 50 0.1</size> <!-- 增加地面的大小 -->
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>50 50 0.1</size> <!-- 增加地面的大小 -->
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.5 0.5 0.5 1</ambient>
+          <diffuse>0.5 0.5 0.5 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- 粗立方体柱子1 -->
+    <link name="pillar_1">
+      <pose>15 15 2 0 0 0</pose> <!-- 柱子的位置 -->
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>1 1 3</size> <!-- 柱子的尺寸：1x1米，3米高 -->
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>1 1 3</size> <!-- 柱子的尺寸 -->
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.7 0.3 0.3 1</ambient> <!-- 柱子的颜色（红色调） -->
+          <diffuse>0.7 0.3 0.3 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- 粗立方体柱子2 -->
+    <link name="pillar_2">
+      <pose>-15 15 2 0 0 0</pose> <!-- 柱子的位置 -->
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>1 1 3</size> <!-- 柱子的尺寸：1x1米，3米高 -->
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>1 1 3</size> <!-- 柱子的尺寸 -->
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.3 0.7 0.3 1</ambient> <!-- 柱子的颜色（绿色调） -->
+          <diffuse>0.3 0.7 0.3 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- 粗立方体柱子3 -->
+    <link name="pillar_3">
+      <pose>15 -15 2 0 0 0</pose> <!-- 柱子的位置 -->
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>1 1 3</size> <!-- 柱子的尺寸：1x1米，3米高 -->
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>1 1 3</size> <!-- 柱子的尺寸 -->
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.3 0.3 0.7 1</ambient> <!-- 柱子的颜色（蓝色调） -->
+          <diffuse>0.3 0.3 0.7 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+        <!-- 粗立方体柱子4 -->
+    <link name="pillar_4">
+      <pose>-15 -15 2 0 0 0</pose> <!-- 柱子的位置 -->
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>1 1 3</size> <!-- 柱子的尺寸：1x1米，3米高 -->
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>1 1 3</size> <!-- 柱子的尺寸 -->
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.3 0.3 0.7 1</ambient> <!-- 柱子的颜色（蓝色调） -->
+          <diffuse>0.3 0.3 0.7 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <!-- 增加一些墙壁 -->
+    <link name="wall_1">
+      <pose>25 0 1.5 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.1 50 3</size> <!-- 墙壁的尺寸 -->
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>0.1 50 3</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.8 0.8 0.8 1</ambient>
+          <diffuse>0.8 0.8 0.8 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <link name="wall_2">
+      <pose>-25 0 1.5 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.1 50 3</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>0.1 50 3</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.8 0.8 0.8 1</ambient>
+          <diffuse>0.8 0.8 0.8 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <link name="wall_3">
+      <pose>0 25 1.5 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>50 0.1 3</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>50 0.1 3</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.8 0.8 0.8 1</ambient>
+          <diffuse>0.8 0.8 0.8 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+    <link name="wall_4">
+      <pose>0 -25 1.5 0 0 0</pose>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>50 0.1 3</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <box>
+            <size>50 0.1 3</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.8 0.8 0.8 1</ambient>
+          <diffuse>0.8 0.8 0.8 1</diffuse>
+        </material>
+      </visual>
+    </link>
+
+  </model>
+</sdf>
+

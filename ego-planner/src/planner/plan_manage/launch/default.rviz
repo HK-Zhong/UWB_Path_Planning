@@ -1,0 +1,1029 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 0
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Image1
+        - /Depth1
+      Splitter Ratio: 0.5
+    Tree Height: 331
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.5886790156364441
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+      - /ThirdPersonFollower1
+    Name: Views
+    Splitter Ratio: 0.5104477405548096
+  - Class: rviz/Time
+    Name: Time
+    SyncMode: 0
+    SyncSource: real_map_2
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 1
+      Class: rviz/Axes
+      Enabled: true
+      Length: 1
+      Name: Axes
+      Radius: 0.10000000149011612
+      Reference Frame: <Fixed Frame>
+      Show Trail: false
+      Value: true
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /ardrone_1/odom_visualization/robot
+          Name: Marker_1
+          Namespaces:
+            ardrone_1: true
+          Queue Size: 100
+          Value: true
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /ardrone_2/odom_visualization/robot
+          Name: Marker_2
+          Namespaces:
+            ardrone_2: true
+          Queue Size: 100
+          Value: true
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /ardrone_3/odom_visualization/robot
+          Name: Marker_3
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /ardrone_4/odom_visualization/robot
+          Name: Marker_4
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /ardrone_5/odom_visualization/robot
+          Name: Marker_5
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+        - Class: rviz/Marker
+          Enabled: true
+          Marker Topic: /ardrone_6/odom_visualization/robot
+          Name: Marker_6
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+      Enabled: true
+      Name: Robot
+    - Alpha: 0.5
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 150
+      Reference Frame: <Fixed Frame>
+      Value: true
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Group
+          Displays:
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone1/ego_planner_node/goal_point
+              Name: goal_point_1
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_1/ego_planner_node/global_list
+              Name: global_path_1
+              Namespaces:
+                "": true
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_1/ego_planner_node/optimal_list
+              Name: optimal_traj_1
+              Namespaces:
+                "": true
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_1/ego_planner_node/a_star_list
+              Name: AStar_1
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_1/ego_planner_node/init_list
+              Name: InitTraj_1
+              Namespaces:
+                "": true
+              Queue Size: 100
+              Value: true
+          Enabled: true
+          Name: Planning_1
+        - Class: rviz/Group
+          Displays:
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_2/ego_planner_node/goal_point
+              Name: goal_point_2
+              Namespaces:
+                "": true
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_2/ego_planner_node/global_list
+              Name: global_path_2
+              Namespaces:
+                "": true
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_2/ego_planner_node/optimal_list
+              Name: optimal_traj_2
+              Namespaces:
+                "": true
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_2/ego_planner_node/a_star_list
+              Name: AStar_2
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_2/ego_planner_node/init_list
+              Name: InitTraj_2
+              Namespaces:
+                "": true
+              Queue Size: 100
+              Value: true
+          Enabled: true
+          Name: Planning_2
+        - Class: rviz/Group
+          Displays:
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_3/ego_planner_node/goal_point
+              Name: goal_point_3
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_3/ego_planner_node/global_list
+              Name: global_path_3
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_3/ego_planner_node/optimal_list
+              Name: optimal_traj_3
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_3/ego_planner_node/a_star_list
+              Name: AStar_3
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_3/ego_planner_node/init_list
+              Name: InitTraj_3
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+          Enabled: true
+          Name: Planning_3
+        - Class: rviz/Group
+          Displays:
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_4/ego_planner_node/goal_point
+              Name: goal_point_4
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_4/ego_planner_node/global_list
+              Name: global_path_4
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_4/ego_planner_node/optimal_list
+              Name: optimal_traj_4
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_4/ego_planner_node/a_star_list
+              Name: AStar_4
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_4/ego_planner_node/init_list
+              Name: InitTraj_4
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+          Enabled: true
+          Name: Planning_4
+        - Class: rviz/Group
+          Displays:
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_5/ego_planner_node/goal_point
+              Name: goal_point_5
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_5/ego_planner_node/global_list
+              Name: global_path_5
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_5/ego_planner_node/optimal_list
+              Name: optimal_traj_5
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_5/ego_planner_node/a_star_list
+              Name: AStar_5
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_5/ego_planner_node/init_list
+              Name: InitTraj_5
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+          Enabled: true
+          Name: Planning_5
+        - Class: rviz/Group
+          Displays:
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_6/ego_planner_node/goal_point
+              Name: goal_point_6
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_6/ego_planner_node/global_list
+              Name: global_path_6
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_6/ego_planner_node/optimal_list
+              Name: optimal_traj_6
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_6/ego_planner_node/a_star_list
+              Name: AStar_6
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+            - Class: rviz/Marker
+              Enabled: true
+              Marker Topic: /ardrone_6/ego_planner_node/init_list
+              Name: InitTraj_6
+              Namespaces:
+                {}
+              Queue Size: 100
+              Value: true
+          Enabled: true
+          Name: Planning_6
+      Enabled: true
+      Name: Planning
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: -9999
+                Min Value: 9999
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 255; 255; 255
+              Color Transformer: AxisColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Min Color: 0; 0; 0
+              Name: map_inflate_1
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 3
+              Size (m): 0.10000000149011612
+              Style: Flat Squares
+              Topic: /ardrone_1/grid_map/occupancy_inflate
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 2.7592508792877197
+                Min Value: -0.9228500127792358
+                Value: false
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 187; 187; 187
+              Color Transformer: AxisColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Min Color: 0; 0; 0
+              Name: real_map_1
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 3
+              Size (m): 0.10000000149011612
+              Style: Flat Squares
+              Topic: /ardrone_1/grid_map/occupancy
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+          Enabled: true
+          Name: Mapping_1
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: -9999
+                Min Value: 9999
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 255; 255; 255
+              Color Transformer: AxisColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Min Color: 0; 0; 0
+              Name: map_inflate_2
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 3
+              Size (m): 0.10000000149011612
+              Style: Flat Squares
+              Topic: /ardrone_2/grid_map/occupancy
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 2.7592508792877197
+                Min Value: -0.9228500127792358
+                Value: false
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 187; 187; 187
+              Color Transformer: AxisColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Min Color: 0; 0; 0
+              Name: real_map_2
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 3
+              Size (m): 0.20000000298023224
+              Style: Flat Squares
+              Topic: /ardrone_2/grid_map/occupancy
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+          Enabled: true
+          Name: Mapping_2
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 0.4399999976158142
+                Min Value: 0.14000000059604645
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 255; 255; 255
+              Color Transformer: AxisColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Min Color: 0; 0; 0
+              Name: map_inflate_3
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 3
+              Size (m): 0.10000000149011612
+              Style: Flat Squares
+              Topic: /ardrone_3/grid_map/occupancy
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 2.7592508792877197
+                Min Value: -0.9228500127792358
+                Value: false
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 187; 187; 187
+              Color Transformer: AxisColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Min Color: 0; 0; 0
+              Name: real_map_3
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 3
+              Size (m): 0.10000000149011612
+              Style: Boxes
+              Topic: /ardrone_3/grid_map/occupancy
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+          Enabled: true
+          Name: Mapping_3
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 0.4399999976158142
+                Min Value: 0.14000000059604645
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 255; 255; 255
+              Color Transformer: AxisColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Min Color: 0; 0; 0
+              Name: map_inflate_4
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 3
+              Size (m): 0.10000000149011612
+              Style: Flat Squares
+              Topic: /ardrone_4/grid_map/occupancy
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 2.7592508792877197
+                Min Value: -0.9228500127792358
+                Value: false
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 187; 187; 187
+              Color Transformer: AxisColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Min Color: 0; 0; 0
+              Name: real_map_4
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 3
+              Size (m): 0.10000000149011612
+              Style: Boxes
+              Topic: /ardrone_4/grid_map/occupancy
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+          Enabled: true
+          Name: Mapping_4
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 1.1399999856948853
+                Min Value: 0.14000000059604645
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 255; 255; 255
+              Color Transformer: AxisColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Min Color: 0; 0; 0
+              Name: map_inflate_5
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 3
+              Size (m): 0.10000000149011612
+              Style: Flat Squares
+              Topic: /ardrone_5/grid_map/occupancy
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 2.7592508792877197
+                Min Value: -0.9228500127792358
+                Value: false
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 187; 187; 187
+              Color Transformer: AxisColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Min Color: 0; 0; 0
+              Name: real_map_5
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 3
+              Size (m): 0.10000000149011612
+              Style: Boxes
+              Topic: /ardrone_5/grid_map/occupancy
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+          Enabled: true
+          Name: Mapping_5
+        - Class: rviz/Group
+          Displays:
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 0.5400000214576721
+                Min Value: 0.14000000059604645
+                Value: true
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 255; 255; 255
+              Color Transformer: AxisColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Min Color: 0; 0; 0
+              Name: map_inflate_6
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 3
+              Size (m): 0.10000000149011612
+              Style: Flat Squares
+              Topic: /ardrone_6/grid_map/occupancy
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+            - Alpha: 1
+              Autocompute Intensity Bounds: true
+              Autocompute Value Bounds:
+                Max Value: 2.7592508792877197
+                Min Value: -0.9228500127792358
+                Value: false
+              Axis: Z
+              Channel Name: intensity
+              Class: rviz/PointCloud2
+              Color: 187; 187; 187
+              Color Transformer: AxisColor
+              Decay Time: 0
+              Enabled: true
+              Invert Rainbow: false
+              Max Color: 255; 255; 255
+              Min Color: 0; 0; 0
+              Name: real_map_6
+              Position Transformer: XYZ
+              Queue Size: 10
+              Selectable: true
+              Size (Pixels): 3
+              Size (m): 0.10000000149011612
+              Style: Boxes
+              Topic: /ardrone_6/grid_map/occupancy
+              Unreliable: false
+              Use Fixed Frame: true
+              Use rainbow: true
+              Value: true
+          Enabled: true
+          Name: Mapping_6
+      Enabled: true
+      Name: Mapping
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /ardrone_1/tag_detections_image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Image1
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /ardrone_2/tag_detections_image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Image2
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /ardrone_3/tag_detections_image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Image3
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /ardrone_4/tag_detections_image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Image4
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /ardrone_5/tag_detections_image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Image5
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: false
+          Image Topic: /ardrone_6/tag_detections_image
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: Image6
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: false
+      Enabled: true
+      Name: Image
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /ardrone_1/vi_sensor/camera_depth/depth/disparity
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: depth_1
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /ardrone_2/vi_sensor/camera_depth/depth/disparity
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: depth_2
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /ardrone_3/vi_sensor/camera_depth/depth/disparity
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: depth_3
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /ardrone_4/vi_sensor/camera_depth/depth/disparity
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: depth_4
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: true
+          Image Topic: /ardrone_5/vi_sensor/camera_depth/depth/disparity
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: depth_5
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: true
+        - Class: rviz/Image
+          Enabled: false
+          Image Topic: /ardrone_6/vi_sensor/camera_depth/depth/disparity
+          Max Value: 1
+          Median window: 5
+          Min Value: 0
+          Name: depth_6
+          Normalize Range: true
+          Queue Size: 2
+          Transport Hint: raw
+          Unreliable: false
+          Value: false
+      Enabled: true
+      Name: Depth
+    - Class: rviz/Group
+      Displays:
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /initial_tag_markers
+          Name: InitialMarker
+          Namespaces:
+            tags: true
+            tags_text: true
+          Queue Size: 100
+          Value: true
+        - Class: rviz/MarkerArray
+          Enabled: true
+          Marker Topic: /new_tag_markers
+          Name: NewMarkerArray
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+      Enabled: true
+      Name: Marker
+  Enabled: true
+  Global Options:
+    Background Color: 255; 253; 224
+    Default Light: true
+    Fixed Frame: world
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
+      Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+  Value: true
+  Views:
+    Current:
+      Class: rviz/ThirdPersonFollower
+      Distance: 121.59561157226562
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Field of View: 0.7853981852531433
+      Focal Point:
+        X: 38.307769775390625
+        Y: -1.0547056198120117
+        Z: 0.47685718536376953
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Pitch: 0.5697967410087585
+      Target Frame: world
+      Yaw: 6.277344703674316
+    Saved:
+      - Class: rviz/ThirdPersonFollower
+        Distance: 17.48538589477539
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.05999999865889549
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Field of View: 0.7853981852531433
+        Focal Point:
+          X: -16.308002471923828
+          Y: 0.4492051601409912
+          Z: 8.589673598180525e-06
+        Focal Shape Fixed Size: true
+        Focal Shape Size: 0.05000000074505806
+        Invert Z Axis: false
+        Name: ThirdPersonFollower
+        Near Clip Distance: 0.009999999776482582
+        Pitch: 1.0347968339920044
+        Target Frame: <Fixed Frame>
+        Yaw: 3.150407314300537
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 1835
+  Hide Left Dock: false
+  Hide Right Dock: false
+  Image1:
+    collapsed: false
+  Image2:
+    collapsed: false
+  Image3:
+    collapsed: false
+  Image4:
+    collapsed: false
+  Image5:
+    collapsed: false
+  Image6:
+    collapsed: false
+  QMainWindow State: 000000ff00000000fd00000004000000000000020c000006c3fc0200000015fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006e00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000004700000192000000f100fffffffb0000000a00560069006500770073000000024600000188000000c200fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d00650072006100000001d1000000b50000000000000000fb0000000c0049006d006100670065003101000001e00000010f0000001900fffffffb0000000c0049006d006100670065003201000002f6000001020000001900fffffffb0000000a0049006d006100670065000000027b0000015d0000000000000000fb0000000a006400650070007400680100000459000000f50000000000000000fb0000000a0049006d00610067006501000001970000011a0000000000000000fb0000000a0049006d00610067006501000002b8000001200000000000000000fb0000000a0049006d006100670065010000030d000000cb0000000000000000fb0000000c0049006d006100670065003301000003ff000000ea0000001900fffffffb0000000c0049006d006100670065003401000004f0000001030000001900fffffffb0000000c0049006d006100670065003501000005fa000001100000001900fffffffb0000000c0049006d00610067006500360000000511000000c70000001900ffffff000000010000022d000006c3fc0200000008fb0000000e00640065007000740068005f00310100000047000000f20000001900fffffffb0000000e00640065007000740068005f003201000001400000011d0000001900fffffffb0000000e00640065007000740068005f00330100000264000001830000001900fffffffb0000000e00640065007000740068005f003401000003ee000001900000001900fffffffb0000000e00640065007000740068005f00350100000585000001850000001900fffffffb0000000e00640065007000740068005f003600000004d5000001030000001900fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000006100000003bfc0100000002fb0000000800540069006d0065000000000000000610000004c100fffffffb0000000800540069006d00650100000000000004500000000000000000000007a6000006c300000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 3053
+  X: 72
+  Y: 34
+  depth_1:
+    collapsed: false
+  depth_2:
+    collapsed: false
+  depth_3:
+    collapsed: false
+  depth_4:
+    collapsed: false
+  depth_5:
+    collapsed: false
+  depth_6:
+    collapsed: false

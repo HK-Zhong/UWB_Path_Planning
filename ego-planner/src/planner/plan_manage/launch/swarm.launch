@@ -1,0 +1,90 @@
+<launch>
+    <arg name="map_size_x" value="150.0"/>
+    <arg name="map_size_y" value="150.0"/>
+    <arg name="map_size_z" value=" 5.0"/>
+    <arg name="max_vel" value=" 0.3"/>
+    <arg name="max_acc" value=" 2.0"/>
+
+
+
+    <include file="$(find ego_planner)/launch/single.launch">
+        <arg name="prefix" value="ardrone_1"/>
+        <arg name="odom_topic" value="/ardrone_1/odometry_sensor1/odometry"/>
+        <arg name="depth_topic" value="/ardrone_1/vi_sensor/camera_depth/depth/disparity"/>
+        <arg name="cmd_topic" value="/ardrone_1/command/pose"/>
+        <arg name="max_vel" value="$(arg max_vel)"/>
+        <arg name="max_acc" value="$(arg max_acc)"/>
+
+        <arg name="map_size_x" value="$(arg map_size_x)"/>
+        <arg name="map_size_y" value="$(arg map_size_y)"/>
+        <arg name="map_size_z" value="$(arg map_size_z)"/>
+
+        <arg name="camera_name" default="/ardrone_1/vi_sensor/left" />
+        <arg name="image_topic" default="image_raw" />
+    </include>
+
+    <include file="$(find ego_planner)/launch/single.launch">
+        <arg name="prefix" value="ardrone_2"/>
+        <arg name="odom_topic" value="/ardrone_2/odometry_sensor1/odometry"/>
+        <arg name="depth_topic" value="/ardrone_2/vi_sensor/camera_depth/depth/disparity"/>
+        <arg name="cmd_topic" value="/ardrone_2/command/pose"/>
+        <arg name="max_vel" value="$(arg max_vel)"/>
+        <arg name="max_acc" value="$(arg max_acc)"/>
+
+        <arg name="map_size_x" value="$(arg map_size_x)"/>
+        <arg name="map_size_y" value="$(arg map_size_y)"/>
+        <arg name="map_size_z" value="$(arg map_size_z)"/>
+        
+        <arg name="camera_name" default="/ardrone_2/vi_sensor/left" />
+        <arg name="image_topic" default="image_raw" />
+    </include>
+
+    <include file="$(find ego_planner)/launch/single.launch">
+        <arg name="prefix" value="ardrone_3"/>
+        <arg name="odom_topic" value="/ardrone_3/odometry_sensor1/odometry"/>
+        <arg name="depth_topic" value="/ardrone_3/vi_sensor/camera_depth/depth/disparity"/>
+        <arg name="cmd_topic" value="/ardrone_3/command/pose"/>
+        <arg name="max_vel" value="$(arg max_vel)"/>
+        <arg name="max_acc" value="$(arg max_acc)"/>
+
+        <arg name="map_size_x" value="$(arg map_size_x)"/>
+        <arg name="map_size_y" value="$(arg map_size_y)"/>
+        <arg name="map_size_z" value="$(arg map_size_z)"/>
+
+        <arg name="camera_name" default="/ardrone_3/vi_sensor/left" />
+        <arg name="image_topic" default="image_raw" />
+    </include>
+
+    <!-- <include file="$(find ego_planner)/launch/single.launch">
+        <arg name="prefix" value="ardrone_4"/>
+        <arg name="odom_topic" value="/ardrone_4/odometry_sensor1/odometry"/>
+        <arg name="depth_topic" value="/ardrone_4/vi_sensor/camera_depth/depth/disparity"/>
+        <arg name="cmd_topic" value="/ardrone_4/command/pose"/>
+        <arg name="max_vel" value="$(arg max_vel)"/>
+        <arg name="max_acc" value="$(arg max_acc)"/>
+
+        <arg name="map_size_x" value="$(arg map_size_x)"/>
+        <arg name="map_size_y" value="$(arg map_size_y)"/>
+        <arg name="map_size_z" value="$(arg map_size_z)"/>
+
+        <arg name="camera_name" default="/ardrone_4/vi_sensor/left" />
+        <arg name="image_topic" default="image_raw" />
+    </include>
+
+    <include file="$(find ego_planner)/launch/single.launch">
+        <arg name="prefix" value="ardrone_5"/>
+        <arg name="odom_topic" value="/ardrone_5/odometry_sensor1/odometry"/>
+        <arg name="depth_topic" value="/ardrone_5/vi_sensor/camera_depth/depth/disparity"/>
+        <arg name="cmd_topic" value="/ardrone_5/command/pose"/>
+        <arg name="max_vel" value="$(arg max_vel)"/>
+        <arg name="max_acc" value="$(arg max_acc)"/>
+
+        <arg name="map_size_x" value="$(arg map_size_x)"/>
+        <arg name="map_size_y" value="$(arg map_size_y)"/>
+        <arg name="map_size_z" value="$(arg map_size_z)"/>
+
+        <arg name="camera_name" default="/ardrone_5/vi_sensor/left" />
+        <arg name="image_topic" default="image_raw" />
+    </include> -->
+
+</launch>

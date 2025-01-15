@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <world name="default">
+    <physics type='ode'>
+      <gravity>0 0 -9.8</gravity>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+      <real_time_update_rate>1000</real_time_update_rate>
+    </physics>
+
+    <model name="uwb_anchor_0">
+      <pose>5 40 0 0 0 0</pose>
+      <link name="link">
+        <sensor name="ray_sensor" type="ray">
+          <pose>0 0 0 0 0 0</pose>
+          <ray>
+            <scan>
+              <horizontal>
+                <samples>180</samples>
+                <resolution>1</resolution>
+                <min_angle>-1.5708</min_angle>
+                <max_angle>1.5708</max_angle>
+              </horizontal>
+            </scan>
+            <range>
+              <min>0.1</min>
+              <max>50.0</max>
+            </range>
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>0.01</stddev>
+            </noise>
+          </ray>
+          <plugin name="gazebo_ros_ray_sensor" filename="libgazebo_ros_ray_sensor.so">
+            <topicName>/ray_sensor_topic</topicName>
+            <frameName>ray_sensor_frame</frameName>
+          </plugin>
+        </sensor>
+      </link>
+    </model>
+
+  </world>
+</sdf>

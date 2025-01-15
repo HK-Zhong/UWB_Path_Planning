@@ -1,0 +1,80 @@
+<launch>
+  <arg name="world_name" default="jkw_dynamic_2"/>
+  <arg name="enable_logging" default="false"/>
+  <arg name="enable_ground_truth" default="true"/>
+  <arg name="paused" value="false"/>
+  <arg name="mav_name" value="ardrone"/>
+  <arg name="gui" value="true"/>
+  <arg name="drone_nums" default="0"/>
+
+  <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find rotors_gazebo)/models"/>
+  <env name="GAZEBO_RESOURCE_PATH" value="${GAZEBO_RESOURCE_PATH}:$(find rotors_gazebo)/models"/>
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find rotors_gazebo)/worlds/$(arg world_name).world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="gui" value="$(arg gui)" />
+  </include>
+
+
+  <!-- <node name="simulate_uwb_anchors" pkg="rotors_gazebo" type="UWB_Anchor.py">
+        <param name="config_file" value="/home/coolas-fly/JKW_PROJECT/collaborative_detect_sim_ws/src/collaborative_detect/utils/config/UWB_Anchors.yml"/>
+        <param name="~publish_rate" value="10"/>
+  </node> -->
+
+  <!-- <group ns="ardrone_1">
+    <include file="$(find rotors_gazebo)/launch/spawn_mav.launch">
+      <arg name="number" value="1"/>
+      <arg name="mav_name" value="ardrone" />
+      <arg name="model" value="$(find rotors_description)/urdf/mav_with_vi_sensor.gazebo" />
+      <arg name="enable_logging" value="$(arg enable_logging)" />
+      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+      <arg name="log_file" value="ardrone1"/>
+      <arg name="x" value="40.0"/>
+      <arg name="y" value="-15.0"/>
+      <arg name="z" value="1.0"/>
+      <arg name="yaw" value="3.14159"/>
+    </include>
+    <node name="lee_position_controller_node" pkg="rotors_control" type="lee_position_controller_node" output="screen">
+      <rosparam command="load" file="$(find rotors_gazebo)/resource/lee_controller_ardrone.yaml" />
+      <rosparam command="load" file="$(find rotors_gazebo)/resource/ardrone.yaml" />
+      <remap from="odometry" to="odometry_sensor1/odometry" />
+    </node>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+    <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen" args="40 -15 1 180 5"/>
+    <node name="drone1_distance_calculator" pkg="rotors_gazebo" type="UWB_Tag.py">
+        <param name="config_file_path" value="/home/coolas-fly/JKW_PROJECT/collaborative_detect_sim_ws/src/collaborative_detect/utils/config/UWB_Anchors.yml"/>
+        <param name="drone_id" value="1"/>
+    </node>
+  </group>
+
+  <group ns="ardrone_2">
+    <include file="$(find rotors_gazebo)/launch/spawn_mav.launch">
+      <arg name="number" value="2"/>
+      <arg name="mav_name" value="ardrone" />
+      <arg name="model" value="$(find rotors_description)/urdf/mav_with_vi_sensor.gazebo" />
+      <arg name="enable_logging" value="$(arg enable_logging)" />
+      <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
+      <arg name="log_file" value="ardrone1"/>
+      <arg name="x" value="40.0"/>
+      <arg name="y" value="0.0"/>
+      <arg name="z" value="1.0"/>
+      <arg name="yaw" value="3.14159"/>
+    </include>
+    <node name="lee_position_controller_node" pkg="rotors_control" type="lee_position_controller_node" output="screen">
+      <rosparam command="load" file="$(find rotors_gazebo)/resource/lee_controller_ardrone.yaml" />
+      <rosparam command="load" file="$(find rotors_gazebo)/resource/ardrone.yaml" />
+      <remap from="odometry" to="odometry_sensor1/odometry" />
+    </node>
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+    <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen" args="40 0 1 180 5"/>
+    <node name="drone2_distance_calculator" pkg="rotors_gazebo" type="UWB_Tag.py">
+        <param name="config_file_path" value="/home/coolas-fly/JKW_PROJECT/collaborative_detect_sim_ws/src/collaborative_detect/utils/config/UWB_Anchors.yml"/>
+        <param name="drone_id" value="2"/>
+    </node>
+  </group> -->
+
+
+
+</launch>
