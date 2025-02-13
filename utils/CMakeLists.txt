@@ -145,8 +145,6 @@ add_definitions(${GAZEBO_CXX_FLAGS})
 
 # add_executable(los_detector_test src/los_detector_test.cpp)
 # add_executable(los_detector src/los_detector.cpp)
-add_executable(laser_listener src/laser_listener.cpp)
-target_link_libraries(laser_listener ${GAZEBO_LIBRARIES} yaml-cpp)
 
 # target_link_libraries(los_detector_test ${GAZEBO_LIBRARIES} ${YAML_CPP_LIBRARIES})
 # target_link_libraries(los_detector ${GAZEBO_LIBRARIES} ${YAML_CPP_LIBRARIES})

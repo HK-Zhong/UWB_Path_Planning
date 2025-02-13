@@ -5,7 +5,7 @@ from geometry_msgs.msg import Point, PointStamped
 import yaml
 
 class LOSDetector:
-    def __init__(self, rate):
+    def __init__(self):
         """
         初始化 LOS 检测类，加载 UWB 锚点并订阅无人机位置。
         """
@@ -14,8 +14,6 @@ class LOSDetector:
         self.uwb_anchors_file = '/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/UWB_Anchors.yml'
         self.drone_topic = '/ardrone_1/odometry_sensor1/position'
         self.current_drone_position = Point(0, 0, 0)  # 无人机当前位置
-        
-        self.rate = rospy.Rate(rate)
 
         # 订阅无人机位置
         rospy.Subscriber(self.drone_topic, PointStamped, self.drone_position_callback)
@@ -55,19 +53,17 @@ class LOSDetector:
             get_model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
             response = get_model_state(model_name, '')
             position = response.pose.position
-            size_x = 0.5  # 假设障碍物的半径
-            size_y = 0.5
-            size_z = 1.5
+            size = 0.5  # 假设障碍物的半径
             # 定义 8 个顶点
             return [
-                Point(position.x - size_x, position.y - size_y, position.z - size_z),
-                Point(position.x + size_x, position.y - size_y, position.z - size_z),
-                Point(position.x + size_x, position.y + size_y, position.z - size_z),
-                Point(position.x - size_x, position.y + size_y, position.z - size_z),
-                Point(position.x - size_x, position.y - size_y, position.z + size_z),
-                Point(position.x + size_x, position.y - size_y, position.z + size_z),
-                Point(position.x + size_x, position.y + size_y, position.z + size_z),
-                Point(position.x - size_x, position.y + size_y, position.z + size_z)
+                Point(position.x - size, position.y - size, position.z - size),
+                Point(position.x + size, position.y - size, position.z - size),
+                Point(position.x + size, position.y + size, position.z - size),
+                Point(position.x - size, position.y + size, position.z - size),
+                Point(position.x - size, position.y - size, position.z + size),
+                Point(position.x + size, position.y - size, position.z + size),
+                Point(position.x + size, position.y + size, position.z + size),
+                Point(position.x - size, position.y + size, position.z + size)
             ]
         except rospy.ServiceException as e:
             rospy.logerr(f"Failed to call get_model_state service for {model_name}: {e}")
@@ -80,9 +76,12 @@ class LOSDetector:
         obstacles = []
         models = self.get_all_models()
         for model in models:
-            if model == "ardrone_1" or model == "floor":
+            if model == "floor" or "ardrone_1":
+                rospy.loginfo(1)
                 continue
             bounding_box = self.get_model_bounding_box(model)
+            rospy.loginfo(model)
+            rospy.loginfo(bounding_box)
             if bounding_box:
                 obstacles.append(bounding_box)
                 
@@ -124,6 +123,7 @@ class LOSDetector:
             y = start.y + t * dy
             z = start.z + t * dz
             points.append(Point(x, y, z))
+
         return points
 
     def point_in_bounding_box(self, point, bounding_box):
@@ -161,22 +161,23 @@ class LOSDetector:
             los_results.append((anchor, has_los))
         return los_results
 
-    def run(self):
+    def run(self, rate_hz=1):
         """
         运行 LOS 检测循环，并持续输出结果。
         """
+        rate = rospy.Rate(rate_hz)
         while not rospy.is_shutdown():
             results = self.check_los_to_anchors(step_size=0.2)
             for anchor, has_los in results:
                 status = "LOS" if has_los else "NLOS"
                 rospy.loginfo(f"无人机位置到锚点 ({anchor.x}, {anchor.y}, {anchor.z}) 的结果: {status}")
-            self.rate.sleep()
+            rate.sleep()
 
 if __name__ == '__main__':
     try:
         # 初始化 LOS 检测器
-        los_detector = LOSDetector(rate=1)
+        los_detector = LOSDetector()
         # 运行 LOS 检测
-        los_detector.run()
+        los_detector.run(rate_hz=1)
     except rospy.ROSInterruptException:
         pass

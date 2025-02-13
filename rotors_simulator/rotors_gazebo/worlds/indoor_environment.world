@@ -41,35 +41,6 @@
       <heading_deg>0</heading_deg>
     </spherical_coordinates>
 
-    <!-- 定义激光传感器 -->
-    <model name="laser_sensor_model">
-      <pose>0 0 0.5 0 0 0</pose> <!-- 设置传感器位置 -->
-      <link name="link">
-        <sensor name="ray_sensor" type="ray">
-          <pose>0 0 1 0 0 0</pose> <!-- 传感器相对于模型的位置 -->
-          <update_rate>30</update_rate> <!-- 数据更新频率 -->
-          <ray>
-            <scan>
-              <horizontal>
-                <samples>360</samples> <!-- 水平采样点数 -->
-                <resolution>1</resolution> <!-- 分辨率 -->
-                <min_angle>-1.5708</min_angle> <!-- 最小扫描角度（-90度） -->
-                <max_angle>1.5708</max_angle> <!-- 最大扫描角度（90度） -->
-              </horizontal>
-            </scan>
-            <range>
-              <min>0.1</min> <!-- 最小探测距离 -->
-              <max>10.0</max> <!-- 最大探测距离 -->
-              <resolution>0.01</resolution> <!-- 距离分辨率 -->
-            </range>
-            <contact>
-              <max_contacts>10</max_contacts> <!-- 最大碰撞点数 -->
-            </contact>
-          </ray>
-        </sensor>
-      </link>
-    </model>
-
     <!-- 增加更大的地面 -->
     <model name="floor">
       <static>true</static> <!-- 地面是静态物体 -->
@@ -95,13 +66,13 @@
       </link>
     </model>
 
-    <model name="obstacle">
-      <pose>3 0 0.5 0 0 0</pose>
+    <model name="obstacle1">
+      <pose>15 15 1.5 0 0 0</pose>
       <link name="link">
         <visual name="visual">
           <geometry>
             <box>
-              <size>1 1 1</size> <!-- 视觉部分尺寸 -->
+              <size>1 1 3</size> <!-- 视觉部分尺寸 -->
             </box>
           </geometry>
           <material>
@@ -115,13 +86,94 @@
         <collision name="collision">
           <geometry>
             <box>
-              <size>1 1 1</size> <!-- 碰撞部分尺寸 -->
+              <size>1 1 3</size> <!-- 碰撞部分尺寸 -->
             </box>
           </geometry>
         </collision>
       </link>
     </model>
 
-    
+    <model name="obstacle2">
+      <pose>-15 15 1.5 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 3</size> <!-- 视觉部分尺寸 -->
+            </box>
+          </geometry>
+          <material>
+            <ambient>1 0 0 1</ambient> <!-- 红色 -->
+            <diffuse>1 0 0 1</diffuse>
+            <specular>0.5 0.5 0.5 1</specular>
+            <emissive>0 0 0 1</emissive>
+            <transparency>0</transparency> <!-- 不透明 -->
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1 1 3</size> <!-- 碰撞部分尺寸 -->
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <model name="obstacle3">
+      <pose>15 -15 1.5 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 3</size> <!-- 视觉部分尺寸 -->
+            </box>
+          </geometry>
+          <material>
+            <ambient>1 0 0 1</ambient> <!-- 红色 -->
+            <diffuse>1 0 0 1</diffuse>
+            <specular>0.5 0.5 0.5 1</specular>
+            <emissive>0 0 0 1</emissive>
+            <transparency>0</transparency> <!-- 不透明 -->
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1 1 3</size> <!-- 碰撞部分尺寸 -->
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <model name="obstacle4">
+      <pose>-15 -15 1.5 0 0 0</pose>
+      <link name="link">
+        <visual name="visual">
+          <geometry>
+            <box>
+              <size>1 1 3</size> <!-- 视觉部分尺寸 -->
+            </box>
+          </geometry>
+          <material>
+            <ambient>1 0 0 1</ambient> <!-- 红色 -->
+            <diffuse>1 0 0 1</diffuse>
+            <specular>0.5 0.5 0.5 1</specular>
+            <emissive>0 0 0 1</emissive>
+            <transparency>0</transparency> <!-- 不透明 -->
+          </material>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <box>
+              <size>1 1 3</size> <!-- 碰撞部分尺寸 -->
+            </box>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+
+
   </world>
 </sdf>
