@@ -1,7 +1,9 @@
 import rospy
 import math
+import json
 from gazebo_msgs.srv import GetWorldProperties, GetModelState
 from geometry_msgs.msg import Point, PointStamped
+from std_msgs.msg import String
 import yaml
 
 class LOSDetector:
@@ -25,6 +27,9 @@ class LOSDetector:
 
         # 获取 Gazebo 障碍物
         self.obstacles = self.get_obstacles_from_gazebo()
+        
+        # 创建 ROS 发布者，发布 JSON 格式的消息
+        self.los_pub = rospy.Publisher('/los_status_json', String, queue_size=10)
 
     def drone_position_callback(self, msg):
         """
@@ -94,7 +99,14 @@ class LOSDetector:
         """
         with open(self.uwb_anchors_file, 'r') as file:
             data = yaml.safe_load(file)
-        return [Point(anchor['x'], anchor['y'], anchor['z']) for anchor in data['UWB_Anchors']]
+
+        anchors = []
+        for anchor in data['UWB_Anchors']:
+            anchors.append({
+                "id": anchor['id'],
+                "position": Point(anchor['x'], anchor['y'], anchor['z'])
+            })
+        return anchors
 
     def sample_points(self, start, end, step_size=0.5):
         """
@@ -136,7 +148,6 @@ class LOSDetector:
         y_max = max(p.y for p in bounding_box)
         z_min = min(p.z for p in bounding_box)
         z_max = max(p.z for p in bounding_box)
-
         return (x_min <= point.x <= x_max) and (y_min <= point.y <= y_max) and (z_min <= point.z <= z_max)
 
     def line_segment_nlos_detection(self, start, end, step_size):
@@ -155,10 +166,19 @@ class LOSDetector:
         检测无人机当前位置到所有 UWB 锚点的 LOS，使用采样点检测。
         """
         los_results = []
+
         for anchor in self.uwb_anchors:
-            is_nlos = self.line_segment_nlos_detection(self.current_drone_position, anchor, step_size)
+            anchor_id = anchor["id"]
+            anchor_position = anchor["position"]
+
+            is_nlos = self.line_segment_nlos_detection(self.current_drone_position, anchor_position, step_size)
             has_los = not is_nlos
-            los_results.append((anchor, has_los))
+
+            los_results.append({
+                "id": anchor_id,
+                "LOS": has_los  # True 表示 LOS，False 表示 NLOS
+            })
+        
         return los_results
 
     def run(self):
@@ -167,9 +187,10 @@ class LOSDetector:
         """
         while not rospy.is_shutdown():
             results = self.check_los_to_anchors(step_size=0.2)
-            for anchor, has_los in results:
-                status = "LOS" if has_los else "NLOS"
-                rospy.loginfo(f"无人机位置到锚点 ({anchor.x}, {anchor.y}, {anchor.z}) 的结果: {status}")
+            # 转换为 JSON 格式并发布
+            los_json_msg = json.dumps(results)
+            self.los_pub.publish(los_json_msg)
+            
             self.rate.sleep()
 
 if __name__ == '__main__':

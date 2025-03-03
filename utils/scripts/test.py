@@ -1,44 +1,44 @@
-#!/usr/bin/env python
-import yaml
-import math
+import numpy as np
+from path_planning import DStarLite
 
-# 定义计算距离的函数
-def calculate_distance(point1, point2):
-    """
-    计算两个点之间的欧几里得距离
-    :param point1: 第一个点 (x1, y1, z1)
-    :param point2: 第二个点 (x2, y2, z2)
-    :return: 欧几里得距离
-    """
-    return math.sqrt(
-        (point1[0] - point2[0]) ** 2 +
-        (point1[1] - point2[1]) ** 2 +
-        (point1[2] - point2[2]) ** 2
-    )
+class GridMap:
+    def __init__(self, size):
+        self.grid_size = size
+        self.grid = np.zeros((size, size), dtype=int)  # 0 表示可通行，1 表示障碍物
+    
+    def add_obstacle(self, obstacles):
+        for x, y in obstacles:
+            self.grid[x, y] = 1
 
-# 加载 YAML 文件中的 UWB 锚点
-def load_uwb_anchors(file_path):
-    """
-    加载 UWB 锚点数据
-    :param file_path: YAML 文件路径
-    :return: 锚点列表，每个锚点是一个字典 {'id': int, 'x': float, 'y': float, 'z': float}
-    """
-    with open(file_path, 'r') as file:
-        data = yaml.safe_load(file)
-    return data['UWB_Anchors']
+    def remove_obstacle(self, obstacles):
+        for x, y in obstacles:
+            self.grid[x, y] = 0
 
-# 主函数
-if __name__ == "__main__":
-    # 定义参考点
-    reference_point = (0, 0, 0.5)
+# 创建地图
+size = 10
+map_instance = GridMap(size)
+map_instance.add_obstacle([(4, 0), (4, 5), (4, 6), (4, 7), (5, 7)])  # 设置障碍物
 
-    # 加载 UWB 锚点
-    anchors = load_uwb_anchors("UWB_Anchors.yml")
+# 初始化 D* Lite
+start = (0, 0)
+goal = (9, 9)
+dstar = DStarLite(map_instance)
+dstar.initialize(start, goal)
 
-    # 计算每个锚点与参考点的距离
-    print("计算点 (0, 0, 0.5) 与所有 UWB 锚点之间的距离：")
-    for anchor in anchors:
-        anchor_position = (anchor['x'], anchor['y'], anchor['z'])
-        distance = calculate_distance(reference_point, anchor_position)
-        print(f"Anchor ID: {anchor['id']}, Distance: {distance:.2f} meters")
+# 计算路径
+print("初始路径:")
+path = dstar.find_path()
+print(path)
 
+# 更新障碍物
+print("添加新的障碍物后:")
+map_instance.add_obstacle([(3, 3), (3, 4), (3, 5)])
+dstar.update_obstacle([(3, 3), (3, 4), (3, 5)])
+path = dstar.find_path()
+print(path)
+
+# 机器人移动
+print("机器人移动后:")
+dstar.move_start((1, 1))
+path = dstar.find_path()
+print(path)
