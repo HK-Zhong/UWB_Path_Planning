@@ -60,9 +60,14 @@ class LOSDetector:
             get_model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
             response = get_model_state(model_name, '')
             position = response.pose.position
-            size_x = 0.5  # 假设障碍物的半径
-            size_y = 0.5
-            size_z = 1.5
+            if model_name == "obstacle3":
+                size_x = 2
+                size_y = 13
+                size_z = 2
+            else:
+                size_x = 5  # 假设障碍物的半径
+                size_y = 3
+                size_z = 2
             # 定义 8 个顶点
             return [
                 Point(position.x - size_x, position.y - size_y, position.z - size_z),

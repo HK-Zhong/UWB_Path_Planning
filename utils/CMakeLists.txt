@@ -177,6 +177,7 @@ catkin_install_python(PROGRAMS
   scripts/waypoint_publisher.py
   scripts/test.py
   scripts/los_detect.py
+  scripts/path_planning.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
