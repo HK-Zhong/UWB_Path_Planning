@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="utils" type="uav_navigator.py" name="uav_navigator" output="screen"> </node>
+</launch>

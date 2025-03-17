@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 class GridMap:
-    def __init__(self, size=50, resolution=0.1):
+    def __init__(self, size=50, resolution=0.5):
         """
         初始化栅格地图
         :param size: 地图大小（米）
@@ -15,7 +15,7 @@ class GridMap:
         self.grid_size = int(size / resolution)  # 计算栅格总数
         self.grid_map = np.ones((self.grid_size, self.grid_size), dtype=np.int8)  # 0 表示可通行，1 表示障碍物
         self.uwb_anchors_file = '/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/UWB_Anchors.yml'
-        self.real_anchors = self.load_uwb_anchors()
+        self.real_anchors_position = self.load_uwb_anchors()
         
         # UWB锚点编号之间的连通性
         self.uwb_los = [(0, 1), (1, 2), (2, 3), (1, 4), (2, 5), (3, 6), (3, 8), (0, 7), (7, 9), (9, 10), (9, 11), (11, 12), (12, 13), (11, 13), (8, 13)]
@@ -29,7 +29,8 @@ class GridMap:
             data = yaml.safe_load(file)
         
         for anchor in data['UWB_Anchors']:
-            real_anchors[anchor["id"]] = (anchor["x"], anchor["y"]) 
+            real_anchors[anchor["id"]] = (anchor["x"], anchor["y"])
+            
         return real_anchors
         
     def set_obstacle(self, obstacles):
@@ -40,17 +41,17 @@ class GridMap:
         for x, y in obstacles:
             self.grid_map[x, y] = 0
 
-    def to_grid(self, x, y):
+    def to_grid(self, x_real, y_real):
         """ 将实际坐标转换为栅格坐标 """
-        gx = int((x + self.size / 2) / self.resolution)
-        gy = int((y + self.size / 2) / self.resolution)
-        return gx, gy
+        x_grid = int((x_real + self.size / 2) / self.resolution)
+        y_grid = int((y_real + self.size / 2) / self.resolution)
+        return x_grid, y_grid
 
-    def to_real(self, gx, gy):
+    def to_real(self, x_grid, y_grid):
         """ 将栅格坐标转换为实际坐标 """
-        x = round(gx * self.resolution - self.size / 2, 1)
-        y = round(gy * self.resolution - self.size / 2, 1)
-        return x, y
+        x_real = round(x_grid * self.resolution - self.size / 2, 1)
+        y_real = round(y_grid * self.resolution - self.size / 2, 1)
+        return x_real, y_real
 
     def get_line_grids(self, start_real, end_real):
         """
@@ -88,30 +89,37 @@ class GridMap:
 
         return points
     
-    def map_update(self, start_real, end_real, mode:str):
+    def map_update(self, start_real, end_real):
         """
-        更新地图，占据或空闲
-        :param mode: occupy or free
+        更新地图,输入的位置均为真实位置
+        :param start_real: 起点的真实坐标 (x, y)
+        :param end_real: 终点的真实坐标 (x, y)
         """
         points = self.get_line_grids(start_real, end_real)
         for point in points:
-            if mode == "occupy":
-                self.grid_map[point[0], point[1]] = 1
-            else:
-                self.grid_map[point[0], point[1]] = 0
+            self.grid_map[point] = 0
+                
+    def map_update_by_los(self, uav_position_real, los_data: dict):
+        """
+        los_data: {0: True, 1: True, 2: False, 3: False, 4: True, 5: False, 6: False, 7: True, 8: False, 9: False, 10: False, 11: False, 12: False, 13: False}
+        """
+        for id in los_data.keys():
+            # 如果无人机与锚点之间是视距
+            if los_data[id]:
+                self.map_update(uav_position_real, self.real_anchors_position[id])
     
     def map_init(self):
         """
         初始化UWB锚点间的连通性
         """
         for path in self.uwb_los:
-            start_real = self.real_anchors[path[0]]
-            end_real = self.real_anchors[path[1]]
-            self.map_update(start_real, end_real, "free")
+            start_real = self.real_anchors_position[path[0]]
+            end_real = self.real_anchors_position[path[1]]
+            self.map_update(start_real, end_real)
             
     def visualize(self):
         """
-        可视化网格地图
+        可视化网格地图。
         """
         plt.figure(figsize=(6, 6))
         plt.imshow(self.grid_map, cmap='gray_r', origin='upper')

@@ -196,6 +196,8 @@ class LOSDetector:
             los_json_msg = json.dumps(results)
             self.los_pub.publish(los_json_msg)
             
+            rospy.loginfo(los_json_msg)
+            
             self.rate.sleep()
 
 if __name__ == '__main__':

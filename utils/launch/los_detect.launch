@@ -1,0 +1,3 @@
+<launch>
+  <node pkg="utils" type="los_detect.py" name="los_detector" output="screen"> </node>
+</launch>

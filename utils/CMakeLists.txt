@@ -174,10 +174,10 @@ add_definitions(${GAZEBO_CXX_FLAGS})
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
+  scripts/los_detect.py
   scripts/waypoint_publisher.py
   scripts/test.py
-  scripts/los_detect.py
-  scripts/path_planning.py
+  scripts/uav_navigator.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

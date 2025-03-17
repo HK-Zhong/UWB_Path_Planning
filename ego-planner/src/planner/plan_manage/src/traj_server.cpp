@@ -193,25 +193,7 @@ void cmdCallback(const ros::TimerEvent &e)
     vel.setZero();
     acc.setZero();
 
-    // yaw_yawdot.first = last_yaw_;
-    int current_time = static_cast<int>(t_cur - traj_duration_);
-
-    if ( (current_time / 3) % 4 == 0) yaw_yawdot.first = -( 5 * PI ) / 6.0;
-    else if ( (current_time / 3) % 4 == 1) yaw_yawdot.first = -PI;
-    else if ( (current_time / 3) % 4 == 2) yaw_yawdot.first = ( 5 * PI ) / 6.0;
-    else if ( (current_time / 3) % 4 == 3) yaw_yawdot.first = -PI;
-
-
-
-    // if( t_cur - traj_duration_ >= 0 && t_cur - traj_duration_ <= 8 ) yaw_yawdot.first = -( 3 * PI ) / 4.0;
-    // else if( t_cur - traj_duration_ > 8 && t_cur - traj_duration_ <= 16 ) yaw_yawdot.first = -PI;
-    // else if( t_cur - traj_duration_ > 16 && t_cur - traj_duration_ <= 24 ) yaw_yawdot.first = ( 3 * PI ) / 4.0;
-    // else if( t_cur - traj_duration_ > 15 && t_cur - traj_duration_ <= 20 ) yaw_yawdot.first = -PI / 4.0;
-    // else if( t_cur - traj_duration_ > 20 && t_cur - traj_duration_ <= 25 ) yaw_yawdot.first = 0;
-    // else if( t_cur - traj_duration_ > 25 && t_cur - traj_duration_ <= 30 ) yaw_yawdot.first = PI / 4.0;
-    // else if( t_cur - traj_duration_ > 30 && t_cur - traj_duration_ <= 35 ) yaw_yawdot.first = PI / 2.0;
-    // else if( t_cur - traj_duration_ > 30 && t_cur - traj_duration_ <= 35 ) yaw_yawdot.first = ( 3 * PI ) / 4.0;
-    // else if( t_cur - traj_duration_ > 30 && t_cur - traj_duration_ <= 35 ) yaw_yawdot.first = PI;
+    yaw_yawdot.first = last_yaw_;
     yaw_yawdot.second = 0;
 
     pos_f = pos;

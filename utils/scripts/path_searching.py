@@ -48,26 +48,26 @@ class AStar:
         ]
         return valid_neighbors
 
-    def find_path(self, start, goal):
+    def find_path(self, start_grid, goal_grid):
         """
         使用 A* 搜索算法寻找路径
-        :param start: 起点 (x, y)
-        :param goal: 终点 (x, y)
+        :param start_grid: 起点 (x, y)
+        :param goal_grid: 终点 (x, y)
         :return: 最优路径列表 [(x1, y1), (x2, y2), ...] 或 None（若无路径）
         """
-        if self.grid_map[start] == 1 or self.grid_map[goal] == 1:
+        if self.grid_map[start_grid] == 1 or self.grid_map[goal_grid] == 1:
             return None  # 起点或终点是障碍物，直接返回
 
         open_set = []
-        heapq.heappush(open_set, (0, start))  # (优先级, 节点)
+        heapq.heappush(open_set, (0, start_grid))  # (优先级, 节点)
         came_from = {}  # 记录路径
-        g_score = {start: 0}
-        f_score = {start: self.heuristic(start, goal)}
+        g_score = {start_grid: 0}
+        f_score = {start_grid: self.heuristic(start_grid, goal_grid)}
 
         while open_set:
             _, current = heapq.heappop(open_set)
 
-            if current == goal:
+            if current == goal_grid:
                 return self.reconstruct_path(came_from, current)
 
             for neighbor in self.get_neighbors(current):
@@ -76,7 +76,7 @@ class AStar:
                 if neighbor not in g_score or tentative_g_score < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g_score
-                    f_score[neighbor] = tentative_g_score + self.heuristic(neighbor, goal)
+                    f_score[neighbor] = tentative_g_score + self.heuristic(neighbor, goal_grid)
                     heapq.heappush(open_set, (f_score[neighbor], neighbor))
 
         return None  # 无法到达目标点
@@ -94,6 +94,9 @@ class AStar:
             path.append(current)
         path.reverse()
         return path
+    
+    def map_reconstruct(self, grid_map: GridMap):
+        self.map = grid_map
 
 
 # 测试 A* 搜索
