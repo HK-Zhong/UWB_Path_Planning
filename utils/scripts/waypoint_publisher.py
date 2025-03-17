@@ -108,6 +108,9 @@ if __name__ == '__main__':
             (-5, 12, 2),
             (0, 15, 2),
             (11, 13, 2),
+            (4, 5, 2),
+            (4, -5, 2),
+            (11, -10, 2),
         ]
         
         controller = DroneController(waypoints, tolerance=0.2)

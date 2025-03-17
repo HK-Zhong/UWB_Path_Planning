@@ -67,6 +67,7 @@ class UAVNavigator:
                 self.a_star.map_reconstruct(self.grid_map)
                 
                 path = self.find_path(self.current_position, self.goal_real)
+                print("path: ", path)
                 
                 self.rate.sleep()
                 
