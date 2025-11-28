@@ -509,7 +509,6 @@
         </channel>
       </control_channels>
     </plugin>
-    <static>0</static>
     <plugin name='rotors_gazebo_imu_plugin' filename='librotors_gazebo_imu_plugin.so'>
       <robotNamespace/>
       <linkName>/imu_link</linkName>
@@ -523,5 +522,9 @@
       <accelerometerBiasCorrelationTime>300.0</accelerometerBiasCorrelationTime>
       <accelerometerTurnOnBiasSigma>0.196</accelerometerTurnOnBiasSigma>
     </plugin>
+    <frame name='base_joint' attached_to='base_link'>
+      <pose>0 0 0 0 -0 0</pose>
+    </frame>
+    <frame name='base_link_inertia' attached_to='base_joint'/>
   </model>
 </sdf>

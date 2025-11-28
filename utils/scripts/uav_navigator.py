@@ -19,7 +19,7 @@ class UAVNavigator:
         rospy.init_node("uav_path_planner", anonymous=True)
         self.grid_map = GridMap()  # 初始化地图
         self.grid_map.map_init()
-        self.goal_real = (11, 4)  # 目标位置
+        self.goal_real = (11, 13)  # 目标位置
         self.current_position = (-15, -15)  # 记录无人机当前位置
         self.temp_los_data = []
         self.los_data = {}  # 存储LOS状态
