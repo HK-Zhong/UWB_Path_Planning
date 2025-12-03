@@ -83,66 +83,150 @@ class AStar:
 
     def map_reconstruct(self, grid_map: GridMap):
         self.map = grid_map
+        
+    def extract_key_waypoints(self, path):
+        if not path or len(path) <= 2:
+            return path  # 这种情况说明本来就没有移动
+
+        waypoints = [path[0]]
+
+        prev_dx = path[1][0] - path[0][0]
+        prev_dy = path[1][1] - path[0][1]
+
+        for i in range(2, len(path)):
+            x_prev, y_prev = path[i-1]
+            x_curr, y_curr = path[i]
+
+            dx = x_curr - x_prev
+            dy = y_curr - y_prev
+
+            if dx != prev_dx or dy != prev_dy:
+                waypoints.append((x_prev, y_prev))
+
+            prev_dx, prev_dy = dx, dy
+
+        waypoints.append(path[-1])
+
+        # 🚀 删除起点，让无人机直接飞向下一个点
+        if len(waypoints) > 1:
+            waypoints = waypoints[1:]  # 关键：跳过起点
+
+        return waypoints
+
 
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
-    
-    # 创建 10x10 网格地图（初始全是 1，不可通行）
-    grid_map = GridMap(size=10)
+    import random
 
-    # ========== 清空地图，让所有网格可通行 ==========
-    grid_map.grid_map[:, :] = 0   # 关键代码：全部设为 0（可通过）
+    # ========== 创建 30x30 网格地图 ==========
+    grid_map = GridMap(size=16)
+    grid_map.grid_map[:, :] = 0   # 全部可通行
 
     # 创建 A* 实例
     pathfinder = AStar(grid_map)
 
-    # ========== 设置障碍物 ==========
-    obstacles = [
-        (2, 2), (2, 3), (2, 4),
-        (3, 4),
-        (5, 5), (6, 5), (7, 5)
-    ]
+    # ========== 设置大面积障碍物 ==========
+    obstacles = []
+
+    # 1. 中间一条粗横障碍带
+    for y in range(5, 25):
+        obstacles.append((10, y))
+        obstacles.append((11, y))
+        obstacles.append((12, y))
+
+    # 2. 大的矩形障碍块
+    for x in range(18, 25):
+        for y in range(3, 10):
+            obstacles.append((x, y))
+
+    # 3. 随机撒一些障碍点（更自然）
+    random.seed(0)
+    for _ in range(60):
+        ox = random.randint(0, 29)
+        oy = random.randint(0, 29)
+        obstacles.append((ox, oy))
+
+    # 添加障碍到地图
     pathfinder.set_obstacle(obstacles)
 
-    # 起点和终点
+    # ========== 设置起点和终点 ==========
     start = (0, 0)
-    goal = (9, 9)
+    goal = (29, 29)
 
     # 执行 A* 搜索
     path = pathfinder.find_path(start, goal)
 
-    # 输出网格
     print("Grid Map (1 = obstacle, 0 = free):")
     print(grid_map.grid_map)
 
-    # 输出路径
     if path:
-        print("\n找到路径:")
+        print("\nA* 完整路径:")
         print(path)
     else:
         print("未找到可行路径")
+        exit()
 
-    # ==============================
-    # 可视化路径
-    # ==============================
-    if path:
-        grid = grid_map.grid_map.copy()
-        
-        # 标记路径
-        for (x, y) in path:
-            grid[x, y] = 2  # 2 表示路径
+    # ========== 提取关键航点 ==========
+    def extract_key_waypoints(path):
+        if not path or len(path) <= 2:
+            return path
 
-        # 可视化
-        plt.imshow(grid, cmap="gray_r")
-        plt.title("A* Path (8-邻域)")
+        waypoints = [path[0]]
 
-        plt.scatter(start[1], start[0], c="yellow", label="Start")
-        plt.scatter(goal[1], goal[0], c="red", label="Goal")
+        prev_dx = path[1][0] - path[0][0]
+        prev_dy = path[1][1] - path[0][1]
 
-        xs = [p[1] for p in path]
-        ys = [p[0] for p in path]
-        plt.plot(xs, ys, c="blue")
+        for i in range(2, len(path)):
+            x_prev, y_prev = path[i-1]
+            x_curr, y_curr = path[i]
 
-        plt.legend()
-        plt.show()
+            dx = x_curr - x_prev
+            dy = y_curr - y_prev
+
+            if dx != prev_dx or dy != prev_dy:
+                waypoints.append((x_prev, y_prev))
+
+            prev_dx, prev_dy = dx, dy
+
+        waypoints.append(path[-1])
+        return waypoints
+
+    key_wps = extract_key_waypoints(path)
+
+    print("\n关键航点:")
+    print(key_wps)
+
+    # =========================
+    #      可视化路径
+    # =========================
+    grid = grid_map.grid_map.copy()
+
+    # 标记 A* 路径
+    for (x, y) in path:
+        grid[x, y] = 2
+
+    # 标记关键航点
+    for (x, y) in key_wps:
+        grid[x, y] = 3
+
+    plt.figure(figsize=(8, 8))
+    plt.imshow(grid, cmap="gray_r")
+    plt.title("A* Path & Key Waypoints (30×30 Grid)")
+
+    # 绘制完整路径
+    xs = [p[1] for p in path]
+    ys = [p[0] for p in path]
+    plt.plot(xs, ys, c="blue", linewidth=2, label="A* Path")
+
+    # 绘制关键点
+    xs_wp = [p[1] for p in key_wps]
+    ys_wp = [p[0] for p in key_wps]
+    plt.scatter(xs_wp, ys_wp, c="red", s=60, label="Key Waypoints")
+
+    # 起点终点
+    plt.scatter(start[1], start[0], c="yellow", s=80, label="Start")
+    plt.scatter(goal[1], goal[0], c="green", s=80, label="Goal")
+
+    plt.legend()
+    plt.show()

@@ -1,10 +1,11 @@
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
+import rospy
 
 
 class GridMap:
-    def __init__(self, size=50, resolution=0.5):
+    def __init__(self, size=50, resolution=0.25):
         """
         初始化栅格地图
         :param size: 地图大小（米）
@@ -16,6 +17,7 @@ class GridMap:
         self.grid_map = np.ones((self.grid_size, self.grid_size), dtype=np.int8)  # 0 表示可通行，1 表示障碍物
         self.uwb_anchors_file = '/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/UWB_Anchors.yml'
         self.real_anchors_position = self.load_uwb_anchors()
+        # print(self.real_anchors_position)
         
         # UWB锚点编号之间的连通性
         self.uwb_los = [(0, 1), (1, 2), (2, 3), (1, 4), (2, 5), (3, 6), (3, 8), (0, 7), (7, 9), (9, 10), (9, 11), (11, 12), (12, 13), (11, 13), (8, 13)]
@@ -99,14 +101,14 @@ class GridMap:
         for point in points:
             self.grid_map[point] = 0
                 
-    def map_update_by_los(self, uav_position_real, los_data: dict):
+    def map_update_by_los(self, uav_position_real, los_data):
         """
-        los_data: {0: True, 1: True, 2: False, 3: False, 4: True, 5: False, 6: False, 7: True, 8: False, 9: False, 10: False, 11: False, 12: False, 13: False}
+        los_data: [{'id': 0, 'LOS': True}, {'id': 1, 'LOS': True}, {'id': 2, 'LOS': False}, {'id': 3, 'LOS': False}, {'id': 4, 'LOS': True}, {'id': 5, 'LOS': False}, {'id': 6, 'LOS': False}, {'id': 7, 'LOS': True}, {'id': 8, 'LOS': False}, {'id': 9, 'LOS': False}, {'id': 10, 'LOS': False}, {'id': 11, 'LOS': False}, {'id': 12, 'LOS': False}, {'id': 13, 'LOS': False}]
         """
-        for id in los_data.keys():
+        for tag in los_data:
             # 如果无人机与锚点之间是视距
-            if los_data[id]:
-                self.map_update(uav_position_real, self.real_anchors_position[id])
+            if tag["LOS"]:
+                self.map_update(uav_position_real, self.real_anchors_position[tag["id"]])
     
     def map_init(self):
         """

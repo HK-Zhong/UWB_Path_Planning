@@ -113,7 +113,7 @@ class LOSDetector:
             })
         return anchors
 
-    def sample_points(self, start, end, step_size=0.5):
+    def sample_points(self, start, end, step_size=0.2):
         """
         按固定步长 0.5m 在起点和终点之间均匀采样。
         参数:

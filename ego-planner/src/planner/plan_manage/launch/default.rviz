@@ -5,9 +5,10 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Image1
+        - /Image1/Image11
         - /Depth1
       Splitter Ratio: 0.5
-    Tree Height: 331
+    Tree Height: 785
   - Class: rviz/Selection
     Name: Selection
   - Class: rviz/Tool Properties
@@ -26,7 +27,7 @@ Panels:
   - Class: rviz/Time
     Name: Time
     SyncMode: 0
-    SyncSource: real_map_2
+    SyncSource: real_map_1
 Preferences:
   PromptSaveOnExit: true
 Toolbars:
@@ -58,7 +59,7 @@ Visualization Manager:
           Marker Topic: /ardrone_2/odom_visualization/robot
           Name: Marker_2
           Namespaces:
-            ardrone_2: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/Marker
@@ -146,7 +147,7 @@ Visualization Manager:
               Marker Topic: /ardrone_1/ego_planner_node/a_star_list
               Name: AStar_1
               Namespaces:
-                {}
+                "": true
               Queue Size: 100
               Value: true
             - Class: rviz/Marker
@@ -166,7 +167,7 @@ Visualization Manager:
               Marker Topic: /ardrone_2/ego_planner_node/goal_point
               Name: goal_point_2
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
             - Class: rviz/Marker
@@ -174,7 +175,7 @@ Visualization Manager:
               Marker Topic: /ardrone_2/ego_planner_node/global_list
               Name: global_path_2
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
             - Class: rviz/Marker
@@ -182,7 +183,7 @@ Visualization Manager:
               Marker Topic: /ardrone_2/ego_planner_node/optimal_list
               Name: optimal_traj_2
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
             - Class: rviz/Marker
@@ -198,7 +199,7 @@ Visualization Manager:
               Marker Topic: /ardrone_2/ego_planner_node/init_list
               Name: InitTraj_2
               Namespaces:
-                "": true
+                {}
               Queue Size: 100
               Value: true
           Enabled: true
@@ -388,8 +389,8 @@ Visualization Manager:
             - Alpha: 1
               Autocompute Intensity Bounds: true
               Autocompute Value Bounds:
-                Max Value: -9999
-                Min Value: 9999
+                Max Value: 0.8399999737739563
+                Min Value: 0.03999999910593033
                 Value: true
               Axis: Z
               Channel Name: intensity
@@ -760,7 +761,7 @@ Visualization Manager:
           Unreliable: false
           Value: true
         - Class: rviz/Image
-          Enabled: true
+          Enabled: false
           Image Topic: /ardrone_2/tag_detections_image
           Max Value: 1
           Median window: 5
@@ -770,9 +771,9 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: true
+          Value: false
         - Class: rviz/Image
-          Enabled: true
+          Enabled: false
           Image Topic: /ardrone_3/tag_detections_image
           Max Value: 1
           Median window: 5
@@ -782,9 +783,9 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: true
+          Value: false
         - Class: rviz/Image
-          Enabled: true
+          Enabled: false
           Image Topic: /ardrone_4/tag_detections_image
           Max Value: 1
           Median window: 5
@@ -794,9 +795,9 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: true
+          Value: false
         - Class: rviz/Image
-          Enabled: true
+          Enabled: false
           Image Topic: /ardrone_5/tag_detections_image
           Max Value: 1
           Median window: 5
@@ -806,7 +807,7 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: true
+          Value: false
         - Class: rviz/Image
           Enabled: false
           Image Topic: /ardrone_6/tag_detections_image
@@ -836,7 +837,7 @@ Visualization Manager:
           Unreliable: false
           Value: true
         - Class: rviz/Image
-          Enabled: true
+          Enabled: false
           Image Topic: /ardrone_2/vi_sensor/camera_depth/depth/disparity
           Max Value: 1
           Median window: 5
@@ -846,9 +847,9 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: true
+          Value: false
         - Class: rviz/Image
-          Enabled: true
+          Enabled: false
           Image Topic: /ardrone_3/vi_sensor/camera_depth/depth/disparity
           Max Value: 1
           Median window: 5
@@ -858,9 +859,9 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: true
+          Value: false
         - Class: rviz/Image
-          Enabled: true
+          Enabled: false
           Image Topic: /ardrone_4/vi_sensor/camera_depth/depth/disparity
           Max Value: 1
           Median window: 5
@@ -870,9 +871,9 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: true
+          Value: false
         - Class: rviz/Image
-          Enabled: true
+          Enabled: false
           Image Topic: /ardrone_5/vi_sensor/camera_depth/depth/disparity
           Max Value: 1
           Median window: 5
@@ -882,7 +883,7 @@ Visualization Manager:
           Queue Size: 2
           Transport Hint: raw
           Unreliable: false
-          Value: true
+          Value: false
         - Class: rviz/Image
           Enabled: false
           Image Topic: /ardrone_6/vi_sensor/camera_depth/depth/disparity
@@ -904,8 +905,7 @@ Visualization Manager:
           Marker Topic: /initial_tag_markers
           Name: InitialMarker
           Namespaces:
-            tags: true
-            tags_text: true
+            {}
           Queue Size: 100
           Value: true
         - Class: rviz/MarkerArray
@@ -945,7 +945,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/ThirdPersonFollower
-      Distance: 121.59561157226562
+      Distance: 48.977569580078125
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -953,17 +953,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 38.307769775390625
-        Y: -1.0547056198120117
-        Z: 0.47685718536376953
+        X: 11.082014083862305
+        Y: -23.228940963745117
+        Z: 0.476855993270874
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5697967410087585
+      Pitch: 0.6647965908050537
       Target Frame: world
-      Yaw: 6.277344703674316
+      Yaw: 4.642348766326904
     Saved:
       - Class: rviz/ThirdPersonFollower
         Distance: 17.48538589477539
@@ -988,7 +988,7 @@ Visualization Manager:
 Window Geometry:
   Displays:
     collapsed: false
-  Height: 1835
+  Height: 1529
   Hide Left Dock: false
   Hide Right Dock: false
   Image1:
@@ -1003,7 +1003,7 @@ Window Geometry:
     collapsed: false
   Image6:
     collapsed: false
-  QMainWindow State: 000000ff00000000fd00000004000000000000020c000006c3fc0200000015fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006e00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000004700000192000000f100fffffffb0000000a00560069006500770073000000024600000188000000c200fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d00650072006100000001d1000000b50000000000000000fb0000000c0049006d006100670065003101000001e00000010f0000001900fffffffb0000000c0049006d006100670065003201000002f6000001020000001900fffffffb0000000a0049006d006100670065000000027b0000015d0000000000000000fb0000000a006400650070007400680100000459000000f50000000000000000fb0000000a0049006d00610067006501000001970000011a0000000000000000fb0000000a0049006d00610067006501000002b8000001200000000000000000fb0000000a0049006d006100670065010000030d000000cb0000000000000000fb0000000c0049006d006100670065003301000003ff000000ea0000001900fffffffb0000000c0049006d006100670065003401000004f0000001030000001900fffffffb0000000c0049006d006100670065003501000005fa000001100000001900fffffffb0000000c0049006d00610067006500360000000511000000c70000001900ffffff000000010000022d000006c3fc0200000008fb0000000e00640065007000740068005f00310100000047000000f20000001900fffffffb0000000e00640065007000740068005f003201000001400000011d0000001900fffffffb0000000e00640065007000740068005f00330100000264000001830000001900fffffffb0000000e00640065007000740068005f003401000003ee000001900000001900fffffffb0000000e00640065007000740068005f00350100000585000001850000001900fffffffb0000000e00640065007000740068005f003600000004d5000001030000001900fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000006100000003bfc0100000002fb0000000800540069006d0065000000000000000610000004c100fffffffb0000000800540069006d00650100000000000004500000000000000000000007a6000006c300000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  QMainWindow State: 000000ff00000000fd00000004000000000000020c00000591fc0200000015fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006e00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000004700000358000000f100fffffffb0000000a00560069006500770073000000024600000188000000c200fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000c00430061006d00650072006100000001d1000000b50000000000000000fb0000000c0049006d006100670065003101000003a6000002320000001900fffffffb0000000c0049006d00610067006500320000000453000001850000001900fffffffb0000000a0049006d006100670065000000027b0000015d0000000000000000fb0000000a006400650070007400680100000459000000f50000000000000000fb0000000a0049006d00610067006501000001970000011a0000000000000000fb0000000a0049006d00610067006501000002b8000001200000000000000000fb0000000a0049006d006100670065010000030d000000cb0000000000000000fb0000000c0049006d006100670065003300000004bd0000011b0000001900fffffffb0000000c0049006d006100670065003400000004da000000fe0000001900fffffffb0000000c0049006d006100670065003500000004f9000000df0000001900fffffffb0000000c0049006d00610067006500360000000511000000c70000001900ffffff000000010000022d00000591fc0200000008fb0000000e00640065007000740068005f00310100000047000005910000001900fffffffb0000000e00640065007000740068005f003200000002db000002fd0000001900fffffffb0000000e00640065007000740068005f003300000002050000013e0000001900fffffffb0000000e00640065007000740068005f00340000000287000001ab0000001900fffffffb0000000e00640065007000740068005f00350000000381000002570000001900fffffffb0000000e00640065007000740068005f003600000004d5000001030000001900fffffffb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000006100000003bfc0100000002fb0000000800540069006d0065000000000000000610000004c100fffffffb0000000800540069006d006501000000000000045000000000000000000000056f0000059100000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Selection:
     collapsed: false
   Time:
@@ -1012,8 +1012,8 @@ Window Geometry:
     collapsed: false
   Views:
     collapsed: false
-  Width: 3053
-  X: 72
+  Width: 2486
+  X: 74
   Y: 34
   depth_1:
     collapsed: false
