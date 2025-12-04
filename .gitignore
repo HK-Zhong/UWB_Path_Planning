@@ -2,3 +2,5 @@
 **/*.bag
 .vscode/
 build/
+utils/scripts/pics
+utils/scripts/__pycache__

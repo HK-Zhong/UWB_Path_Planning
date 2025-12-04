@@ -20,17 +20,15 @@ class UAVNavigator:
     def __init__(self):
         """ 初始化 ROS 订阅并执行路径规划 """
         rospy.init_node("uav_path_planner", anonymous=True)
-        self.grid_map = GridMap()  # 初始化地图
+        self.grid_map = GridMap(size=50, resolution=0.5)  # 初始化地图
         self.grid_map.map_init()
-        self.goal_real = (0, 15)  # 目标位置
+        self.goal_real = (4, -5)  # 目标位置
         self.current_position = (-15, -15)  # 记录无人机当前位置
-        # self.temp_los_data = []
         self.los_data = []  # 存储LOS状态
 
-        # 订阅传感器数据
-        # rospy.Subscriber("/ardrone_1/odometry_sensor1/position", PointStamped, self.position_callback)
+        # 订阅UWB传感器数据
         rospy.Subscriber("/los_status_json", String, self.los_callback)
-        self.rate = rospy.Rate(2)  # 控制更新频率
+        self.rate = rospy.Rate(0.5)  # 控制更新频率
 
         # 初始化 A* 规划器
         self.a_star = AStar(self.grid_map)
@@ -46,7 +44,7 @@ class UAVNavigator:
 
         # 预定义的航点列表
         self.waypoints = []
-        self.current_waypoint_index = 0  # 记录当前执行的航点索引
+        # self.current_waypoint_index = 0  # 记录当前执行的航点索引
         self.tolerance = 0.2  # 目标点到达的误差范围
 
         rospy.loginfo("Drone Controller Initialized")
@@ -74,10 +72,6 @@ class UAVNavigator:
         distance = math.sqrt(dx**2 + dy**2)
 
         return distance < self.tolerance  # 如果距离小于设定的阈值，则认为到达
-    
-    # def position_callback(self, msg):
-    #     """ 订阅无人机位置，并增量更新路径 """
-    #     self.current_position = (msg.point.x, msg.point.y)
 
     def los_callback(self, msg):
         try:
@@ -93,14 +87,7 @@ class UAVNavigator:
         end_grid = self.grid_map.to_grid(end_real[0], end_real[1])
         
         return self.a_star.find_path(start_grid, end_grid)
-
-    # def los_update(self):
-    #     """更新无人机与各锚点之间的视距情况""" 
-    #     for d in self.temp_los_data:
-    #         self.los_data[d["id"]] = d["LOS"]  # 存储数据: id(int): True/False
-    #     rospy.loginfo(f"los_data: {self.los_data}")
-        
-        
+     
     def map_update(self):
         self.grid_map.map_update_by_los(self.current_position, self.los_data)
     
@@ -132,21 +119,28 @@ class UAVNavigator:
 
         # 发布目标位置
         self.goal_pub.publish(goal)
-        rospy.loginfo(f"Moving to Waypoint {self.current_waypoint_index} -> x: {x}, y: {y}, z: {1.0}")
+        # rospy.loginfo(f"UAV current position {self.current_position}")
+        rospy.loginfo(f"Moving from {self.current_position}")
+        rospy.loginfo(f"to Waypoint (x: {x}, y: {y}, z: {1.0})")
+        
 
     def run(self):
         try:
             """ 持续进行路径规划 """
             while not rospy.is_shutdown():
-                # self.los_update()
-                # 更新地图
+
+                # 1. 更新地图
                 self.map_update()
-                # self.grid_map.apply_safety_margin()
+
+                # 2. 每次规划前都做一次障碍物膨胀，保证当前已知环境下的安全距离
+                self.grid_map.inflate_map(safe_distance_m=0.5)
+
+                # 3. 更新 A*
                 self.a_star.map_reconstruct(self.grid_map)
                 
-                # 栅格地图路径（未转换到真实坐标系）
+                # 4. 栅格地图路径（未转换到真实坐标系）
                 path = self.find_path(self.current_position, self.goal_real)
-                rospy.loginfo(f"grid path: {path}")
+                # rospy.loginfo(f"grid path: {path}")
                 
                 key_waypoints = self.a_star.extract_key_waypoints(path)
                 
@@ -158,6 +152,7 @@ class UAVNavigator:
                 
         finally:
             self.grid_map.visualize()
+            self.grid_map.visualize_edt()
 
 if __name__ == "__main__":
     navigator = UAVNavigator()

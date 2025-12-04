@@ -4,7 +4,7 @@
   <arg name="enable_ground_truth" default="true"/>
   <arg name="paused" value="false"/>
   <arg name="mav_name" value="ardrone"/>
-  <arg name="gui" value="false"/>
+  <arg name="gui" value="true"/>
   <arg name="drone_nums" default="0"/>
 
   <env name="GAZEBO_MODEL_PATH" value="${GAZEBO_MODEL_PATH}:$(find rotors_gazebo)/models"/>
