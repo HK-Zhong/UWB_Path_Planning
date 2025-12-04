@@ -106,7 +106,7 @@ class UAVNavigator:
     
     def move_to_next_waypoint_manual(self, path):
         """
-        发布目标位置，依次前往航点
+        发布目标位置，依次前往航点，发布真实坐标的航点
         """
         if self.current_position is None:
             rospy.logwarn("Current position is not yet available. Waiting for odometry...")
@@ -116,6 +116,7 @@ class UAVNavigator:
             rospy.loginfo("All waypoints reached. Task finished.")
             return
 
+        # 将栅格坐标转换为真实坐标
         x, y = self.grid_map.to_real(path[0][0], path[0][1])
 
         # 构造目标位置的 PoseStamped 消息
@@ -138,10 +139,12 @@ class UAVNavigator:
             """ 持续进行路径规划 """
             while not rospy.is_shutdown():
                 # self.los_update()
+                # 更新地图
                 self.map_update()
-                
+                # self.grid_map.apply_safety_margin()
                 self.a_star.map_reconstruct(self.grid_map)
                 
+                # 栅格地图路径（未转换到真实坐标系）
                 path = self.find_path(self.current_position, self.goal_real)
                 rospy.loginfo(f"grid path: {path}")
                 

@@ -5,7 +5,7 @@ import rospy
 
 
 class GridMap:
-    def __init__(self, size=50, resolution=0.25):
+    def __init__(self, size=50, resolution=0.5):
         """
         初始化栅格地图
         :param size: 地图大小（米）
@@ -91,15 +91,20 @@ class GridMap:
 
         return points
     
-    def map_update(self, start_real, end_real):
+    def map_update(self, start_real, end_real, free_expand=1):
         """
-        更新地图,输入的位置均为真实位置
-        :param start_real: 起点的真实坐标 (x, y)
-        :param end_real: 终点的真实坐标 (x, y)
+        更新地图，并将 LOS 的可通行区域扩宽 free_expand 格
         """
         points = self.get_line_grids(start_real, end_real)
-        for point in points:
-            self.grid_map[point] = 0
+
+        for (gx, gy) in points:
+            # 把 LOS 线附近 free_expand 格内全部置为 0（视为可通行）
+            for dx in range(-free_expand, free_expand + 1):
+                for dy in range(-free_expand, free_expand + 1):
+                    nx, ny = gx + dx, gy + dy
+                    if 0 <= nx < self.grid_size and 0 <= ny < self.grid_size:
+                        self.grid_map[nx, ny] = 0
+
                 
     def map_update_by_los(self, uav_position_real, los_data):
         """

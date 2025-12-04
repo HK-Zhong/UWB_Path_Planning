@@ -85,33 +85,52 @@ class AStar:
         self.map = grid_map
         
     def extract_key_waypoints(self, path):
-        if not path or len(path) <= 2:
-            return path  # 这种情况说明本来就没有移动
+        """
+        输入：A* 搜索路径 [(x,y),...]
+        输出：关键航点（不含起点）
+        """
 
-        waypoints = [path[0]]
+        if not path or len(path) < 2:
+            return []
 
+        # 动态距离阈值（米）
+        min_dist = max(3.0, 6 * self.map.resolution)
+
+        waypoints = []
+        waypoints.append(path[0])      # 保留起点用于判断，但稍后会删除
+        last_wp = path[0]
+
+        # 初始方向
         prev_dx = path[1][0] - path[0][0]
         prev_dy = path[1][1] - path[0][1]
 
-        for i in range(2, len(path)):
+        for i in range(1, len(path)):
             x_prev, y_prev = path[i-1]
             x_curr, y_curr = path[i]
 
             dx = x_curr - x_prev
             dy = y_curr - y_prev
 
-            if dx != prev_dx or dy != prev_dy:
-                waypoints.append((x_prev, y_prev))
+            # 真实距离（米）
+            dist = math.sqrt((x_curr - last_wp[0])**2 + (y_curr - last_wp[1])**2) * self.map.resolution
+
+            # 条件：方向变化 或 距离超过阈值
+            if dx != prev_dx or dy != prev_dy or dist > min_dist:
+                waypoints.append((x_curr, y_curr))
+                last_wp = (x_curr, y_curr)
 
             prev_dx, prev_dy = dx, dy
 
-        waypoints.append(path[-1])
+        # 保证终点存在
+        if waypoints[-1] != path[-1]:
+            waypoints.append(path[-1])
 
-        # 🚀 删除起点，让无人机直接飞向下一个点
-        if len(waypoints) > 1:
-            waypoints = waypoints[1:]  # 关键：跳过起点
+        # ❗删除第一个点（起点）
+        waypoints.pop(0)
 
         return waypoints
+
+
 
 
 
