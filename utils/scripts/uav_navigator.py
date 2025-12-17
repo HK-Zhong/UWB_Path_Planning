@@ -11,29 +11,36 @@ from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped
 import math
 
-# TODO: A*路径规划实时更新地图
-# TODO: 重写路径规划（run函数）等相关代码
-# TODO: 在搜索完路径后，发送给无人机指挥无人机飞行
-
 
 class UAVNavigator:
     def __init__(self):
         """ 初始化 ROS 订阅并执行路径规划 """
         rospy.init_node("uav_path_planner", anonymous=True)
-        self.grid_map = GridMap(size=50, resolution=0.5)  # 初始化地图
+        self.resolution = 0.5  # 栅格分辨率（米）
+        
+        self.grid_map = GridMap(size=50, resolution=self.resolution)  # 初始化地图
         self.grid_map.map_init()
-        self.goal_real = (4, -5)  # 目标位置
-        self.current_position = (-15, -15)  # 记录无人机当前位置
+        self.goal_real = (0, 15)  # 目标位置
+        self.current_position = (-15.0, -15.0)  # 记录无人机当前位置
+        self.start_real = self.current_position # A*规划起始位置（上一次规划的目标位置）,初始为当前无人机位置
         self.los_data = []  # 存储LOS状态
+        self.key_waypoints = []  # 存储关键航点
+        self.active_goal_grid = None   # 当前正在飞的航点（栅格）
+        self.active_goal_real = None   # 当前正在飞的航点（真实）
+        self.need_replan = True        # 是否需要重新规划
+        # Map update state
+        self._map_initialized = False
+
+        # self.map_update(free_expand=1)
 
         # 订阅UWB传感器数据
         rospy.Subscriber("/los_status_json", String, self.los_callback)
-        self.rate = rospy.Rate(0.5)  # 控制更新频率
+        self.rate = rospy.Rate(2)  # 控制更新频率
 
         # 初始化 A* 规划器
-        self.a_star = AStar(self.grid_map)
+        self.a_star = AStar(self.grid_map, edt_hard_min=self.resolution)
         
-                # 当前无人机的位置信息
+        # 当前无人机的位置信息
         self.current_position = None
 
         # 订阅无人机位置话题
@@ -45,7 +52,7 @@ class UAVNavigator:
         # 预定义的航点列表
         self.waypoints = []
         # self.current_waypoint_index = 0  # 记录当前执行的航点索引
-        self.tolerance = 0.2  # 目标点到达的误差范围
+        self.tolerance = 0.3  # 目标点到达的误差范围
 
         rospy.loginfo("Drone Controller Initialized")
 
@@ -66,8 +73,8 @@ class UAVNavigator:
         if self.current_position is None:
             return False
 
-        dx = self.current_position.position.x - x
-        dy = self.current_position.position.y - y
+        dx = self.current_position[0] - x
+        dy = self.current_position[1] - y
         # dz = self.current_position.position.z - z
         distance = math.sqrt(dx**2 + dy**2)
 
@@ -88,23 +95,19 @@ class UAVNavigator:
         
         return self.a_star.find_path(start_grid, end_grid)
      
-    def map_update(self):
-        self.grid_map.map_update_by_los(self.current_position, self.los_data)
+    def map_update(self, free_expand):
+        self.grid_map.map_update_by_los(self.current_position, self.los_data, free_expand=free_expand)
     
-    def move_to_next_waypoint_manual(self, path):
+    def publish_waypoint(self, real_waypoint):
         """
-        发布目标位置，依次前往航点，发布真实坐标的航点
+        发布目标位置，依次前往航点，发布栅格坐标点
         """
         if self.current_position is None:
             rospy.logwarn("Current position is not yet available. Waiting for odometry...")
             return
-
-        if not path or len(path) == 0:
-            rospy.loginfo("All waypoints reached. Task finished.")
-            return
-
+        
         # 将栅格坐标转换为真实坐标
-        x, y = self.grid_map.to_real(path[0][0], path[0][1])
+        x, y = real_waypoint[0], real_waypoint[1]
 
         # 构造目标位置的 PoseStamped 消息
         goal = PoseStamped()
@@ -122,37 +125,109 @@ class UAVNavigator:
         # rospy.loginfo(f"UAV current position {self.current_position}")
         rospy.loginfo(f"Moving from {self.current_position}")
         rospy.loginfo(f"to Waypoint (x: {x}, y: {y}, z: {1.0})")
-        
+    
+    def update_map_stateful(self):
+        """
+        Stateful map update:
+        - Before mission start: one-time wide update (free_expand=1)
+        - During mission: continuous narrow update (free_expand=0)
+        """
 
+        if self.current_position is None:
+            return
+        
+        if not self.los_data:
+            return
+
+        # ===== 状态 1：任务开始前，执行一次宽更新 =====
+        if not self._map_initialized:
+            rospy.loginfo("[update_map_stateful] Initial wide LOS update (free_expand=1)")
+            self.map_update(free_expand=1)
+            self._map_initialized = True
+            return
+
+        # ===== 状态 2：任务执行中，持续窄更新 =====
+        self.map_update(free_expand=0)
+        rospy.loginfo("[update_map_stateful] Continuous narrow LOS update (free_expand=0)")
+
+        
     def run(self):
         try:
-            """ 持续进行路径规划 """
             while not rospy.is_shutdown():
+                                  
+                # ========== 1. 更新地图（LOS → grid_map） ==========              
+                self.update_map_stateful()
+                
+                # ========== 2. 更新 EDT 地图 ==========
+                # ⚠️ 注意：这是“重算 edt_map”，不是改 grid_map
+                self.grid_map.update_edt()
 
-                # 1. 更新地图
-                self.map_update()
-
-                # 2. 每次规划前都做一次障碍物膨胀，保证当前已知环境下的安全距离
-                self.grid_map.inflate_map(safe_distance_m=0.5)
-
-                # 3. 更新 A*
+                # ========== 3. 更新 A* 使用的地图 ==========
                 self.a_star.map_reconstruct(self.grid_map)
-                
-                # 4. 栅格地图路径（未转换到真实坐标系）
-                path = self.find_path(self.current_position, self.goal_real)
-                # rospy.loginfo(f"grid path: {path}")
-                
-                key_waypoints = self.a_star.extract_key_waypoints(path)
-                
-                rospy.loginfo(f"key waypoint path: {key_waypoints}")
-                
-                self.move_to_next_waypoint_manual(key_waypoints)
-                
+
+                # =================================================
+                # 状态 A：当前没有执行航点 → 允许重新规划
+                # =================================================
+                if self.active_goal_real is None and self.need_replan:
+
+                    rospy.loginfo("[Planner] Replanning...")
+
+                    path = self.find_path(self.start_real, self.goal_real)
+                    if not path:
+                        rospy.logwarn("No path found.")
+                        self.rate.sleep()
+                        continue
+
+                    key_waypoints = self.a_star.extract_key_waypoints(path)
+                    if not key_waypoints:
+                        rospy.logwarn("No key waypoints.")
+                        self.rate.sleep()
+                        continue
+
+                    # 只取第一个关键航点作为执行目标
+                    self.active_goal_grid = key_waypoints[0]
+                    self.active_goal_real = self.grid_map.to_real(
+                    self.active_goal_grid[0],
+                    self.active_goal_grid[1])
+
+
+                    # 发布给 EgoPlanner / move_base
+                    self.publish_waypoint(self.active_goal_real)
+
+                    rospy.loginfo(
+                        f"[Planner] Active goal grid={self.active_goal_grid}, "
+                        f"real={self.active_goal_real}")
+
+                    self.need_replan = False
+
+                # =================================================
+                # 状态 B：正在飞 → 只判断是否到达
+                # =================================================
+                elif self.active_goal_real is not None:
+
+                    if self.has_reached_goal(
+                        self.active_goal_real[0],
+                        self.active_goal_real[1],
+                        1.0
+                    ):
+                        rospy.loginfo("[Planner] Active goal reached.")
+
+                        # 规划起点前移（✔️ 正确的位置）
+                        self.start_real = self.active_goal_real
+                        self.key_waypoints.append(self.active_goal_grid)
+
+                        # 清空执行态
+                        self.active_goal_real = None
+                        self.active_goal_grid = None
+                        self.need_replan = True
+
                 self.rate.sleep()
-                
+
         finally:
-            self.grid_map.visualize()
-            self.grid_map.visualize_edt()
+            self.grid_map.visualize(self.key_waypoints)
+            self.grid_map.visualize_edt(self.key_waypoints)
+            # print("finished..")
+
 
 if __name__ == "__main__":
     navigator = UAVNavigator()

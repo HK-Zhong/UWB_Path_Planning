@@ -1,6 +1,22 @@
-**/matlab_rosbag-0.5.0-linux64/
-**/*.bag
-.vscode/
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# ROS / build
 build/
-utils/scripts/pics
-utils/scripts/__pycache__
+devel/
+install/
+
+# VSCode
+.vscode/
+
+# Bags
+**/*.bag
+
+# MATLAB ROS toolbox
+matlab_rosbag-0.5.0-linux64/
+
+# Cache / pics
+utils/scripts/pics/

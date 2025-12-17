@@ -1,61 +1,101 @@
-import numpy as np
 import heapq
 import math
+import numpy as np
 from grid_map import GridMap
+
 
 class AStar:
     """
-    A* 搜索（支持 8 邻域）
+    EDT-aware A* path planner
+
+    Hard constraints:
+      - grid_map == 1  (unknown / obstacle forbidden)
+      - edt < edt_hard_min forbidden
+
+    Soft constraints:
+      - prefer large EDT (stay in corridor center)
+      - shortest path
     """
-    def __init__(self, grid_map: GridMap):
+
+    def __init__(self, grid_map: GridMap, edt_hard_min=0.5):
+        
         self.map = grid_map
 
-    def set_obstacle(self, obstacles):
-        for x, y in obstacles:
-            self.map.grid_map[x, y] = 1
+        self.w_dist = 1.0
+        self.w_safe = 10.0
 
+        self.edt_hard_min = edt_hard_min
+
+        self.safe_epsilon = 1e-3
+
+
+    # =====================================================
+    # Heuristic（几何距离，保持 admissible）
+    # =====================================================
     def heuristic(self, a, b):
-        """
-        对角距离（更适合 8 邻域 A*）
-        """
         dx = abs(a[0] - b[0])
         dy = abs(a[1] - b[1])
         return dx + dy + (math.sqrt(2) - 2) * min(dx, dy)
 
+    # =====================================================
+    # EDT-based safety cost（核心）
+    # =====================================================
+    def safety_cost(self, node):
+        """
+        Simple EDT-based safety cost:
+        EDT 越大，代价越小
+        """
+        edt_value = self.map.edt_map[node[0], node[1]]
+
+        return 1.0 / (edt_value + self.safe_epsilon)
+        # return -edt_value
+
+    # =====================================================
+    # 8 邻域扩展
+    # =====================================================
     def get_neighbors(self, node):
-        """
-        获取 8 邻域节点
-        """
         x, y = node
         directions = [
-            (-1, 0), (1, 0), (0, -1), (0, 1),      # 上下左右
-            (-1, -1), (-1, 1), (1, -1), (1, 1)     # 四个对角
+            (-1, 0), (1, 0), (0, -1), (0, 1),
+            (-1, -1), (-1, 1), (1, -1), (1, 1)
         ]
 
         neighbors = []
         for dx, dy in directions:
             nx, ny = x + dx, y + dy
-            if (
-                0 <= nx < self.map.grid_size and
-                0 <= ny < self.map.grid_size and
-                self.map.grid_map[nx, ny] == 0
-            ):
-                # 区分直走 vs 对角线
-                move_cost = 1 if dx == 0 or dy == 0 else math.sqrt(2)
-                neighbors.append(((nx, ny), move_cost))
+
+            if not (0 <= nx < self.map.grid_size and 0 <= ny < self.map.grid_size):
+                continue
+
+            # ❗硬约束 1：未知 / 障碍
+            if self.map.grid_map[nx, ny] == 1:
+                continue
+
+            # ❗硬约束 2：EDT 太小（贴未知区域太近）
+            if self.map.edt_map[nx, ny] <= self.edt_hard_min:
+                continue
+
+            move_cost = 1.0 if dx == 0 or dy == 0 else math.sqrt(2)
+            neighbors.append(((nx, ny), move_cost))
 
         return neighbors
 
+    # =====================================================
+    # 主搜索
+    # =====================================================
     def find_path(self, start_grid, goal_grid):
-        if self.map.grid_map[start_grid] == 1 or self.map.grid_map[goal_grid] == 1:
+
+        if (
+            self.map.grid_map[start_grid] == 1
+            or self.map.grid_map[goal_grid] == 1
+        ):
             return None
 
         open_set = []
-        heapq.heappush(open_set, (0, start_grid))
+        heapq.heappush(open_set, (0.0, start_grid))
 
         came_from = {}
-        g_score = {start_grid: 0}
-        f_score = {start_grid: self.heuristic(start_grid, goal_grid)}
+        g_score = {start_grid: 0.0}
 
         while open_set:
             _, current = heapq.heappop(open_set)
@@ -63,17 +103,22 @@ class AStar:
             if current == goal_grid:
                 return self.reconstruct_path(came_from, current)
 
-            for (neighbor, move_cost) in self.get_neighbors(current):
-                tentative_g = g_score[current] + move_cost
+            for neighbor, move_cost in self.get_neighbors(current):
+
+                cost_dist = self.w_dist * move_cost
+                cost_safe = self.w_safe * self.safety_cost(neighbor)
+
+                tentative_g = g_score[current] + cost_dist + cost_safe
 
                 if neighbor not in g_score or tentative_g < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g
-                    f_score[neighbor] = tentative_g + self.heuristic(neighbor, goal_grid)
-                    heapq.heappush(open_set, (f_score[neighbor], neighbor))
+                    f_score = tentative_g + self.heuristic(neighbor, goal_grid)
+                    heapq.heappush(open_set, (f_score, neighbor))
 
         return None
 
+    # =====================================================
     def reconstruct_path(self, came_from, current):
         path = [current]
         while current in came_from:
@@ -81,171 +126,66 @@ class AStar:
             path.append(current)
         return path[::-1]
 
+    # =====================================================
     def map_reconstruct(self, grid_map: GridMap):
         self.map = grid_map
-        
+
+    # =====================================================
+    # 关键航点提取（防抖 + 平滑）
+    # =====================================================
     def extract_key_waypoints(self, path):
         """
-        输入：A* 搜索路径 [(x,y),...]
-        输出：关键航点（不含起点）
+        输入：
+            path: [(x, y), ...]
+        输出：
+            关键航点（栅格坐标，不含起点）
         """
 
         if not path or len(path) < 2:
             return []
 
-        # 动态距离阈值（米）
-        min_dist = max(3.0, 6 * self.map.resolution)
+        min_dist_m = max(1.5, 4 * self.map.resolution)
 
         waypoints = []
-        waypoints.append(path[0])      # 保留起点用于判断，但稍后会删除
-        last_wp = path[0]
+        last_kept = path[0]
 
-        # 初始方向
         prev_dx = path[1][0] - path[0][0]
         prev_dy = path[1][1] - path[0][1]
 
         for i in range(1, len(path)):
-            x_prev, y_prev = path[i-1]
-            x_curr, y_curr = path[i]
+            x_prev, y_prev = path[i - 1]
+            x_cur, y_cur = path[i]
 
-            dx = x_curr - x_prev
-            dy = y_curr - y_prev
+            dx = x_cur - x_prev
+            dy = y_cur - y_prev
 
-            # 真实距离（米）
-            dist = math.sqrt((x_curr - last_wp[0])**2 + (y_curr - last_wp[1])**2) * self.map.resolution
+            dist = math.hypot(
+                (x_cur - last_kept[0]) * self.map.resolution,
+                (y_cur - last_kept[1]) * self.map.resolution
+            )
 
-            # 条件：方向变化 或 距离超过阈值
-            if dx != prev_dx or dy != prev_dy or dist > min_dist:
-                waypoints.append((x_curr, y_curr))
-                last_wp = (x_curr, y_curr)
+            turn = (dx != prev_dx) or (dy != prev_dy)
+            far_enough = dist >= min_dist_m
+
+            if turn or far_enough:
+                waypoints.append((x_cur, y_cur))
+                last_kept = (x_cur, y_cur)
 
             prev_dx, prev_dy = dx, dy
 
-        # 保证终点存在
-        if waypoints[-1] != path[-1]:
+        if waypoints and waypoints[-1] != path[-1]:
+            waypoints.append(path[-1])
+        elif not waypoints:
             waypoints.append(path[-1])
 
-        # ❗删除第一个点（起点）
-        waypoints.pop(0)
+        # ❗删除过近的第一个航点（防顿挫）
+        # if waypoints:
+        #     first = waypoints[0]
+        #     dist0 = math.hypot(
+        #         (first[0] - path[0][0]) * self.map.resolution,
+        #         (first[1] - path[0][1]) * self.map.resolution
+        #     )
+        #     if dist0 < 0.5 * min_dist_m:
+        #         waypoints.pop(0)
 
         return waypoints
-
-
-
-
-
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    import random
-
-    # ========== 创建 30x30 网格地图 ==========
-    grid_map = GridMap(size=16)
-    grid_map.grid_map[:, :] = 0   # 全部可通行
-
-    # 创建 A* 实例
-    pathfinder = AStar(grid_map)
-
-    # ========== 设置大面积障碍物 ==========
-    obstacles = []
-
-    # 1. 中间一条粗横障碍带
-    for y in range(5, 25):
-        obstacles.append((10, y))
-        obstacles.append((11, y))
-        obstacles.append((12, y))
-
-    # 2. 大的矩形障碍块
-    for x in range(18, 25):
-        for y in range(3, 10):
-            obstacles.append((x, y))
-
-    # 3. 随机撒一些障碍点（更自然）
-    random.seed(0)
-    for _ in range(60):
-        ox = random.randint(0, 29)
-        oy = random.randint(0, 29)
-        obstacles.append((ox, oy))
-
-    # 添加障碍到地图
-    pathfinder.set_obstacle(obstacles)
-
-    # ========== 设置起点和终点 ==========
-    start = (0, 0)
-    goal = (29, 29)
-
-    # 执行 A* 搜索
-    path = pathfinder.find_path(start, goal)
-
-    print("Grid Map (1 = obstacle, 0 = free):")
-    print(grid_map.grid_map)
-
-    if path:
-        print("\nA* 完整路径:")
-        print(path)
-    else:
-        print("未找到可行路径")
-        exit()
-
-    # ========== 提取关键航点 ==========
-    def extract_key_waypoints(path):
-        if not path or len(path) <= 2:
-            return path
-
-        waypoints = [path[0]]
-
-        prev_dx = path[1][0] - path[0][0]
-        prev_dy = path[1][1] - path[0][1]
-
-        for i in range(2, len(path)):
-            x_prev, y_prev = path[i-1]
-            x_curr, y_curr = path[i]
-
-            dx = x_curr - x_prev
-            dy = y_curr - y_prev
-
-            if dx != prev_dx or dy != prev_dy:
-                waypoints.append((x_prev, y_prev))
-
-            prev_dx, prev_dy = dx, dy
-
-        waypoints.append(path[-1])
-        return waypoints
-
-    key_wps = extract_key_waypoints(path)
-
-    print("\n关键航点:")
-    print(key_wps)
-
-    # =========================
-    #      可视化路径
-    # =========================
-    grid = grid_map.grid_map.copy()
-
-    # 标记 A* 路径
-    for (x, y) in path:
-        grid[x, y] = 2
-
-    # 标记关键航点
-    for (x, y) in key_wps:
-        grid[x, y] = 3
-
-    plt.figure(figsize=(8, 8))
-    plt.imshow(grid, cmap="gray_r")
-    plt.title("A* Path & Key Waypoints (30×30 Grid)")
-
-    # 绘制完整路径
-    xs = [p[1] for p in path]
-    ys = [p[0] for p in path]
-    plt.plot(xs, ys, c="blue", linewidth=2, label="A* Path")
-
-    # 绘制关键点
-    xs_wp = [p[1] for p in key_wps]
-    ys_wp = [p[0] for p in key_wps]
-    plt.scatter(xs_wp, ys_wp, c="red", s=60, label="Key Waypoints")
-
-    # 起点终点
-    plt.scatter(start[1], start[0], c="yellow", s=80, label="Start")
-    plt.scatter(goal[1], goal[0], c="green", s=80, label="Goal")
-
-    plt.legend()
-    plt.show()

@@ -1,88 +1,94 @@
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
-import rospy
 import os
 import time
+import traceback
+import rospy
 
-# ⭐ 新增：用于欧氏距离变换
+
 from scipy.ndimage import distance_transform_edt
 
 
 class GridMap:
+    """
+    GridMap:
+    - self.grid_map : LOS-based binary map (0 free / 1 unknown or obstacle)
+    - self.edt_map  : Euclidean Distance Transform (meters), derived from grid_map
+    """
+
     def __init__(self, size=50, resolution=0.5):
         """
-        初始化栅格地图
-        :param size: 地图大小（米）
-        :param resolution: 栅格分辨率（米）
+        size        : map size (meters)
+        resolution  : grid resolution (meters)
         """
         self.size = size
         self.resolution = resolution
-        self.grid_size = int(size / resolution)  # 计算栅格总数
-        # 1 表示障碍物/未知，0 表示可通行
-        self.grid_map = np.ones((self.grid_size, self.grid_size), dtype=np.int8)
+        self.grid_size = int(size / resolution)
 
-        self.uwb_anchors_file = '/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/UWB_Anchors.yml'
+        # -------------------------------
+        # Binary grid map (SYSTEM INTERFACE)
+        # 0 = free (LOS confirmed)
+        # 1 = unknown / obstacle
+        # -------------------------------
+        self.grid_map = np.ones(
+            (self.grid_size, self.grid_size), dtype=np.int8
+        )
+
+        # -------------------------------
+        # EDT map (meters)
+        # -------------------------------
+        self.edt_map = None
+
+        # ---------- UWB anchors ----------
+        self.uwb_anchors_file = (
+            "/home/coolas-fly/UWB_Path_Planning/src/"
+            "UWB_Path_Planning/utils/config/UWB_Anchors.yml"
+        )
         self.real_anchors_position = self.load_uwb_anchors()
-        
-        # UWB锚点编号之间的连通性
+
+        # Anchor LOS connectivity prior
         self.uwb_los = [
             (0, 1), (1, 2), (2, 3), (1, 4),
             (2, 5), (3, 6), (3, 8), (0, 7),
             (7, 9), (9, 10), (9, 11), (11, 12),
-            (12, 13), (11, 13), (8, 13), (4, 5),
-            (5, 6)
+            (12, 13), (11, 13), (8, 13),
+            (4, 5), (5, 6)
         ]
-    
-    def load_uwb_anchors(self):
-        """
-        从 UWB_Anchors.yml 文件加载锚点坐标,返回真实坐标
-        """
-        real_anchors = dict()
-        with open(self.uwb_anchors_file, 'r') as file:
-            data = yaml.safe_load(file)
-        
-        for anchor in data['UWB_Anchors']:
-            real_anchors[anchor["id"]] = (anchor["x"], anchor["y"])
-            
-        return real_anchors
-        
-    def set_obstacle(self, obstacles):
-        for x, y in obstacles:
-            self.grid_map[x, y] = 1
 
-    def remove_obstacle(self, obstacles):
-        for x, y in obstacles:
-            self.grid_map[x, y] = 0
-
+    # =====================================================
+    # Coordinate transform
+    # =====================================================
     def to_grid(self, x_real, y_real):
-        """ 将实际坐标转换为栅格坐标 """
-        x_grid = int((x_real + self.size / 2.0) / self.resolution)
-        y_grid = int((y_real + self.size / 2.0) / self.resolution)
-        return x_grid, y_grid
+        gx = int((x_real + self.size / 2.0) / self.resolution)
+        gy = int((y_real + self.size / 2.0) / self.resolution)
+        return gx, gy
 
-    def to_real(self, x_grid, y_grid):
-        """ 将栅格坐标转换为实际坐标 """
-        x_real = round(x_grid * self.resolution - self.size / 2.0, 1)
-        y_real = round(y_grid * self.resolution - self.size / 2.0, 1)
-        return x_real, y_real
+    def to_real(self, gx, gy):
+        x = gx * self.resolution - self.size / 2.0
+        y = gy * self.resolution - self.size / 2.0
+        return round(x, 2), round(y, 2)
 
+    # =====================================================
+    # UWB anchor loading
+    # =====================================================
+    def load_uwb_anchors(self):
+        anchors = {}
+        with open(self.uwb_anchors_file, "r") as f:
+            data = yaml.safe_load(f)
+        for a in data["UWB_Anchors"]:
+            anchors[a["id"]] = (a["x"], a["y"])
+        return anchors
+
+    # =====================================================
+    # LOS map update
+    # =====================================================
     def get_line_grids(self, start_real, end_real):
-        """
-        获取两点连线上所有的栅格坐标（使用 Bresenham 直线算法）
-        :param start_real: 起点的真实坐标 (x, y)
-        :param end_real: 终点的真实坐标 (x, y)
-        :return: 经过的所有栅格点列表 [(gx1, gy1), (gx2, gy2), ...]
-        """
-        start_grid = self.to_grid(*start_real)
-        end_grid = self.to_grid(*end_real)
-
-        x0, y0 = start_grid
-        x1, y1 = end_grid
+        """Bresenham line algorithm"""
+        x0, y0 = self.to_grid(*start_real)
+        x1, y1 = self.to_grid(*end_real)
 
         points = []
-
-        # Bresenham 直线算法
         dx = abs(x1 - x0)
         dy = abs(y1 - y0)
         sx = 1 if x0 < x1 else -1
@@ -100,139 +106,124 @@ class GridMap:
             if e2 < dx:
                 err += dx
                 y0 += sy
-
         return points
-    
+
     def map_update(self, start_real, end_real, free_expand=1):
         """
-        更新地图，并将 LOS 的可通行区域扩宽 free_expand 格
+        Update grid_map using LOS ray
         """
-        points = self.get_line_grids(start_real, end_real)
-
-        for (gx, gy) in points:
-            # 把 LOS 线附近 free_expand 格内全部置为 0（视为可通行）
+        for gx, gy in self.get_line_grids(start_real, end_real):
             for dx in range(-free_expand, free_expand + 1):
                 for dy in range(-free_expand, free_expand + 1):
                     nx, ny = gx + dx, gy + dy
                     if 0 <= nx < self.grid_size and 0 <= ny < self.grid_size:
                         self.grid_map[nx, ny] = 0
-                
-    def map_update_by_los(self, uav_position_real, los_data):
-        """
-        los_data: [{'id': 0, 'LOS': True}, ...]
-        """
+
+    def map_update_by_los(self, uav_pos_real, los_data, free_expand=1):
         for tag in los_data:
-            # 如果无人机与锚点之间是视距
             if tag["LOS"]:
-                self.map_update(uav_position_real, self.real_anchors_position[tag["id"]])
-    
+                self.map_update(
+                    uav_pos_real,
+                    self.real_anchors_position[tag["id"]],
+                    free_expand,
+                )
+
     def map_init(self, free_expand=1):
+        for i, j in self.uwb_los:
+            self.map_update(
+                self.real_anchors_position[i],
+                self.real_anchors_position[j],
+                free_expand,
+            )
+
+    # =====================================================
+    # EDT maintenance (NO map erosion)
+    # =====================================================
+    def update_edt(self):
         """
-        初始化UWB锚点间的连通性
+        Compute EDT from grid_map
+        edt_map unit: meters
         """
-        for path in self.uwb_los:
-            start_real = self.real_anchors_position[path[0]]
-            end_real = self.real_anchors_position[path[1]]
-            self.map_update(start_real, end_real, free_expand=free_expand)
+        obstacle_mask = (self.grid_map == 1)
+        dist_cells = distance_transform_edt(~obstacle_mask)
+        self.edt_map = dist_cells * self.resolution
 
-    # ========= ⭐ 新增：障碍物“膨胀”（通过距离场收缩可行区域） =========
-    def inflate_obstacles(self, safe_distance_m=0.5):
+    def is_safe(self, gx, gy, safe_distance_m):
         """
-        使用欧氏距离变换，对障碍物进行“膨胀”，
-        实际效果：离障碍物/未知 小于 safe_distance_m 的 free(0) 栅格全部变成 1
-
-        safe_distance_m: 无人机期望与障碍物保持的最小安全距离（米）
+        Safety query using EDT
         """
-        # free_mask=True 的地方是可通行区域
-        free_mask = (self.grid_map == 0)
+        if self.edt_map is None:
+            return False
+        return self.edt_map[gx, gy] >= safe_distance_m
 
-        # 如果目前还没有任何 free 区域，直接返回
-        if not free_mask.any():
-            rospy.logwarn("inflate_obstacles: no free cells yet, skip inflation.")
-            return
-
-        # 计算：每个 free 格子到最近障碍(=1)的距离（单位：格）
-        # SciPy 语义：输入中非零元素视为“object”，计算其到背景(0)的距离
-        # 所以传入 free_mask，得到的是 free 到最近 non-free(=障碍) 的距离
-        dist_cells = distance_transform_edt(free_mask)
-
-        # 转成米
-        dist_m = dist_cells * self.resolution
-
-        # 距离小于安全距离的全部标记为障碍/未知(1)，其余保留为 0
-        self.grid_map = np.where(dist_m >= safe_distance_m, 0, 1)
-
-    def inflate_map(self, safe_distance_m=1.0):
-        """
-        对外暴露的封装接口（方便在其他模块中调用）
-        """
-        self.inflate_obstacles(safe_distance_m=safe_distance_m)
-    # ========= ⭐ 新增结束 =========
-    
+    # =====================================================
+    # Visualization
+    # =====================================================
     def get_pic_dir(self):
-        """返回当前脚本所在目录下的 pics/ 目录路径"""
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        pic_dir = os.path.join(script_dir, "pics")
-        os.makedirs(pic_dir, exist_ok=True)
-        return pic_dir
-            
-    def visualize(self, filename="map"):
-        """
-        将当前栅格地图保存为图片到 scripts/pics/ 目录（带时间戳）
-        """
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        filename = f"{filename}_{timestamp}.png"
+        d = os.path.join(os.path.dirname(__file__), "pics")
+        os.makedirs(d, exist_ok=True)
+        return d
 
-        save_path = os.path.join(self.get_pic_dir(), filename)
+    def visualize(self, highlight_points=None, filename="grid"):
+
+        ts = time.strftime("%Y%m%d_%H%M%S")
+        path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.png")
 
         plt.figure(figsize=(6, 6))
-        plt.imshow(self.grid_map.T, cmap='gray_r', origin='lower')
+        plt.imshow(self.grid_map.T, cmap="gray_r", origin="lower")
 
+        if highlight_points:
+            xs = [p[0] for p in highlight_points]
+            ys = [p[1] for p in highlight_points]
+            plt.scatter(xs, ys, c="red", s=10)
+        
         plt.xticks(np.arange(-0.5, self.grid_size, 1), [])
         plt.yticks(np.arange(-0.5, self.grid_size, 1), [])
         plt.grid(color='black', linestyle='-', linewidth=0.5)
 
-        plt.savefig(save_path, dpi=200, bbox_inches='tight')
+
+        plt.grid(True, linewidth=0.3)
+        plt.savefig(path, dpi=200)
         plt.close()
 
-        print(f"[GridMap] 地图已保存到: {save_path}")
+        print("[GridMap] grid_map saved:", path)
 
-    def visualize_edt(self, filename="edt"):
-        """
-        保存 EDT 距离场图像（带时间戳）
-        """
-        timestamp = time.strftime("%Y%m%d_%H%M%S")
-        filename = f"{filename}_{timestamp}.png"
+    def visualize_edt(self, highlight_points=None, filename="edt"):
+        if self.edt_map is None:
+            print("[GridMap] edt_map empty, call update_edt() first.")
+            return
 
-        save_path = os.path.join(self.get_pic_dir(), filename)
-
-        obstacle_mask = (self.grid_map == 1)
-        dist_cells = distance_transform_edt(~obstacle_mask)
-        dist_m = dist_cells * self.resolution
+        ts = time.strftime("%Y%m%d_%H%M%S")
+        path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.png")
 
         plt.figure(figsize=(6, 6))
-        plt.imshow(dist_m.T, cmap='jet', origin='lower')
-        plt.colorbar(label="Distance to nearest obstacle (meters)")
-        plt.title("Euclidean Distance Transform (EDT) Map")
+        plt.imshow(self.edt_map.T, cmap="jet", origin="lower")
+        plt.colorbar(label="distance to obstacle (m)")
 
-        plt.xticks([])
-        plt.yticks([])
+        if highlight_points:
+            xs = [p[0] for p in highlight_points]
+            ys = [p[1] for p in highlight_points]
+            plt.scatter(xs, ys, c="red", s=10)
 
-        plt.savefig(save_path, dpi=200, bbox_inches='tight')
+        plt.savefig(path, dpi=200)
         plt.close()
 
-        print(f"[GridMap] EDT 图像已保存到: {save_path}")
+        print("[GridMap] edt_map saved:", path)
 
 
+# =====================================================
+# Standalone test
+# =====================================================
 if __name__ == "__main__":
-    grid_map = GridMap()
+    gm = GridMap(size=50, resolution=0.5)
 
-    # 1. 用锚点 LOS 初始化基础可通行通道（可以调 free_expand 扩宽初始通道）
-    grid_map.map_init(free_expand=1)
+    print("[1] Init LOS map")
+    gm.map_init(free_expand=1)
 
-    # 2. 对障碍物做“膨胀”，比如保持 1 米安全距离
-    #    分辨率 0.5 -> 1 米 ≈ 2 格
-    grid_map.inflate_map(safe_distance_m=1.0)
+    print("[2] Update EDT")
+    gm.update_edt()
 
-    # 3. 可视化结果
-    grid_map.visualize()
+    test_points = [(30, 40), (40, 45), (50, 55)]
+
+    gm.visualize(highlight_points=test_points, filename="los_map")
+    gm.visualize_edt(highlight_points=test_points, filename="edt_map")
