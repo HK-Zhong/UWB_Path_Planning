@@ -75,7 +75,7 @@
       <remap from="~goal" to="/$(arg prefix)/move_base_simple/goal"/>
       <remap from="~traj_start_trigger" to="/traj_start_trigger" />
       <remap from="/waypoint_generator/waypoints" to="/$(arg prefix)/waypoint_generator/waypoints" />
-      <param name="waypoint_type" value="manual-lonely-waypoint"/>    
+      <param name="waypoint_type" value="manual-lonely-waypoint"/>
     </node>
   </group>
 

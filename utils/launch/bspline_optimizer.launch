@@ -1,0 +1,5 @@
+<launch>
+  <!-- Bspline 轨迹优化 -->
+  <node pkg="utils" type="bspline_optimizer_node" name="bspline_optimizer" output="screen"/>
+
+</launch>

@@ -22,7 +22,7 @@ class AStar:
         self.map = grid_map
 
         self.w_dist = 1.0
-        self.w_safe = 10.0
+        self.w_safe = 0.0
 
         self.edt_hard_min = edt_hard_min
 

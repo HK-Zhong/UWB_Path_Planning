@@ -3,23 +3,31 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))  # 添加当前脚本所在目录
 
 import rospy, json
-from geometry_msgs.msg import PointStamped, Point
 from std_msgs.msg import String
 from grid_map import GridMap
 from path_searching import AStar
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, PoseArray, Pose
 import math
+from nav_msgs.msg import OccupancyGrid
+from std_msgs.msg import Header
+
+
 
 
 class UAVNavigator:
     def __init__(self):
         """ 初始化 ROS 订阅并执行路径规划 """
+        
         rospy.init_node("uav_path_planner", anonymous=True)
+        
         self.resolution = 0.5  # 栅格分辨率（米）
         
-        self.grid_map = GridMap(size=50, resolution=self.resolution)  # 初始化地图
+        # 初始化
+        self.grid_map = GridMap(size=50, resolution=self.resolution)
         self.grid_map.map_init()
+        self.a_star = AStar(self.grid_map, edt_hard_min=self.resolution * 1.5)
+        
         self.goal_real = (0, 15)  # 目标位置
         self.current_position = (-15.0, -15.0)  # 记录无人机当前位置
         self.start_real = self.current_position # A*规划起始位置（上一次规划的目标位置）,初始为当前无人机位置
@@ -28,31 +36,31 @@ class UAVNavigator:
         self.active_goal_grid = None   # 当前正在飞的航点（栅格）
         self.active_goal_real = None   # 当前正在飞的航点（真实）
         self.need_replan = True        # 是否需要重新规划
-        # Map update state
         self._map_initialized = False
-
-        # self.map_update(free_expand=1)
 
         # 订阅UWB传感器数据
         rospy.Subscriber("/los_status_json", String, self.los_callback)
-        self.rate = rospy.Rate(2)  # 控制更新频率
+        self.start_goal_pub = rospy.Publisher(
+            "/bspline/start_goal",
+            PoseArray,
+            queue_size=1
+            )
+        self.edt_map_pub = rospy.Publisher(
+            "/bspline/edt_map",
+            OccupancyGrid,
+            queue_size=1,
+            latch=True
+        )
 
-        # 初始化 A* 规划器
-        self.a_star = AStar(self.grid_map, edt_hard_min=self.resolution)
-        
-        # 当前无人机的位置信息
-        self.current_position = None
+        self.rate = rospy.Rate(2)  # 控制更新频率
 
         # 订阅无人机位置话题
         rospy.Subscriber('/ardrone_1/odometry_sensor1/odometry', Odometry, self.odometry_callback)
 
-        # 发布无人机目标位置的 PoseStamped 消息
-        self.goal_pub = rospy.Publisher('/ardrone_1/move_base_simple/goal', PoseStamped, queue_size=10)
-
         # 预定义的航点列表
         self.waypoints = []
         # self.current_waypoint_index = 0  # 记录当前执行的航点索引
-        self.tolerance = 0.3  # 目标点到达的误差范围
+        self.tolerance = 0.2  # 目标点到达的误差范围
 
         rospy.loginfo("Drone Controller Initialized")
 
@@ -61,10 +69,6 @@ class UAVNavigator:
         回调函数，接收并保存无人机当前位置。
         """
         self.current_position = (msg.pose.pose.position.x, msg.pose.pose.position.y)
-        # rospy.loginfo(f"Current Position -> x: {self.current_position.position.x}, "
-        #               f"y: {self.current_position.position.y}, "
-        #               f"z: {self.current_position.position.z}")
-                    # 只有当当前位置可用时，才检查是否到达目标点
 
     def has_reached_goal(self, x, y, z):
         """
@@ -97,6 +101,83 @@ class UAVNavigator:
      
     def map_update(self, free_expand):
         self.grid_map.map_update_by_los(self.current_position, self.los_data, free_expand=free_expand)
+        
+    def publish_start_goal(self, start_real, goal_real):
+        """
+        发布给 Bspline 优化节点的 起点-终点
+        """
+        
+        # ======== 必须的安全检查 ========
+        if start_real is None or goal_real is None:
+            rospy.logwarn(
+                "[uav_navigator] start_real or goal_real is None, skip publish."
+            )
+            return
+        
+        msg = PoseArray()
+        msg.header.stamp = rospy.Time.now()
+        msg.header.frame_id = "map"
+
+        p_start = Pose()
+        p_start.position.x = start_real[0]
+        p_start.position.y = start_real[1]
+        p_start.position.z = 1.0
+
+        p_goal = Pose()
+        p_goal.position.x = goal_real[0]
+        p_goal.position.y = goal_real[1]
+        p_goal.position.z = 1.0
+
+        msg.poses.append(p_start)
+        msg.poses.append(p_goal)
+
+        self.start_goal_pub.publish(msg)
+
+        rospy.loginfo(
+            f"[uav_navigator] Publish start-goal: "
+            f"start={start_real}, goal={goal_real}"
+        )
+
+    def publish_edt_map(self):
+        """
+        Publish EDT map as nav_msgs/OccupancyGrid
+        Each cell stores EDT distance (meters * 100, clipped)
+        """
+
+        if self.grid_map.edt_map is None:
+            return
+
+        msg = OccupancyGrid()
+        msg.header = Header()
+        msg.header.stamp = rospy.Time.now()
+        msg.header.frame_id = "map"
+
+        msg.info.resolution = self.resolution
+        msg.info.width = self.grid_map.grid_size
+        msg.info.height = self.grid_map.grid_size
+
+        # map origin (left-bottom corner)
+        msg.info.origin.position.x = -self.grid_map.size / 2.0
+        msg.info.origin.position.y = -self.grid_map.size / 2.0
+        msg.info.origin.position.z = 0.0
+
+        # OccupancyGrid 要求 int8 [-1,100]
+        # 我们把 EDT (m) → cm → clip 到 [0,100]
+        edt = self.grid_map.edt_map
+        data = []
+
+        for y in range(self.grid_map.grid_size):
+            for x in range(self.grid_map.grid_size):
+                d = edt[x, y]
+                if d <= 0.0:
+                    v = 0
+                else:
+                    v = int(min(d * 100.0, 100.0))
+                data.append(v)
+
+        msg.data = data
+        self.edt_map_pub.publish(msg)
+
     
     def publish_waypoint(self, real_waypoint):
         """
@@ -150,7 +231,6 @@ class UAVNavigator:
         self.map_update(free_expand=0)
         rospy.loginfo("[update_map_stateful] Continuous narrow LOS update (free_expand=0)")
 
-        
     def run(self):
         try:
             while not rospy.is_shutdown():
@@ -161,6 +241,8 @@ class UAVNavigator:
                 # ========== 2. 更新 EDT 地图 ==========
                 # ⚠️ 注意：这是“重算 edt_map”，不是改 grid_map
                 self.grid_map.update_edt()
+                
+                self.publish_edt_map()
 
                 # ========== 3. 更新 A* 使用的地图 ==========
                 self.a_star.map_reconstruct(self.grid_map)
@@ -189,10 +271,16 @@ class UAVNavigator:
                     self.active_goal_real = self.grid_map.to_real(
                     self.active_goal_grid[0],
                     self.active_goal_grid[1])
+                    
+                    # 发布给 Bspline 优化节点
+                    self.publish_start_goal(
+                        self.start_real,
+                        self.active_goal_real
+                    )
 
 
                     # 发布给 EgoPlanner / move_base
-                    self.publish_waypoint(self.active_goal_real)
+                    # self.publish_waypoint(self.active_goal_real)
 
                     rospy.loginfo(
                         f"[Planner] Active goal grid={self.active_goal_grid}, "

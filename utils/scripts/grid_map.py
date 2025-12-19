@@ -167,8 +167,21 @@ class GridMap:
     def visualize(self, highlight_points=None, filename="grid"):
 
         ts = time.strftime("%Y%m%d_%H%M%S")
-        path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.png")
+        pic_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.png")
 
+        # ===== 保存矩阵路径 =====
+        npy_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.npy")
+        txt_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.txt")
+
+        # ===== 保存 grid_map 矩阵 =====
+        np.save(npy_path, self.grid_map)
+        np.savetxt(txt_path, self.grid_map, fmt="%d")
+
+        print(f"[GridMap] grid_map matrix saved:")
+        print(f"  - {npy_path}")
+        print(f"  - {txt_path}")
+
+        # ===== 可视化 =====
         plt.figure(figsize=(6, 6))
         plt.imshow(self.grid_map.T, cmap="gray_r", origin="lower")
 
@@ -176,17 +189,16 @@ class GridMap:
             xs = [p[0] for p in highlight_points]
             ys = [p[1] for p in highlight_points]
             plt.scatter(xs, ys, c="red", s=10)
-        
+
         plt.xticks(np.arange(-0.5, self.grid_size, 1), [])
         plt.yticks(np.arange(-0.5, self.grid_size, 1), [])
         plt.grid(color='black', linestyle='-', linewidth=0.5)
 
-
-        plt.grid(True, linewidth=0.3)
-        plt.savefig(path, dpi=200)
+        plt.savefig(pic_path, dpi=200)
         plt.close()
 
-        print("[GridMap] grid_map saved:", path)
+        print("[GridMap] grid_map image saved:", pic_path)
+
 
     def visualize_edt(self, highlight_points=None, filename="edt"):
         if self.edt_map is None:
@@ -194,8 +206,21 @@ class GridMap:
             return
 
         ts = time.strftime("%Y%m%d_%H%M%S")
-        path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.png")
+        pic_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.png")
 
+        # ===== 保存矩阵路径 =====
+        npy_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.npy")
+        txt_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.txt")
+
+        # ===== 保存 edt_map 矩阵 =====
+        np.save(npy_path, self.edt_map)
+        np.savetxt(txt_path, self.edt_map, fmt="%.4f")
+
+        print(f"[GridMap] edt_map matrix saved:")
+        print(f"  - {npy_path}")
+        print(f"  - {txt_path}")
+
+        # ===== 可视化 =====
         plt.figure(figsize=(6, 6))
         plt.imshow(self.edt_map.T, cmap="jet", origin="lower")
         plt.colorbar(label="distance to obstacle (m)")
@@ -205,10 +230,11 @@ class GridMap:
             ys = [p[1] for p in highlight_points]
             plt.scatter(xs, ys, c="red", s=10)
 
-        plt.savefig(path, dpi=200)
+        plt.savefig(pic_path, dpi=200)
         plt.close()
 
-        print("[GridMap] edt_map saved:", path)
+        print("[GridMap] edt_map image saved:", pic_path)
+
 
 
 # =====================================================

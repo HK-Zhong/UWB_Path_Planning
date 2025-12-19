@@ -1,3 +1,6 @@
 <launch>
-  <node pkg="utils" type="uav_navigator.py" name="uav_navigator" output="screen"> </node>
+
+  <!-- UAV 高层规划 -->
+  <node pkg="utils" type="uav_navigator.py" name="uav_navigator" output="screen" />
+
 </launch>
