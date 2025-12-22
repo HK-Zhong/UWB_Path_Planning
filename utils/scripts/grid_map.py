@@ -167,19 +167,20 @@ class GridMap:
     def visualize(self, highlight_points=None, filename="grid"):
 
         ts = time.strftime("%Y%m%d_%H%M%S")
-        pic_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.png")
+        pic_path = os.path.join(self.get_pic_dir(), "grid_map",f"{filename}_{ts}.png")
+
 
         # ===== 保存矩阵路径 =====
-        npy_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.npy")
-        txt_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.txt")
+        npy_path = os.path.join(self.get_pic_dir(), "grid_map",f"{filename}_{ts}.npy")
+        # txt_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.txt")
 
         # ===== 保存 grid_map 矩阵 =====
         np.save(npy_path, self.grid_map)
-        np.savetxt(txt_path, self.grid_map, fmt="%d")
+        # np.savetxt(txt_path, self.grid_map, fmt="%d")
 
         print(f"[GridMap] grid_map matrix saved:")
         print(f"  - {npy_path}")
-        print(f"  - {txt_path}")
+        # print(f"  - {txt_path}")
 
         # ===== 可视化 =====
         plt.figure(figsize=(6, 6))
@@ -206,19 +207,19 @@ class GridMap:
             return
 
         ts = time.strftime("%Y%m%d_%H%M%S")
-        pic_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.png")
+        pic_path = os.path.join(self.get_pic_dir(), "edt_map",f"{filename}_{ts}.png")
 
         # ===== 保存矩阵路径 =====
-        npy_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.npy")
-        txt_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.txt")
+        npy_path = os.path.join(self.get_pic_dir(), "edt_map",f"{filename}_{ts}.npy")
+        # txt_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.txt")
 
         # ===== 保存 edt_map 矩阵 =====
         np.save(npy_path, self.edt_map)
-        np.savetxt(txt_path, self.edt_map, fmt="%.4f")
+        # np.savetxt(txt_path, self.edt_map, fmt="%.4f")
 
         print(f"[GridMap] edt_map matrix saved:")
         print(f"  - {npy_path}")
-        print(f"  - {txt_path}")
+        # print(f"  - {txt_path}")
 
         # ===== 可视化 =====
         plt.figure(figsize=(6, 6))

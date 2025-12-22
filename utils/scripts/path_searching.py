@@ -22,7 +22,7 @@ class AStar:
         self.map = grid_map
 
         self.w_dist = 1.0
-        self.w_safe = 0.0
+        self.w_safe = 5.0
 
         self.edt_hard_min = edt_hard_min
 
@@ -129,6 +129,101 @@ class AStar:
     # =====================================================
     def map_reconstruct(self, grid_map: GridMap):
         self.map = grid_map
+    
+    def extract_first_window_ctrl_points(self, path, min_dist_m):
+        """
+        从 A* 路径中提取“第一段窗口”的 4 个 B-spline 控制点
+
+        控制点语义：
+            P0: 窗口起点
+            P1: 窗口 1/3 位置
+            P2: 窗口 2/3 位置
+            P3: 窗口终点
+
+        返回：
+            [(gx0, gy0), (gx1, gy1), (gx2, gy2), (gx3, gy3)]
+            若路径不足则返回 None
+        """
+
+        if not path or len(path) < 2:
+            return None
+
+        window_pts = [path[0]]
+        dist_acc = 0.0
+
+        # ============================
+        # 1. 收集第一段窗口路径点
+        # ============================
+        for i in range(1, len(path)):
+            p_prev = path[i - 1]
+            p_cur  = path[i]
+
+            step_dist = math.hypot(
+                (p_cur[0] - p_prev[0]) * self.map.resolution,
+                (p_cur[1] - p_prev[1]) * self.map.resolution
+            )
+
+            dist_acc += step_dist
+            window_pts.append(p_cur)
+
+            if dist_acc >= min_dist_m:
+                break
+
+        n = len(window_pts)
+
+        # ============================
+        # 2. 根据窗口长度生成 4 个点
+        # ============================
+
+        if n >= 4:
+            # 正常情况：直接按比例取
+            idx0 = 0
+            idx1 = n // 3
+            idx2 = (2 * n) // 3
+            idx3 = n - 1
+
+            return [
+                window_pts[idx0],
+                window_pts[idx1],
+                window_pts[idx2],
+                window_pts[idx3],
+            ]
+
+        elif n == 3:
+            # ⚠️ 少一个点 → 在中间再插一个
+            p0 = np.array(window_pts[0])
+            p1 = np.array(window_pts[1])
+            p2 = np.array(window_pts[2])
+
+            p01 = ((p0 + p1) / 2.0).astype(int)
+
+            return [
+                tuple(p0),
+                tuple(p01),
+                tuple(p1),
+                tuple(p2),
+            ]
+
+        elif n == 2:
+            # ⚠️ 只有两个点 → 均匀补两个
+            p0 = np.array(window_pts[0])
+            p1 = np.array(window_pts[1])
+
+            p13 = (2*p0 + p1) / 3.0
+            p23 = (p0 + 2*p1) / 3.0
+
+            return [
+                tuple(p0.astype(int)),
+                tuple(p13.astype(int)),
+                tuple(p23.astype(int)),
+                tuple(p1.astype(int)),
+            ]
+
+        else:
+            # n == 1 → 不足以规划
+            return None
+
+
 
     # =====================================================
     # 关键航点提取（防抖 + 平滑）
@@ -177,15 +272,5 @@ class AStar:
             waypoints.append(path[-1])
         elif not waypoints:
             waypoints.append(path[-1])
-
-        # ❗删除过近的第一个航点（防顿挫）
-        # if waypoints:
-        #     first = waypoints[0]
-        #     dist0 = math.hypot(
-        #         (first[0] - path[0][0]) * self.map.resolution,
-        #         (first[1] - path[0][1]) * self.map.resolution
-        #     )
-        #     if dist0 < 0.5 * min_dist_m:
-        #         waypoints.pop(0)
 
         return waypoints

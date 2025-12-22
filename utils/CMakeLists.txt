@@ -44,13 +44,11 @@ link_directories(${GAZEBO_LIBRARY_DIRS})
 add_definitions(${GAZEBO_CXX_FLAGS})
 
 
-add_executable(bspline_optimizer_node
-  src/bspline_optimizer_node.cpp
+add_executable(catmull_rom_optimizer_node
+  src/centripetal_catmull_rom_optimizer_node.cpp
 )
+target_link_libraries(catmull_rom_optimizer_node ${catkin_LIBRARIES})
 
-target_link_libraries(bspline_optimizer_node
-  ${catkin_LIBRARIES}
-)
 add_executable(test_start_goal_node
   src/test_start_goal_node.cpp
 )

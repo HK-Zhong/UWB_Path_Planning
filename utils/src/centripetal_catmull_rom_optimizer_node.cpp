@@ -1,0 +1,434 @@
+// ================================================================
+// centripetal_catmull_rom_optimizer_node.cpp
+//
+// 用 “Centripetal Catmull–Rom” 直接替换你现在的 Uniform B-spline 插值。
+// 输入：
+//   - /bspline/ctrl_points   (geometry_msgs/PoseArray)  控制点序列（>=2）
+//   - /bspline/edt_map       (nav_msgs/OccupancyGrid)   EDT 地图（data里存“格数”，edt = data * res）
+// 输出：
+//   - /ardrone_1/command/pose (geometry_msgs/PoseStamped) 位置+姿态指令（50Hz）
+//
+// 特点：
+//   - 必过给定点（插值），第一个点/最后一个点必过
+//   - 采用 Centripetal 参数化（α=0.5），显著减少过冲
+//   - yaw “超前飞”：朝向前视点
+//   - 轨迹采样检查 EDT >= edt_hard_min
+//   - 收到新控制点：若当前正在执行轨迹，则默认忽略（防抖）
+// ================================================================
+
+#include <ros/ros.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/PoseArray.h>
+#include <nav_msgs/OccupancyGrid.h>
+
+#include <Eigen/Dense>
+#include <vector>
+#include <cmath>
+#include <memory>
+#include <limits>
+#include <algorithm>
+
+#include <tf/tf.h>
+
+// ----------------------- 参数 -----------------------
+static constexpr double CMD_DT    = 0.02;  // 50 Hz 发布
+static constexpr double SAMPLE_DT = 0.05;  // 安全检查采样
+static constexpr double EPS       = 1e-6;
+
+// ================================================================
+// 1) Centripetal Catmull–Rom 样条（插值曲线）
+//    - 输入：一串点 P0..Pn
+//    - 输出：按弧长-ish 参数 s ∈ [0, total] 计算位置
+//
+// 注意：Catmull–Rom 常用 4 点定义一段曲线：
+//   段 i 表示从 Pi 到 P(i+1)，需要用 P(i-1), Pi, P(i+1), P(i+2)
+// 边界处理：端点处通过“复制端点”扩展。
+// 参数化：centripetal => α=0.5
+//   t0=0
+//   t1=t0+|P1-P0|^α
+//   t2=t1+|P2-P1|^α
+//   t3=t2+|P3-P2|^α
+// ================================================================
+class CentripetalCatmullRom
+{
+public:
+  explicit CentripetalCatmullRom(std::vector<Eigen::Vector3d> pts, double alpha = 0.5)
+    : pts_(std::move(pts)), alpha_(alpha)
+  {
+    // 至少 2 个点才有意义；少于 2 个点就退化
+    if (pts_.size() < 2) return;
+
+    // 预计算每段的“参数长度”（用 centripetal 的 t2-t1 近似段时长）
+    // 这里把整条曲线参数 s 定义为各段 (t2 - t1) 的累加
+    buildSegmentParams();
+  }
+
+  bool valid() const { return pts_.size() >= 2 && !seg_s_.empty(); }
+
+  // 返回整体“参数长度”（相当于 duration，但不是时间）
+  double totalS() const
+  {
+    if (seg_prefix_.empty()) return 0.0;
+    return seg_prefix_.back();
+  }
+
+  // 在 s∈[0,totalS] 上求位置
+  Eigen::Vector3d evaluate(double s) const
+  {
+    if (pts_.empty()) return Eigen::Vector3d::Zero();
+    if (pts_.size() == 1) return pts_.front();
+    if (seg_s_.empty()) return pts_.front();
+
+    double S = totalS();
+    if (S <= EPS) return pts_.front();
+
+    // clamp
+    s = std::min(std::max(s, 0.0), S);
+
+    // 找段：seg i 对应 [prefix(i), prefix(i+1))
+    int i = findSegment(s);
+    double s0 = (i == 0) ? 0.0 : seg_prefix_[i - 1];
+    double ds = seg_s_[i];
+    double u  = (ds > EPS) ? (s - s0) / ds : 0.0; // u∈[0,1]
+
+    return evalSegment(i, u);
+  }
+
+private:
+  // 构建段参数：seg_s_[i] ~ (t2 - t1)
+  void buildSegmentParams()
+  {
+    // 段数 = n-1（从 P0->P1, P1->P2, ...）
+    int n = static_cast<int>(pts_.size());
+    int segN = n - 1;
+
+    seg_s_.assign(segN, 0.0);
+    seg_prefix_.assign(segN, 0.0);
+
+    double acc = 0.0;
+    for (int i = 0; i < segN; ++i)
+    {
+      // 取段 i 的四个点：P(i-1), Pi, P(i+1), P(i+2)（越界用端点复制）
+      Eigen::Vector3d P0 = pts_[std::max(i - 1, 0)];
+      Eigen::Vector3d P1 = pts_[i];
+      Eigen::Vector3d P2 = pts_[i + 1];
+      Eigen::Vector3d P3 = pts_[std::min(i + 2, n - 1)];
+
+      // centripetal 参数化的 t 序列
+      double t0 = 0.0;
+      double t1 = t0 + tj(P0, P1);
+      double t2 = t1 + tj(P1, P2);
+      double t3 = t2 + tj(P2, P3);
+
+      double ds = (t2 - t1);
+      if (ds < EPS) ds = 1.0; // 避免零长度段
+
+      seg_s_[i] = ds;
+      acc += ds;
+      seg_prefix_[i] = acc;
+    }
+  }
+
+  // tj = |Pi - Pj|^α
+  double tj(const Eigen::Vector3d& a, const Eigen::Vector3d& b) const
+  {
+    double d = (b - a).norm();
+    // centripetal α=0.5 => sqrt(d)
+    return std::pow(std::max(d, 0.0), alpha_);
+  }
+
+  int findSegment(double s) const
+  {
+    // seg_prefix_[i] = sum_{k<=i} seg_s_[k]
+    // 找最小 i 使 prefix[i] >= s
+    auto it = std::lower_bound(seg_prefix_.begin(), seg_prefix_.end(), s);
+    int i = static_cast<int>(std::distance(seg_prefix_.begin(), it));
+    if (i < 0) i = 0;
+    if (i >= static_cast<int>(seg_s_.size())) i = static_cast<int>(seg_s_.size()) - 1;
+    return i;
+  }
+
+  // 计算某一段 i（Pi->P(i+1)）在 u∈[0,1] 的位置
+  Eigen::Vector3d evalSegment(int i, double u) const
+  {
+    int n = static_cast<int>(pts_.size());
+
+    Eigen::Vector3d P0 = pts_[std::max(i - 1, 0)];
+    Eigen::Vector3d P1 = pts_[i];
+    Eigen::Vector3d P2 = pts_[i + 1];
+    Eigen::Vector3d P3 = pts_[std::min(i + 2, n - 1)];
+
+    // centripetal 参数化
+    double t0 = 0.0;
+    double t1 = t0 + tj(P0, P1);
+    double t2 = t1 + tj(P1, P2);
+    double t3 = t2 + tj(P2, P3);
+
+    // 该段的实际参数 t ∈ [t1, t2]
+    double t = (1.0 - u) * t1 + u * t2;
+
+    // 按 Catmull–Rom 的“递推线性插值”公式：
+    // A1 = (t1-t)/(t1-t0)*P0 + (t-t0)/(t1-t0)*P1
+    // A2 = (t2-t)/(t2-t1)*P1 + (t-t1)/(t2-t1)*P2
+    // A3 = (t3-t)/(t3-t2)*P2 + (t-t2)/(t3-t2)*P3
+    // B1 = (t2-t)/(t2-t0)*A1 + (t-t0)/(t2-t0)*A2
+    // B2 = (t3-t)/(t3-t1)*A2 + (t-t1)/(t3-t1)*A3
+    // C  = (t2-t)/(t2-t1)*B1 + (t-t1)/(t2-t1)*B2
+    Eigen::Vector3d A1 = lerpSafe(P0, P1, t0, t1, t);
+    Eigen::Vector3d A2 = lerpSafe(P1, P2, t1, t2, t);
+    Eigen::Vector3d A3 = lerpSafe(P2, P3, t2, t3, t);
+
+    Eigen::Vector3d B1 = lerpSafe(A1, A2, t0, t2, t);
+    Eigen::Vector3d B2 = lerpSafe(A2, A3, t1, t3, t);
+
+    Eigen::Vector3d C  = lerpSafe(B1, B2, t1, t2, t);
+
+    return C;
+  }
+
+  // 在区间 [ta,tb] 上按参数 t 做线性插值，处理除零
+  static Eigen::Vector3d lerpSafe(const Eigen::Vector3d& Pa,
+                                  const Eigen::Vector3d& Pb,
+                                  double ta, double tb, double t)
+  {
+    double denom = (tb - ta);
+    if (std::fabs(denom) < EPS) return Pa;
+    double w = (t - ta) / denom;
+    return (1.0 - w) * Pa + w * Pb;
+  }
+
+private:
+  std::vector<Eigen::Vector3d> pts_;
+  double alpha_;
+
+  std::vector<double> seg_s_;      // 每段参数长度
+  std::vector<double> seg_prefix_; // 前缀和（累计到该段末尾）
+};
+
+// ================================================================
+// 2) ROS Node：订阅控制点 + EDT，发布姿态指令
+// ================================================================
+class CatmullRomOptimizerNode
+{
+public:
+  CatmullRomOptimizerNode()
+  {
+    ros::NodeHandle pnh("~");
+    ros::NodeHandle nh;
+
+    // ---- 参数 ----
+    pnh.param("edt_hard_min",    edt_hard_min_,    0.5);
+    pnh.param("yaw_lookahead_s", yaw_lookahead_s_, 0.20); // 在曲线参数 s 上的前视量
+    pnh.param("speed_s_per_sec", speed_s_per_sec_, 2.0);  // s 参数推进速度（越大飞得越快）
+    pnh.param("ignore_while_exec", ignore_while_exec_, true);
+
+    // ---- 订阅控制点序列（>=2） ----
+    ctrl_pts_sub_ = nh.subscribe(
+        "/bspline/ctrl_points", 1,
+        &CatmullRomOptimizerNode::ctrlPointsCallback, this);
+
+    // ---- 订阅 EDT ----
+    edt_sub_ = nh.subscribe(
+        "/bspline/edt_map", 1,
+        &CatmullRomOptimizerNode::edtCallback, this);
+
+    // ---- 发布无人机指令 ----
+    cmd_pub_ = nh.advertise<geometry_msgs::PoseStamped>(
+        "/ardrone_1/command/pose", 10);
+
+    // ---- 定时器 ----
+    timer_ = nh.createTimer(
+        ros::Duration(CMD_DT),
+        &CatmullRomOptimizerNode::cmdTimer, this);
+
+    ROS_INFO("[catmull_rom_optimizer] Ready. edt_hard_min=%.3f, speed_s_per_sec=%.2f",
+             edt_hard_min_, speed_s_per_sec_);
+  }
+
+private:
+  void edtCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg)
+  {
+    edt_map_ = *msg;
+    has_edt_ = true;
+  }
+
+  void ctrlPointsCallback(const geometry_msgs::PoseArray::ConstPtr& msg)
+  {
+    if (msg->poses.size() < 2)
+    {
+      ROS_WARN("[catmull] Need >=2 points.");
+      return;
+    }
+    if (ignore_while_exec_ && executing_)
+    {
+      ROS_WARN("[catmull] Executing, ignore new points.");
+      return;
+    }
+    if (!has_edt_)
+    {
+      ROS_WARN("[catmull] No EDT yet.");
+      return;
+    }
+
+    std::vector<Eigen::Vector3d> pts;
+    pts.reserve(msg->poses.size());
+    for (const auto& p : msg->poses)
+    {
+      pts.emplace_back(p.position.x, p.position.y, p.position.z);
+    }
+
+    // 构造 centripetal Catmull–Rom（α=0.5）
+    auto cand = std::make_unique<CentripetalCatmullRom>(pts, 0.5);
+    if (!cand->valid() || cand->totalS() <= EPS)
+    {
+      ROS_WARN("[catmull] Curve invalid.");
+      return;
+    }
+
+    // 安全性检查
+    if (!checkCurveSafety(*cand))
+    {
+      ROS_WARN("[catmull] Curve violates EDT constraint.");
+      return;
+    }
+
+    curve_ = std::move(cand);
+    start_time_ = ros::Time::now();
+    executing_ = true;
+
+    ROS_INFO("[catmull] Curve accepted. points=%zu, totalS=%.3f",
+             pts.size(), curve_->totalS());
+  }
+
+  bool checkCurveSafety(const CentripetalCatmullRom& c)
+  {
+    const double S = c.totalS();
+    if (S <= EPS) return false;
+
+    // 用 s 参数均匀采样
+    // 若你希望更严，可把步长改小一些
+    const double ds = std::max(0.05, speed_s_per_sec_ * SAMPLE_DT);
+
+    for (double s = 0.0; s <= S + 1e-9; s += ds)
+    {
+      Eigen::Vector3d p = c.evaluate(s);
+      if (!isSafeByEDT(p.x(), p.y()))
+        return false;
+    }
+    return true;
+  }
+
+  bool isSafeByEDT(double x, double y) const
+  {
+    // 世界坐标 -> 栅格
+    int gx = int((x - edt_map_.info.origin.position.x) / edt_map_.info.resolution);
+    int gy = int((y - edt_map_.info.origin.position.y) / edt_map_.info.resolution);
+
+    if (gx < 0 || gy < 0 ||
+        gx >= (int)edt_map_.info.width ||
+        gy >= (int)edt_map_.info.height)
+      return false;
+
+    int idx = gy * edt_map_.info.width + gx;
+
+    // 你的 EDT 发布逻辑假设：data里存“格数”
+    // edt(m) = data * resolution
+    double edt = double(edt_map_.data[idx]) * edt_map_.info.resolution;
+
+    return edt >= edt_hard_min_;
+  }
+
+  double computeYawLookAhead(double s_now) const
+  {
+    if (!curve_) return last_yaw_;
+
+    double s2 = std::min(s_now + yaw_lookahead_s_, curve_->totalS());
+    Eigen::Vector3d p0 = curve_->evaluate(s_now);
+    Eigen::Vector3d p1 = curve_->evaluate(s2);
+
+    Eigen::Vector2d d = (p1 - p0).head<2>();
+    if (d.norm() < 1e-3) return last_yaw_;
+
+    return std::atan2(d.y(), d.x());
+  }
+
+  void cmdTimer(const ros::TimerEvent&)
+  {
+    if (!executing_ || !curve_) return;
+
+    ros::Time now = ros::Time::now();
+    double t = (now - start_time_).toSec();
+
+    // s 参数按“速度”推进：s = v_s * t
+    double s = speed_s_per_sec_ * t;
+    double S = curve_->totalS();
+
+    if (s >= S)
+    {
+      s = S;
+      executing_ = false; // 到终点就停止接受新点（或你也可以在这里悬停继续发布）
+    }
+
+    Eigen::Vector3d p = curve_->evaluate(s);
+
+    // 如果运行中遇到不安全（地图更新导致）——可选择紧急停止
+    if (has_edt_ && !isSafeByEDT(p.x(), p.y()))
+    {
+      ROS_ERROR("[catmull] Unsafe point encountered during execution! Stop.");
+      executing_ = false;
+      return;
+    }
+
+    double yaw = computeYawLookAhead(s);
+    last_yaw_ = yaw;
+
+    tf::Quaternion q;
+    q.setRPY(0.0, 0.0, yaw);
+
+    geometry_msgs::PoseStamped cmd;
+    cmd.header.stamp = now;
+    cmd.header.frame_id = "map";
+    cmd.pose.position.x = p.x();
+    cmd.pose.position.y = p.y();
+    cmd.pose.position.z = p.z();
+    cmd.pose.orientation.x = q.x();
+    cmd.pose.orientation.y = q.y();
+    cmd.pose.orientation.z = q.z();
+    cmd.pose.orientation.w = q.w();
+
+    cmd_pub_.publish(cmd);
+  }
+
+private:
+  // ROS
+  ros::Subscriber ctrl_pts_sub_;
+  ros::Subscriber edt_sub_;
+  ros::Publisher  cmd_pub_;
+  ros::Timer      timer_;
+
+  // EDT
+  nav_msgs::OccupancyGrid edt_map_;
+  bool has_edt_ = false;
+
+  // 曲线
+  std::unique_ptr<CentripetalCatmullRom> curve_;
+  ros::Time start_time_;
+  bool executing_ = false;
+
+  // 参数
+  double edt_hard_min_ = 0.5;
+  double yaw_lookahead_s_ = 0.2;
+  double speed_s_per_sec_ = 2.0;
+  bool   ignore_while_exec_ = true;
+
+  // yaw
+  double last_yaw_ = 0.0;
+};
+
+int main(int argc, char** argv)
+{
+  ros::init(argc, argv, "centripetal_catmull_rom_optimizer_node");
+  CatmullRomOptimizerNode node;
+  ros::spin();
+  return 0;
+}

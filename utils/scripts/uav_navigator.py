@@ -19,7 +19,7 @@ class UAVNavigator:
     def __init__(self):
         """ 初始化 ROS 订阅并执行路径规划 """
         
-        rospy.init_node("uav_path_planner", anonymous=True)
+        rospy.init_node("uav_navigator", anonymous=True)
         
         self.resolution = 0.5  # 栅格分辨率（米）
         
@@ -40,16 +40,23 @@ class UAVNavigator:
 
         # 订阅UWB传感器数据
         rospy.Subscriber("/los_status_json", String, self.los_callback)
-        self.start_goal_pub = rospy.Publisher(
-            "/bspline/start_goal",
+        self.bspline_ctrl_pub = rospy.Publisher(
+            "/bspline/ctrl_points",
             PoseArray,
             queue_size=1
-            )
+        )
+
         self.edt_map_pub = rospy.Publisher(
             "/bspline/edt_map",
             OccupancyGrid,
             queue_size=1,
             latch=True
+        )
+        
+        self.goal_pub = rospy.Publisher(
+            "/ardrone_1/command/pose",
+            PoseStamped,
+            queue_size=10
         )
 
         self.rate = rospy.Rate(2)  # 控制更新频率
@@ -81,6 +88,7 @@ class UAVNavigator:
         dy = self.current_position[1] - y
         # dz = self.current_position.position.z - z
         distance = math.sqrt(dx**2 + dy**2)
+        rospy.loginfo(f"current position: {self.current_position}, goal position: ({x}, {y}), Distance to goal: {distance}")
 
         return distance < self.tolerance  # 如果距离小于设定的阈值，则认为到达
 
@@ -178,6 +186,39 @@ class UAVNavigator:
         msg.data = data
         self.edt_map_pub.publish(msg)
 
+    def publish_bspline_ctrl_points(self, ctrl_pts_real):
+        """
+        发布给 Bspline 优化节点的 4 个控制点（cubic B-spline）
+
+        ctrl_pts_real: [(x0,y0), (x1,y1), (x2,y2), (x3,y3)]
+        """
+
+        # ======== 安全检查 ========
+        if ctrl_pts_real is None or len(ctrl_pts_real) < 4:
+            rospy.logwarn(
+                "[uav_navigator] ctrl_pts_real invalid (<4), skip publish."
+            )
+            return
+
+        msg = PoseArray()
+        msg.header.stamp = rospy.Time.now()
+        msg.header.frame_id = "map"
+
+        # ======== 按顺序填入 4 个控制点 ========
+        for i, pt in enumerate(ctrl_pts_real[:4]):
+            p = Pose()
+            p.position.x = pt[0]
+            p.position.y = pt[1]
+            p.position.z = 1.0
+            msg.poses.append(p)
+
+        # 发布
+        self.bspline_ctrl_pub.publish(msg)
+
+        rospy.loginfo(
+            "[uav_navigator] Publish B-spline ctrl points: "
+            f"{ctrl_pts_real[:4]}"
+        )
     
     def publish_waypoint(self, real_waypoint):
         """
@@ -252,38 +293,52 @@ class UAVNavigator:
                 # =================================================
                 if self.active_goal_real is None and self.need_replan:
 
-                    rospy.loginfo("[Planner] Replanning...")
+                    rospy.loginfo("[Navigator] Replanning...")
 
-                    path = self.find_path(self.start_real, self.goal_real)
-                    if not path:
-                        rospy.logwarn("No path found.")
+                    grid_path = self.find_path(self.start_real, self.goal_real)
+                    if not grid_path:
+                        rospy.logwarn("[Navigator] No path found.")
                         self.rate.sleep()
                         continue
-
-                    key_waypoints = self.a_star.extract_key_waypoints(path)
-                    if not key_waypoints:
-                        rospy.logwarn("No key waypoints.")
-                        self.rate.sleep()
-                        continue
-
-                    # 只取第一个关键航点作为执行目标
-                    self.active_goal_grid = key_waypoints[0]
-                    self.active_goal_real = self.grid_map.to_real(
-                    self.active_goal_grid[0],
-                    self.active_goal_grid[1])
                     
-                    # 发布给 Bspline 优化节点
-                    self.publish_start_goal(
-                        self.start_real,
-                        self.active_goal_real
+                    # 2. 提取“第一段窗口”的 4 个控制点（栅格）
+                    ctrl_pts_grid = self.a_star.extract_first_window_ctrl_points(
+                        path=grid_path, 
+                        min_dist_m=2.0
                     )
+                    
+                    if not ctrl_pts_grid or len(ctrl_pts_grid) < 4:
+                        rospy.logwarn("[Navigator] Failed to extract B-spline control points. Directly flying to goal.")
+                        
+                        self.active_goal_grid = grid_path[-1]
+                        self.active_goal_real = self.grid_map.to_real(
+                            self.active_goal_grid[0],
+                            self.active_goal_grid[1]
+                            )
+                        self.publish_waypoint(self.active_goal_real)
+                        rospy.loginfo(
+                        f"[Navigator] Active goal grid={self.active_goal_grid}, "
+                        f"real={self.active_goal_real}")
+                        self.rate.sleep()
+                        continue
+
+                    # 3. 栅格 → 真实坐标
+                    ctrl_pts_real = [
+                        self.grid_map.to_real(gx, gy)
+                        for gx, gy in ctrl_pts_grid
+                    ]
+                    
+                    self.active_goal_real = ctrl_pts_real[-1]
+                    self.active_goal_grid = ctrl_pts_grid[-1]
+                    
+                    self.publish_bspline_ctrl_points(ctrl_pts_real)
 
 
                     # 发布给 EgoPlanner / move_base
                     # self.publish_waypoint(self.active_goal_real)
 
                     rospy.loginfo(
-                        f"[Planner] Active goal grid={self.active_goal_grid}, "
+                        f"[Navigator] Active goal grid={self.active_goal_grid}, "
                         f"real={self.active_goal_real}")
 
                     self.need_replan = False
@@ -292,13 +347,13 @@ class UAVNavigator:
                 # 状态 B：正在飞 → 只判断是否到达
                 # =================================================
                 elif self.active_goal_real is not None:
-
+                    rospy.loginfo("[Navigator] flying ...")
                     if self.has_reached_goal(
                         self.active_goal_real[0],
                         self.active_goal_real[1],
                         1.0
                     ):
-                        rospy.loginfo("[Planner] Active goal reached.")
+                        rospy.loginfo("[Navigator] Active goal reached.")
 
                         # 规划起点前移（✔️ 正确的位置）
                         self.start_real = self.active_goal_real
