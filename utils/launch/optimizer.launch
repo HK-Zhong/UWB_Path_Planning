@@ -1,7 +1,7 @@
 <launch>
   <node pkg="utils" type="catmull_rom_optimizer_node" name="catmull_rom_optimizer_node" output="screen">
     <param name="edt_hard_min" value="0.71" />
-    <param name="speed_s_per_sec" value="2.0" />
+    <param name="speed_s_per_sec" value="1.8" />
     <param name="yaw_lookahead_s" value="0.3" />
     <param name="ignore_while_exec" value="true" />
   </node>

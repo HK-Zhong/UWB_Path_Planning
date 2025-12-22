@@ -28,7 +28,7 @@ class UAVNavigator:
         self.grid_map.map_init()
         self.a_star = AStar(self.grid_map, edt_hard_min=self.resolution * 1.5)
         
-        self.goal_real = (0, 15)  # 目标位置
+        self.goal_real = (18, 5)  # 目标位置
         self.current_position = (-15.0, -15.0)  # 记录无人机当前位置
         self.start_real = self.current_position # A*规划起始位置（上一次规划的目标位置）,初始为当前无人机位置
         self.los_data = []  # 存储LOS状态
@@ -88,7 +88,7 @@ class UAVNavigator:
         dy = self.current_position[1] - y
         # dz = self.current_position.position.z - z
         distance = math.sqrt(dx**2 + dy**2)
-        rospy.loginfo(f"current position: {self.current_position}, goal position: ({x}, {y}), Distance to goal: {distance}")
+        # rospy.loginfo(f"current position: {self.current_position}, goal position: ({x}, {y}), Distance to goal: {distance}")
 
         return distance < self.tolerance  # 如果距离小于设定的阈值，则认为到达
 
@@ -315,6 +315,7 @@ class UAVNavigator:
                             self.active_goal_grid[0],
                             self.active_goal_grid[1]
                             )
+                        
                         self.publish_waypoint(self.active_goal_real)
                         rospy.loginfo(
                         f"[Navigator] Active goal grid={self.active_goal_grid}, "
