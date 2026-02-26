@@ -6,17 +6,18 @@ from geometry_msgs.msg import Point, PointStamped
 from std_msgs.msg import String
 import yaml
 
+
 class LOSDetector:
     def __init__(self, rate):
         """
         初始化 LOS 检测类，加载 UWB 锚点并订阅无人机位置。
         """
         rospy.init_node('los_detector')
-        
+
         self.uwb_anchors_file = '/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/UWB_Anchors.yml'
         self.drone_topic = '/ardrone_1/odometry_sensor1/position'
         self.current_drone_position = Point(0, 0, 0)  # 无人机当前位置
-        
+
         self.rate = rospy.Rate(rate)
 
         # 订阅无人机位置
@@ -27,7 +28,7 @@ class LOSDetector:
 
         # 获取 Gazebo 障碍物
         self.obstacles = self.get_obstacles_from_gazebo()
-        
+
         # 创建 ROS 发布者，发布 JSON 格式的消息
         self.los_pub = rospy.Publisher('/los_status_json', String, queue_size=10)
 
@@ -95,7 +96,7 @@ class LOSDetector:
             bounding_box = self.get_model_bounding_box(model)
             if bounding_box:
                 obstacles.append(bounding_box)
-                
+
         return obstacles
 
     def load_uwb_anchors(self):
@@ -124,12 +125,12 @@ class LOSDetector:
             采样点列表 (List[Point])
         """
         points = []
-        
+
         # 计算线段长度
         dx = end.x - start.x
         dy = end.y - start.y
         dz = end.z - start.z
-        length = math.sqrt(dx**2 + dy**2 + dz**2)
+        length = math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
 
         # 计算需要采样的点数
         num_samples = int(length // step_size)
@@ -183,7 +184,7 @@ class LOSDetector:
                 "id": anchor_id,
                 "LOS": has_los  # True 表示 LOS，False 表示 NLOS
             })
-        
+
         return los_results
 
     def run(self):
@@ -195,10 +196,11 @@ class LOSDetector:
             # 转换为 JSON 格式并发布
             los_json_msg = json.dumps(results)
             self.los_pub.publish(los_json_msg)
-            
+
             rospy.loginfo(los_json_msg)
-            
+
             self.rate.sleep()
+
 
 if __name__ == '__main__':
     try:

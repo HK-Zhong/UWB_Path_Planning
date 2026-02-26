@@ -6,7 +6,6 @@ import time
 import traceback
 import rospy
 
-
 from scipy.ndimage import distance_transform_edt
 
 
@@ -167,11 +166,10 @@ class GridMap:
     def visualize(self, highlight_points=None, filename="grid"):
 
         ts = time.strftime("%Y%m%d_%H%M%S")
-        pic_path = os.path.join(self.get_pic_dir(), "grid_map",f"{filename}_{ts}.png")
-
+        pic_path = os.path.join(self.get_pic_dir(), "grid_map", f"{filename}_{ts}.png")
 
         # ===== 保存矩阵路径 =====
-        npy_path = os.path.join(self.get_pic_dir(), "grid_map",f"{filename}_{ts}.npy")
+        npy_path = os.path.join(self.get_pic_dir(), "grid_map", f"{filename}_{ts}.npy")
         # txt_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.txt")
 
         # ===== 保存 grid_map 矩阵 =====
@@ -200,17 +198,16 @@ class GridMap:
 
         print("[GridMap] grid_map image saved:", pic_path)
 
-
     def visualize_edt(self, highlight_points=None, filename="edt"):
         if self.edt_map is None:
             print("[GridMap] edt_map empty, call update_edt() first.")
             return
 
         ts = time.strftime("%Y%m%d_%H%M%S")
-        pic_path = os.path.join(self.get_pic_dir(), "edt_map",f"{filename}_{ts}.png")
+        pic_path = os.path.join(self.get_pic_dir(), "edt_map", f"{filename}_{ts}.png")
 
         # ===== 保存矩阵路径 =====
-        npy_path = os.path.join(self.get_pic_dir(), "edt_map",f"{filename}_{ts}.npy")
+        npy_path = os.path.join(self.get_pic_dir(), "edt_map", f"{filename}_{ts}.npy")
         # txt_path = os.path.join(self.get_pic_dir(), f"{filename}_{ts}.txt")
 
         # ===== 保存 edt_map 矩阵 =====
@@ -235,7 +232,6 @@ class GridMap:
         plt.close()
 
         print("[GridMap] edt_map image saved:", pic_path)
-
 
 
 # =====================================================

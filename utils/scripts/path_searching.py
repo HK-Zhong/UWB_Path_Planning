@@ -18,7 +18,7 @@ class AStar:
     """
 
     def __init__(self, grid_map: GridMap, edt_hard_min=0.5):
-        
+
         self.map = grid_map
 
         self.w_dist = 1.0
@@ -27,7 +27,6 @@ class AStar:
         self.edt_hard_min = edt_hard_min
 
         self.safe_epsilon = 1e-3
-
 
     # =====================================================
     # Heuristic（几何距离，保持 admissible）
@@ -86,8 +85,8 @@ class AStar:
     def find_path(self, start_grid, goal_grid):
 
         if (
-            self.map.grid_map[start_grid] == 1
-            or self.map.grid_map[goal_grid] == 1
+                self.map.grid_map[start_grid] == 1
+                or self.map.grid_map[goal_grid] == 1
         ):
             return None
 
@@ -129,7 +128,7 @@ class AStar:
     # =====================================================
     def map_reconstruct(self, grid_map: GridMap):
         self.map = grid_map
-    
+
     def extract_first_window_ctrl_points(self, path, min_dist_m):
         """
         从 A* 路径中提取“第一段窗口”的 4 个 B-spline 控制点
@@ -156,7 +155,7 @@ class AStar:
         # ============================
         for i in range(1, len(path)):
             p_prev = path[i - 1]
-            p_cur  = path[i]
+            p_cur = path[i]
 
             step_dist = math.hypot(
                 (p_cur[0] - p_prev[0]) * self.map.resolution,
@@ -209,8 +208,8 @@ class AStar:
             p0 = np.array(window_pts[0])
             p1 = np.array(window_pts[1])
 
-            p13 = (2*p0 + p1) / 3.0
-            p23 = (p0 + 2*p1) / 3.0
+            p13 = (2 * p0 + p1) / 3.0
+            p23 = (p0 + 2 * p1) / 3.0
 
             return [
                 tuple(p0.astype(int)),
@@ -222,8 +221,6 @@ class AStar:
         else:
             # n == 1 → 不足以规划
             return None
-
-
 
     # =====================================================
     # 关键航点提取（防抖 + 平滑）
