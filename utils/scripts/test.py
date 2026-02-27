@@ -9,8 +9,8 @@ def main():
     # ===============================
     # 1. 读取保存的 numpy 数据
     # ===============================
-    grid_map_path = "grid_20251219_164314.npy"
-    edt_map_path  = "edt_20251219_164314.npy"
+    grid_map_path = "pics/grid_map/grid_20260226_212734.npy"
+    edt_map_path  = "pics/edt_map/edt_20260226_212734.npy"
 
     grid_map_np = np.load(grid_map_path)
     edt_map_np  = np.load(edt_map_path)
@@ -44,14 +44,14 @@ def main():
     # 4. 起点 & 终点（真实 → 栅格）
     # ===============================
     start = gm.to_grid(-15, -15)
-    goal  = gm.to_grid(0, 15)
+    goal  = gm.to_grid(18, 5)
 
     print("[TEST] start:", start, "goal:", goal)
 
     # ===============================
     # 5. 搜索路径
     # ===============================
-    path = astar.find_path(start, goal)
+    path = astar.plan(start, goal)
 
     if path is None:
         print("[TEST] ❌ No path found.")

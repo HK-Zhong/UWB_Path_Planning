@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))  # 添加当前脚�
 import rospy, json
 from std_msgs.msg import String
 from grid_map import GridMap
-from path_searching import AStar
+from path_searching import EDTAwareAStarPlanner
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, PoseArray, Pose
 import math
@@ -25,7 +25,7 @@ class UAVNavigator:
         # 初始化
         self.grid_map = GridMap(size=50, resolution=self.resolution)
         self.grid_map.map_init()
-        self.a_star = AStar(self.grid_map, edt_hard_min=self.resolution * 1.5)
+        self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=self.resolution * 1.5)
 
         self.goal_real = (18, 5)  # 目标位置
         self.current_position = (-15.0, -15.0)  # 记录无人机当前位置
@@ -97,53 +97,17 @@ class UAVNavigator:
         except json.JSONDecodeError as e:
             rospy.logerr(f"解析 JSON 失败: {e}")
 
-    def find_path(self, start_real, end_real):
+    def plan(self, start_real, end_real):
         """ 使用 A* 计算路径 """
         if not start_real or not end_real:
             return
         start_grid = self.grid_map.to_grid(start_real[0], start_real[1])
         end_grid = self.grid_map.to_grid(end_real[0], end_real[1])
 
-        return self.a_star.find_path(start_grid, end_grid)
+        return self.planner.plan(start_grid, end_grid)
 
     def map_update(self, free_expand):
         self.grid_map.map_update_by_los(self.current_position, self.los_data, free_expand=free_expand)
-
-    def publish_start_goal(self, start_real, goal_real):
-        """
-        发布给 Bspline 优化节点的 起点-终点
-        """
-
-        # ======== 必须的安全检查 ========
-        if start_real is None or goal_real is None:
-            rospy.logwarn(
-                "[uav_navigator] start_real or goal_real is None, skip publish."
-            )
-            return
-
-        msg = PoseArray()
-        msg.header.stamp = rospy.Time.now()
-        msg.header.frame_id = "map"
-
-        p_start = Pose()
-        p_start.position.x = start_real[0]
-        p_start.position.y = start_real[1]
-        p_start.position.z = 1.0
-
-        p_goal = Pose()
-        p_goal.position.x = goal_real[0]
-        p_goal.position.y = goal_real[1]
-        p_goal.position.z = 1.0
-
-        msg.poses.append(p_start)
-        msg.poses.append(p_goal)
-
-        self.start_goal_pub.publish(msg)
-
-        rospy.loginfo(
-            f"[uav_navigator] Publish start-goal: "
-            f"start={start_real}, goal={goal_real}"
-        )
 
     def publish_edt_map(self):
         """
@@ -285,7 +249,7 @@ class UAVNavigator:
                 self.publish_edt_map()
 
                 # ========== 3. 更新 A* 使用的地图 ==========
-                self.a_star.map_reconstruct(self.grid_map)
+                self.planner.map_reconstruct(self.grid_map)
 
                 # =================================================
                 # 状态 A：当前没有执行航点 → 允许重新规划
@@ -294,14 +258,14 @@ class UAVNavigator:
 
                     rospy.loginfo("[Navigator] Replanning...")
 
-                    grid_path = self.find_path(self.start_real, self.goal_real)
+                    grid_path = self.plan(self.start_real, self.goal_real)
                     if not grid_path:
                         rospy.logwarn("[Navigator] No path found.")
                         self.rate.sleep()
                         continue
 
                     # 2. 提取“第一段窗口”的 4 个控制点（栅格）
-                    ctrl_pts_grid = self.a_star.extract_first_window_ctrl_points(
+                    ctrl_pts_grid = self.planner.extract_first_window_ctrl_points(
                         path=grid_path,
                         min_dist_m=2.0
                     )

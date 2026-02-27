@@ -12,7 +12,7 @@ class LOSDetector:
         """
         初始化 LOS 检测类，加载 UWB 锚点并订阅无人机位置。
         """
-        rospy.init_node('los_detector')
+        rospy.init_node('los_detector', anonymous=True)
 
         self.uwb_anchors_file = '/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/UWB_Anchors.yml'
         self.drone_topic = '/ardrone_1/odometry_sensor1/position'
@@ -20,14 +20,24 @@ class LOSDetector:
 
         self.rate = rospy.Rate(rate)
 
+        self.step_size = rospy.get_param('~step_size', 0.2)
+        self.wait_pose_timeout = rospy.get_param('~wait_pose_timeout', 5.0)
+        self._have_pose = False
+
+        self._get_world_properties = None
+        self._get_model_state = None
+        self._init_gazebo_services()
+        try:
+            self.obstacles = self.get_obstacles_from_gazebo()
+        except Exception as e:
+            rospy.logwarn(f"[LOSDetector] Failed to get obstacles from Gazebo: {e}")
+            self.obstacles = []
+
         # 订阅无人机位置
         rospy.Subscriber(self.drone_topic, PointStamped, self.drone_position_callback)
 
         # 读取 UWB 锚点
         self.uwb_anchors = self.load_uwb_anchors()
-
-        # 获取 Gazebo 障碍物
-        self.obstacles = self.get_obstacles_from_gazebo()
 
         # 创建 ROS 发布者，发布 JSON 格式的消息
         self.los_pub = rospy.Publisher('/los_status_json', String, queue_size=10)
@@ -37,16 +47,32 @@ class LOSDetector:
         订阅无人机位置的回调函数，实时更新位置。
         """
         self.current_drone_position = msg.point
+        self._have_pose = True
+
+    def _init_gazebo_services(self):
+        """Initialize Gazebo service proxies once to avoid repeated wait_for_service calls."""
+        try:
+            rospy.wait_for_service('/gazebo/get_world_properties', timeout=5.0)
+            rospy.wait_for_service('/gazebo/get_model_state', timeout=5.0)
+            self._get_world_properties = rospy.ServiceProxy('/gazebo/get_world_properties', GetWorldProperties)
+            self._get_model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+            return True
+        except (rospy.ROSException, rospy.ServiceException) as e:
+            rospy.logwarn(f"[LOSDetector] Gazebo services not ready: {e}")
+            self._get_world_properties = None
+            self._get_model_state = None
+            return False
 
     def get_all_models(self):
         """
         获取 Gazebo 仿真环境中的所有模型名称。
         """
-        rospy.wait_for_service('/gazebo/get_world_properties')
+        if self._get_world_properties is None:
+            if not self._init_gazebo_services():
+                return []
         try:
-            get_world_properties = rospy.ServiceProxy('/gazebo/get_world_properties', GetWorldProperties)
-            response = get_world_properties()
-            rospy.loginfo(f"model names: {response.model_names}")
+            response = self._get_world_properties()
+            rospy.loginfo_throttle(10.0, f"model names: {response.model_names}")
             return response.model_names
         except rospy.ServiceException as e:
             rospy.logerr(f"Failed to call get_world_properties service: {e}")
@@ -56,10 +82,12 @@ class LOSDetector:
         """
         获取模型的三维位置信息，假设每个模型是一个立体障碍物，返回 Bounding Box 的 8 个顶点。
         """
-        rospy.wait_for_service('/gazebo/get_model_state')
+        if self._get_model_state is None:
+            if not self._init_gazebo_services():
+                return []
         try:
-            get_model_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
-            response = get_model_state(model_name, '')
+            response = self._get_model_state(model_name, '')
+            # Proceed even if response.success is False, but catch exceptions
             position = response.pose.position
             if model_name == "obstacle3":
                 size_x = 2
@@ -80,8 +108,8 @@ class LOSDetector:
                 Point(position.x + size_x, position.y + size_y, position.z + size_z),
                 Point(position.x - size_x, position.y + size_y, position.z + size_z)
             ]
-        except rospy.ServiceException as e:
-            rospy.logerr(f"Failed to call get_model_state service for {model_name}: {e}")
+        except Exception as e:
+            rospy.logerr(f"Failed to get bounding box for {model_name}: {e}")
             return []
 
     def get_obstacles_from_gazebo(self):
@@ -116,11 +144,11 @@ class LOSDetector:
 
     def sample_points(self, start, end, step_size=0.2):
         """
-        按固定步长 0.5m 在起点和终点之间均匀采样。
+        按固定步长 0.2m 在起点和终点之间均匀采样。
         参数:
             start: 起点 (Point)
             end: 终点 (Point)
-            step_size: 采样步长 (默认为 0.5m)
+            step_size: 采样步长 (默认为 0.2m)
         返回:
             采样点列表 (List[Point])
         """
@@ -132,12 +160,13 @@ class LOSDetector:
         dz = end.z - start.z
         length = math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
 
-        # 计算需要采样的点数
-        num_samples = int(length // step_size)
+        if length < 1e-6:
+            return [Point(start.x, start.y, start.z), Point(end.x, end.y, end.z)]
 
-        # 生成等间距的点
+        num_samples = max(1, int(math.ceil(length / step_size)))
+
         for i in range(num_samples + 1):  # 包括终点
-            t = i * step_size / length if length > 0 else 0
+            t = float(i) / float(num_samples)
             x = start.x + t * dx
             y = start.y + t * dy
             z = start.z + t * dz
@@ -192,12 +221,21 @@ class LOSDetector:
         运行 LOS 检测循环，并持续输出结果。
         """
         while not rospy.is_shutdown():
-            results = self.check_los_to_anchors(step_size=0.2)
+            if not self._have_pose:
+                rospy.logwarn_throttle(5.0, "[LOSDetector] Waiting for drone position...")
+                self.rate.sleep()
+                continue
+            if not self.uwb_anchors:
+                rospy.logerr_throttle(5.0, "[LOSDetector] No UWB anchors loaded!")
+                self.rate.sleep()
+                continue
+
+            results = self.check_los_to_anchors(step_size=self.step_size)
             # 转换为 JSON 格式并发布
             los_json_msg = json.dumps(results)
             self.los_pub.publish(los_json_msg)
 
-            rospy.loginfo(los_json_msg)
+            rospy.loginfo_throttle(2.0, los_json_msg)
 
             self.rate.sleep()
 
