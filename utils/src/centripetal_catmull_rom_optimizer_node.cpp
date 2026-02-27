@@ -3,8 +3,8 @@
 //
 // 用 “Centripetal Catmull–Rom” 直接替换你现在的 Uniform B-spline 插值。
 // 输入：
-//   - /bspline/ctrl_points   (geometry_msgs/PoseArray)  控制点序列（>=2）
-//   - /bspline/edt_map       (nav_msgs/OccupancyGrid)   EDT 地图（data里存“格数”，edt = data * res）
+//   - /optimizer/ctrl_points   (geometry_msgs/PoseArray)  控制点序列（>=2）
+//   - /optimizer/edt_map       (nav_msgs/OccupancyGrid)   EDT 地图（data: int8 [-1,100] -1未知；0..100为线性编码值
 // 输出：
 //   - /ardrone_1/command/pose (geometry_msgs/PoseStamped) 位置+姿态指令（50Hz）
 //
@@ -224,12 +224,12 @@ public:
 
     // ---- 订阅控制点序列（>=2） ----
     ctrl_pts_sub_ = nh.subscribe(
-        "/bspline/ctrl_points", 1,
+        "/optimizer/ctrl_points", 1,
         &CatmullRomOptimizerNode::ctrlPointsCallback, this);
 
     // ---- 订阅 EDT ----
     edt_sub_ = nh.subscribe(
-        "/bspline/edt_map", 1,
+        "/optimizer/edt_map", 1,
         &CatmullRomOptimizerNode::edtCallback, this);
 
     // ---- 发布无人机指令 ----
@@ -277,6 +277,67 @@ private:
       pts.emplace_back(p.position.x, p.position.y, p.position.z);
     }
 
+    // ===================== DEBUG LOG: start/end + EDT =====================
+    // 你现在发布的是 4 个控制点：我们把第一个点当起点，最后一个点当终点。
+    if (msg->poses.size() >= 4)
+    {
+      const Eigen::Vector3d &p_start = pts.front();
+      const Eigen::Vector3d &p_goal  = pts.back();
+
+      double edt_s = 0.0, edt_g = 0.0;
+      int raw_s = -1, raw_g = -1;
+      int gsx = 0, gsy = 0, ggx = 0, ggy = 0;
+
+      bool ok_s = queryEDT(p_start.x(), p_start.y(), edt_s, raw_s, gsx, gsy);
+      bool ok_g = queryEDT(p_goal.x(),  p_goal.y(),  edt_g, raw_g, ggx, ggy);
+
+      if (ok_s)
+      {
+        ROS_WARN_STREAM("[DEBUG][CTRL_PTS] START pos=(" << p_start.x() << "," << p_start.y()
+                        << ") grid=(" << gsx << "," << gsy << ") raw_v=" << raw_s
+                        << " edt_m=" << edt_s << " thr=" << edt_hard_min_);
+      }
+      else
+      {
+        ROS_WARN_STREAM("[DEBUG][CTRL_PTS] START pos=(" << p_start.x() << "," << p_start.y()
+                        << ") EDT QUERY FAIL (out/unknown). raw_v=" << raw_s);
+      }
+
+      if (ok_g)
+      {
+        ROS_WARN_STREAM("[DEBUG][CTRL_PTS] GOAL  pos=(" << p_goal.x() << "," << p_goal.y()
+                        << ") grid=(" << ggx << "," << ggy << ") raw_v=" << raw_g
+                        << " edt_m=" << edt_g << " thr=" << edt_hard_min_);
+      }
+      else
+      {
+        ROS_WARN_STREAM("[DEBUG][CTRL_PTS] GOAL  pos=(" << p_goal.x() << "," << p_goal.y()
+                        << ") EDT QUERY FAIL (out/unknown). raw_v=" << raw_g);
+      }
+    }
+    else
+    {
+      // 兼容旧的 >=2 点输入：也打印首尾
+      const Eigen::Vector3d &p_start = pts.front();
+      const Eigen::Vector3d &p_goal  = pts.back();
+
+      double edt_s = 0.0, edt_g = 0.0;
+      int raw_s = -1, raw_g = -1;
+      int gsx = 0, gsy = 0, ggx = 0, ggy = 0;
+
+      bool ok_s = queryEDT(p_start.x(), p_start.y(), edt_s, raw_s, gsx, gsy);
+      bool ok_g = queryEDT(p_goal.x(),  p_goal.y(),  edt_g, raw_g, ggx, ggy);
+
+      ROS_WARN_STREAM("[DEBUG][CTRL_PTS] (legacy) pts=" << pts.size());
+      ROS_WARN_STREAM("[DEBUG][CTRL_PTS] START pos=(" << p_start.x() << "," << p_start.y()
+                      << ") grid=(" << gsx << "," << gsy << ") raw_v=" << raw_s
+                      << " edt_m=" << edt_s << " thr=" << edt_hard_min_ << " ok=" << ok_s);
+      ROS_WARN_STREAM("[DEBUG][CTRL_PTS] GOAL  pos=(" << p_goal.x() << "," << p_goal.y()
+                      << ") grid=(" << ggx << "," << ggy << ") raw_v=" << raw_g
+                      << " edt_m=" << edt_g << " thr=" << edt_hard_min_ << " ok=" << ok_g);
+    }
+    // ================================================================
+
     // 构造 centripetal Catmull–Rom（α=0.5）
     auto cand = std::make_unique<CentripetalCatmullRom>(pts, 0.5);
     if (!cand->valid() || cand->totalS() <= EPS)
@@ -300,12 +361,47 @@ private:
              pts.size(), curve_->totalS());
   }
 
+  // 查询某个世界坐标点的 EDT 值（米）。
+  // 返回 true 表示查询成功（在地图内且非 unknown），并把 edt_m 写入 out。
+  bool queryEDT(double x, double y, double &edt_m, int &raw_v, int &gx, int &gy) const
+  {
+    edt_m = 0.0;
+    raw_v = -1;
+
+    const double ox  = edt_map_.info.origin.position.x;
+    const double oy  = edt_map_.info.origin.position.y;
+    const double res = edt_map_.info.resolution;
+
+    gx = int((x - ox) / res);
+    gy = int((y - oy) / res);
+
+    if (gx < 0 || gy < 0 || gx >= (int)edt_map_.info.width || gy >= (int)edt_map_.info.height)
+      return false;
+
+    const int idx = gy * (int)edt_map_.info.width + gx;
+    raw_v = static_cast<int>(edt_map_.data[idx]);
+
+    // unknown
+    if (raw_v < 0)
+      return false;
+
+    // clamp [0,100]
+    const int v = std::min(100, std::max(0, raw_v));
+
+    // HARD-CODED max range to match Python encoder
+    constexpr double kMaxRangeM = 5.0;
+    constexpr double kMetersPerUnit = kMaxRangeM / 100.0; // 0.05m per unit
+
+    edt_m = static_cast<double>(v) * kMetersPerUnit;
+    return true;
+  }
+
   bool checkCurveSafety(const CentripetalCatmullRom& c)
   {
     const double S = c.totalS();
     if (S <= EPS) return false;
 
-    // 用 s 参数均匀采样
+    // 用 s 参数均匀采样（注意：s 是曲线参数，不是时间；这里只是做安全性覆盖采样）
     // 若你希望更严，可把步长改小一些
     const double ds = std::max(0.05, speed_s_per_sec_ * SAMPLE_DT);
 
@@ -313,7 +409,12 @@ private:
     {
       Eigen::Vector3d p = c.evaluate(s);
       if (!isSafeByEDT(p.x(), p.y()))
+      {
+        ROS_ERROR_STREAM("[catmull][SAFETY FAIL] s=" << s
+                         << " pos=(" << p.x() << "," << p.y() << ")"
+                         << " totalS=" << S);
         return false;
+      }
     }
     return true;
   }
@@ -321,21 +422,62 @@ private:
   bool isSafeByEDT(double x, double y) const
   {
     // 世界坐标 -> 栅格
-    int gx = int((x - edt_map_.info.origin.position.x) / edt_map_.info.resolution);
-    int gy = int((y - edt_map_.info.origin.position.y) / edt_map_.info.resolution);
+    const double ox = edt_map_.info.origin.position.x;
+    const double oy = edt_map_.info.origin.position.y;
+    const double res = edt_map_.info.resolution;
 
-    if (gx < 0 || gy < 0 ||
-        gx >= (int)edt_map_.info.width ||
-        gy >= (int)edt_map_.info.height)
+    int gx = int((x - ox) / res);
+    int gy = int((y - oy) / res);
+
+    if (gx < 0 || gy < 0 || gx >= (int)edt_map_.info.width || gy >= (int)edt_map_.info.height)
+    {
+      ROS_ERROR_STREAM("[catmull][EDT OUT OF MAP] pos=(" << x << "," << y
+                       << ") grid=(" << gx << "," << gy << ")"
+                       << " map_size=(" << edt_map_.info.width << "," << edt_map_.info.height << ")"
+                       << " origin=(" << ox << "," << oy << ") res=" << res);
       return false;
+    }
 
-    int idx = gy * edt_map_.info.width + gx;
+    const int idx = gy * (int)edt_map_.info.width + gx;
 
-    // 你的 EDT 发布逻辑假设：data里存“格数”
-    // edt(m) = data * resolution
-    double edt = double(edt_map_.data[idx]) * edt_map_.info.resolution;
+    // ===================== EDT decode (HARD-CODED to match Python) =====================
+    // Python publish_edt_map():
+    //   max_range_m = 5.0
+    //   scale = 100.0 / max_range_m
+    //   v = int(min(d * scale, 100.0))  where d is EDT in meters
+    // So decode is:
+    //   d(m) = v * (max_range_m / 100.0) = v * 0.05
+    // OccupancyGrid.data is int8 [-1,100]; -1 means unknown.
 
-    return edt >= edt_hard_min_;
+    const int raw_v = static_cast<int>(edt_map_.data[idx]);
+
+    // Unknown cell
+    if (raw_v < 0)
+    {
+      ROS_ERROR_STREAM("[catmull][EDT UNKNOWN] pos=(" << x << "," << y
+                       << ") grid=(" << gx << "," << gy << ") raw_v=" << raw_v);
+      return false;
+    }
+
+    // Clamp to [0,100]
+    const int v = std::min(100, std::max(0, raw_v));
+
+    // HARD-CODED max range to match Python encoder
+    constexpr double kMaxRangeM = 5.0;
+    constexpr double kMetersPerUnit = kMaxRangeM / 100.0; // 0.05m per unit
+
+    const double edt_m = static_cast<double>(v) * kMetersPerUnit;
+
+    if (edt_m < edt_hard_min_)
+    {
+      ROS_ERROR_STREAM("[catmull][EDT TOO SMALL] pos=(" << x << "," << y
+                       << ") grid=(" << gx << "," << gy << ") raw_v=" << raw_v
+                       << " v=" << v << " edt_m=" << edt_m
+                       << " threshold=" << edt_hard_min_);
+      return false;
+    }
+
+    return true;
   }
 
   double computeYawLookAhead(double s_now) const

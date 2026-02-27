@@ -39,14 +39,14 @@ class UAVNavigator:
 
         # 订阅UWB传感器数据
         rospy.Subscriber("/los_status_json", String, self.los_callback)
-        self.bspline_ctrl_pub = rospy.Publisher(
-            "/bspline/ctrl_points",
+        self.optimizer_ctrl_pub = rospy.Publisher(
+            "/optimizer/ctrl_points",
             PoseArray,
             queue_size=1
         )
 
         self.edt_map_pub = rospy.Publisher(
-            "/bspline/edt_map",
+            "/optimizer/edt_map",
             OccupancyGrid,
             queue_size=1,
             latch=True
@@ -133,25 +133,32 @@ class UAVNavigator:
         msg.info.origin.position.z = 0.0
 
         # OccupancyGrid 要求 int8 [-1,100]
-        # 我们把 EDT (m) → cm → clip 到 [0,100]
+        # 我们改为：把 EDT (m) 映射到一个可调上限 max_range_m → [0,100]
+        # 这样可以表达 >1m 的距离，而不是被强行截断到 1m
+
         edt = self.grid_map.edt_map
         data = []
+
+        max_range_m = 5.0  # 可调参数：最多表达 5m 的安全距离
+        scale = 100.0 / max_range_m  # 线性映射到 [0,100]
 
         for y in range(self.grid_map.grid_size):
             for x in range(self.grid_map.grid_size):
                 d = edt[x, y]
+
                 if d <= 0.0:
                     v = 0
                 else:
-                    v = int(min(d * 100.0, 100.0))
+                    v = int(min(d * scale, 100.0))
+
                 data.append(v)
 
         msg.data = data
         self.edt_map_pub.publish(msg)
 
-    def publish_bspline_ctrl_points(self, ctrl_pts_real):
+    def publish_optimizer_ctrl_points(self, ctrl_pts_real):
         """
-        发布给 Bspline 优化节点的 4 个控制点（cubic B-spline）
+        发布给 optimizer 优化节点的 4 个控制点（cubic B-spline）
 
         ctrl_pts_real: [(x0,y0), (x1,y1), (x2,y2), (x3,y3)]
         """
@@ -176,7 +183,7 @@ class UAVNavigator:
             msg.poses.append(p)
 
         # 发布
-        self.bspline_ctrl_pub.publish(msg)
+        self.optimizer_ctrl_pub.publish(msg)
 
         rospy.loginfo(
             "[uav_navigator] Publish B-spline ctrl points: "
@@ -246,6 +253,11 @@ class UAVNavigator:
                 # ⚠️ 注意：这是“重算 edt_map”，不是改 grid_map
                 self.grid_map.update_edt()
 
+                gx, gy = self.grid_map.to_grid(self.current_position[0], self.current_position[1])
+                rospy.logwarn(f"[DEBUG][AFTER EDT] start grid=({gx},{gy}) "
+                              f"grid_val={self.grid_map.grid_map[gx, gy]} "
+                              f"EDT(m)={self.grid_map.edt_map[gx, gy]}")
+
                 self.publish_edt_map()
 
                 # ========== 3. 更新 A* 使用的地图 ==========
@@ -295,7 +307,7 @@ class UAVNavigator:
                     self.active_goal_real = ctrl_pts_real[-1]
                     self.active_goal_grid = ctrl_pts_grid[-1]
 
-                    self.publish_bspline_ctrl_points(ctrl_pts_real)
+                    self.publish_optimizer_ctrl_points(ctrl_pts_real)
 
                     # 发布给 EgoPlanner / move_base
                     # self.publish_waypoint(self.active_goal_real)
