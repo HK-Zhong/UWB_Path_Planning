@@ -47,7 +47,25 @@ add_definitions(${GAZEBO_CXX_FLAGS})
 add_executable(catmull_rom_optimizer_node
   src/centripetal_catmull_rom_optimizer_node.cpp
 )
-target_link_libraries(catmull_rom_optimizer_node ${catkin_LIBRARIES})
+target_link_libraries(catmull_rom_optimizer_node
+  ${catkin_LIBRARIES}
+)
+
+add_executable(piecewise_cubic_spline_optimizer_node
+  src/piecewise_cubic_spline_optimizer_node.cpp
+)
+
+target_link_libraries(piecewise_cubic_spline_optimizer_node
+  ${catkin_LIBRARIES}
+)
+
+add_executable(minimum_snap_optimizer_node
+  src/minimum_snap_optimizer_node.cpp
+)
+
+target_link_libraries(minimum_snap_optimizer_node
+  ${catkin_LIBRARIES}
+)
 
 add_executable(test_start_goal_node
   src/test_start_goal_node.cpp
@@ -56,6 +74,7 @@ add_executable(test_start_goal_node
 target_link_libraries(test_start_goal_node
   ${catkin_LIBRARIES}
 )
+
 add_executable(test_edt_map_node
   src/test_edt_map_node.cpp
 )
@@ -67,7 +86,7 @@ target_link_libraries(test_edt_map_node
 catkin_install_python(PROGRAMS
   scripts/los_detect.py
   scripts/waypoint_publisher.py
-  scripts/test.py
+  scripts/path_searching_test.py
   scripts/uav_navigator.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

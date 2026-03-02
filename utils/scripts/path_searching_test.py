@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from grid_map import GridMap
-from path_searching import AStar
+from path_searching import EDTAwareAStarPlanner, GridAStarPlanner, DijkstraPlanner
 
 
 def main():
@@ -32,9 +32,9 @@ def main():
     # ===============================
     # 3. AStar
     # ===============================
-    astar = AStar(
+    astar = EDTAwareAStarPlanner(
         grid_map=gm,
-        edt_hard_min=resolution * 1.5
+        edt_hard_min=resolution
     )
 
     astar.w_dist = 1.0

@@ -350,3 +350,164 @@ class EDTAwareAStarPlanner(PlannerBase):
             current = came_from[current]
             path.append(current)
         return path[::-1]
+
+
+# ============================================================
+# Classic planners for comparison
+#   1) Grid A* (distance-only, no EDT / no turn penalty)
+#   2) Dijkstra (A* with zero heuristic)
+# ============================================================
+
+class GridAStarPlanner(PlannerBase):
+    """Classic grid A* (distance-only).
+
+    Hard constraints:
+      - grid_map == 1 is forbidden (unknown/obstacle)
+
+    Cost:
+      - 4/8-neighborhood move cost (1 or sqrt(2))
+      - heuristic: octile distance (admissible for 8-neighborhood)
+
+    This is a baseline to compare against EDT-aware A*.
+    """
+
+    def __init__(self, grid_map: GridMap, allow_diagonal: bool = True):
+        super().__init__(grid_map)
+        self.allow_diagonal = allow_diagonal
+
+    def heuristic(self, a, b):
+        dx = abs(a[0] - b[0])
+        dy = abs(a[1] - b[1])
+        # Octile distance (admissible for 8-connected grid)
+        return (dx + dy) + (math.sqrt(2) - 2) * min(dx, dy)
+
+    def get_neighbors(self, node):
+        x, y = node
+        if self.allow_diagonal:
+            directions = [
+                (-1, 0), (1, 0), (0, -1), (0, 1),
+                (-1, -1), (-1, 1), (1, -1), (1, 1),
+            ]
+        else:
+            directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+        neighbors = []
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if not (0 <= nx < self.map.grid_size and 0 <= ny < self.map.grid_size):
+                continue
+            if self.map.grid_map[nx, ny] == 1:
+                continue
+            move_cost = 1.0 if dx == 0 or dy == 0 else math.sqrt(2)
+            neighbors.append(((nx, ny), move_cost))
+        return neighbors
+
+    def plan(self, start_grid, goal_grid):
+        if self.map.grid_map[start_grid] == 1 or self.map.grid_map[goal_grid] == 1:
+            return None
+
+        open_set = []
+        heapq.heappush(open_set, (0.0, start_grid))
+
+        came_from = {}
+        g_score = {start_grid: 0.0}
+
+        while open_set:
+            _, current = heapq.heappop(open_set)
+
+            if current == goal_grid:
+                return self.reconstruct_path(came_from, current)
+
+            for neighbor, move_cost in self.get_neighbors(current):
+                tentative_g = g_score[current] + move_cost
+
+                if neighbor not in g_score or tentative_g < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g
+                    f_score = tentative_g + self.heuristic(neighbor, goal_grid)
+                    heapq.heappush(open_set, (f_score, neighbor))
+
+        return None
+
+    def reconstruct_path(self, came_from, current):
+        path = [current]
+        while current in came_from:
+            current = came_from[current]
+            path.append(current)
+        return path[::-1]
+
+
+class DijkstraPlanner(PlannerBase):
+    """Classic Dijkstra on grid (equivalent to A* with heuristic = 0).
+
+    Hard constraints:
+      - grid_map == 1 is forbidden (unknown/obstacle)
+
+    Cost:
+      - 4/8-neighborhood move cost (1 or sqrt(2))
+
+    This is a baseline to compare against A* variants.
+    """
+
+    def __init__(self, grid_map: GridMap, allow_diagonal: bool = True):
+        super().__init__(grid_map)
+        self.allow_diagonal = allow_diagonal
+
+    def get_neighbors(self, node):
+        x, y = node
+        if self.allow_diagonal:
+            directions = [
+                (-1, 0), (1, 0), (0, -1), (0, 1),
+                (-1, -1), (-1, 1), (1, -1), (1, 1),
+            ]
+        else:
+            directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+        neighbors = []
+        for dx, dy in directions:
+            nx, ny = x + dx, y + dy
+            if not (0 <= nx < self.map.grid_size and 0 <= ny < self.map.grid_size):
+                continue
+            if self.map.grid_map[nx, ny] == 1:
+                continue
+            move_cost = 1.0 if dx == 0 or dy == 0 else math.sqrt(2)
+            neighbors.append(((nx, ny), move_cost))
+        return neighbors
+
+    def plan(self, start_grid, goal_grid):
+        if self.map.grid_map[start_grid] == 1 or self.map.grid_map[goal_grid] == 1:
+            return None
+
+        # Priority by g only
+        open_set = []
+        heapq.heappush(open_set, (0.0, start_grid))
+
+        came_from = {}
+        g_score = {start_grid: 0.0}
+
+        while open_set:
+            g_cur, current = heapq.heappop(open_set)
+
+            # Skip stale entries
+            if g_cur > g_score.get(current, float('inf')):
+                continue
+
+            if current == goal_grid:
+                return self.reconstruct_path(came_from, current)
+
+            for neighbor, move_cost in self.get_neighbors(current):
+                tentative_g = g_score[current] + move_cost
+
+                if neighbor not in g_score or tentative_g < g_score[neighbor]:
+                    came_from[neighbor] = current
+                    g_score[neighbor] = tentative_g
+                    heapq.heappush(open_set, (tentative_g, neighbor))
+
+        return None
+
+    def reconstruct_path(self, came_from, current):
+        path = [current]
+        while current in came_from:
+            current = came_from[current]
+            path.append(current)
+        return path[::-1]

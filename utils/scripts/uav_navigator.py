@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))  # 添加当前脚�
 import rospy, json
 from std_msgs.msg import String
 from grid_map import GridMap
-from path_searching import EDTAwareAStarPlanner
+from path_searching import EDTAwareAStarPlanner, GridAStarPlanner, DijkstraPlanner
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, PoseArray, Pose
 import math
@@ -25,7 +25,9 @@ class UAVNavigator:
         # 初始化
         self.grid_map = GridMap(size=50, resolution=self.resolution)
         self.grid_map.map_init()
-        self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=self.resolution * 1.5)
+        self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=self.resolution)
+        # self.planner = GridAStarPlanner(self.grid_map)
+        # self.planner = DijkstraPlanner(self.grid_map)
 
         self.goal_real = (18, 5)  # 目标位置
         self.current_position = (-15.0, -15.0)  # 记录无人机当前位置
@@ -270,7 +272,9 @@ class UAVNavigator:
 
                     rospy.loginfo("[Navigator] Replanning...")
 
+                    # 1. 路径规划，输出栅格坐标路径
                     grid_path = self.plan(self.start_real, self.goal_real)
+
                     if not grid_path:
                         rospy.logwarn("[Navigator] No path found.")
                         self.rate.sleep()
@@ -279,13 +283,17 @@ class UAVNavigator:
                     # 2. 提取“第一段窗口”的 4 个控制点（栅格）
                     ctrl_pts_grid = self.planner.extract_first_window_ctrl_points(
                         path=grid_path,
-                        min_dist_m=2.0
+                        min_dist_m=3.0
                     )
 
-                    if not ctrl_pts_grid or len(ctrl_pts_grid) < 4:
-                        rospy.logwarn("[Navigator] Failed to extract B-spline control points. Directly flying to goal.")
+                    if ctrl_pts_grid is None:
+                        rospy.logwarn("[Navigator] extract_first_window_ctrl_points returned None.")
+                        self.rate.sleep()
+                        continue
 
-                        self.active_goal_grid = grid_path[-1]
+                    if len(ctrl_pts_grid) < 4:
+                        rospy.logwarn("[Navigator] Failed to extract 4 control points. Directly flying to goal.")
+                        self.active_goal_grid = ctrl_pts_grid[-1]
                         self.active_goal_real = self.grid_map.to_real(
                             self.active_goal_grid[0],
                             self.active_goal_grid[1]
@@ -307,6 +315,7 @@ class UAVNavigator:
                     self.active_goal_real = ctrl_pts_real[-1]
                     self.active_goal_grid = ctrl_pts_grid[-1]
 
+                    # 4. 轨迹优化
                     self.publish_optimizer_ctrl_points(ctrl_pts_real)
 
                     # 发布给 EgoPlanner / move_base
