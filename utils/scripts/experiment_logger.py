@@ -56,11 +56,12 @@ class SimpleExperimentLogger:
     # 记录一次分段
     # ==========================
     def log_segment(
-        self,
-        start_real,
-        goal_real,
-        planning_time,
-        optimization_time,
+            self,
+            start_real,
+            goal_real,
+            planning_time,
+            optimization_time,
+            cost_v, cost_a, cost_jerk,
     ):
         self.plan_index += 1
 
@@ -73,6 +74,9 @@ class SimpleExperimentLogger:
             "goal_y": goal_real[1],
             "planning_time": planning_time,
             "optimization_time": optimization_time,
+            "cost_v": cost_v,
+            "cost_a": cost_a,
+            "cost_jerk": cost_jerk,
         }
 
         self.rows.append(row)
@@ -94,6 +98,9 @@ class SimpleExperimentLogger:
             "goal_y",
             "planning_time",
             "optimization_time",
+            "cost_v",
+            "cost_a",
+            "cost_jerk",
         ]
 
         with open(self.csv_path, "w", newline="") as f:

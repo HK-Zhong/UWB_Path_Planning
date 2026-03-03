@@ -8,7 +8,7 @@ from std_msgs.msg import String
 from grid_map import GridMap
 from path_searching import EDTAwareAStarPlanner, GridAStarPlanner, DijkstraPlanner
 from nav_msgs.msg import Odometry
-from geometry_msgs.msg import PoseStamped, PoseArray, Pose
+from geometry_msgs.msg import PoseStamped, PoseArray, Pose, Vector3
 import math
 from nav_msgs.msg import OccupancyGrid
 from std_msgs.msg import Header
@@ -62,6 +62,11 @@ class UAVNavigator:
             queue_size=10
         )
 
+        # ===== Subscribe optimizer cost =====
+        self._last_opt_cost = None  # (cost_v, cost_a, cost_jerk)
+        self._last_opt_cost_stamp = None
+        rospy.Subscriber("/optimizer/cost", Vector3, self.optimizer_cost_callback)
+
         self.rate = rospy.Rate(2)  # 控制更新频率
 
         # 订阅无人机位置话题
@@ -103,6 +108,11 @@ class UAVNavigator:
             self.los_data = json.loads(msg.data)  # 解析 JSON 消息
         except json.JSONDecodeError as e:
             rospy.logerr(f"解析 JSON 失败: {e}")
+
+    def optimizer_cost_callback(self, msg: Vector3):
+        """Receive optimizer control costs (v, a, jerk)."""
+        self._last_opt_cost = (float(msg.x), float(msg.y), float(msg.z))
+        self._last_opt_cost_stamp = rospy.Time.now()
 
     def plan(self, start_real, end_real):
         """ 使用 A* 计算路径 """
@@ -253,7 +263,7 @@ class UAVNavigator:
         try:
             while not rospy.is_shutdown():
 
-                # ========== 1. 更新地图（LOS → grid_map） ==========              
+                # ========== 1. 更新地图（LOS → grid_map） ==========
                 self.update_map_stateful()
 
                 # ========== 2. 更新 EDT 地图 ==========
@@ -327,11 +337,18 @@ class UAVNavigator:
                     self.publish_optimizer_ctrl_points(ctrl_pts_real)
                     optimizing_time = self.logger.toc()
 
+                    cost_v, cost_a, cost_jerk = (None, None, None)
+                    if self._last_opt_cost is not None:
+                        cost_v, cost_a, cost_jerk = self._last_opt_cost
+
                     self.logger.log_segment(
                         start_real=self.start_real,
                         goal_real=self.active_goal_real,
                         planning_time=planning_time,
                         optimization_time=optimizing_time,
+                        cost_v=cost_v,
+                        cost_a=cost_a,
+                        cost_jerk=cost_jerk,
                     )
 
                     rospy.loginfo(

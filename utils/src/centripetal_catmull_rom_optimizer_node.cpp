@@ -20,6 +20,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <geometry_msgs/Vector3.h>
 
 #include <Eigen/Dense>
 #include <vector>
@@ -235,6 +236,8 @@ public:
     // ---- 发布无人机指令 ----
     cmd_pub_ = nh.advertise<geometry_msgs::PoseStamped>(
         "/ardrone_1/command/pose", 10);
+    cost_pub_ = nh.advertise<geometry_msgs::Vector3>(
+        "/optimizer/cost", 10);
 
     // ---- 定时器 ----
     timer_ = nh.createTimer(
@@ -359,6 +362,7 @@ private:
 
     ROS_INFO("[catmull] Curve accepted. points=%zu, totalS=%.3f",
              pts.size(), curve_->totalS());
+    publishCostsForCurve(*curve_);
   }
 
   // 查询某个世界坐标点的 EDT 值（米）。
@@ -546,7 +550,65 @@ private:
   ros::Subscriber ctrl_pts_sub_;
   ros::Subscriber edt_sub_;
   ros::Publisher  cmd_pub_;
+  ros::Publisher  cost_pub_;
   ros::Timer      timer_;
+
+  // Helper to compute and publish costs for a curve
+  void publishCostsForCurve(const CentripetalCatmullRom& c)
+  {
+    // Compute simple discrete costs along execution time:
+    // s(t) = speed_s_per_sec_ * t
+    // v, a, jerk derived from finite differences of position.
+
+    const double S = c.totalS();
+    if (S <= EPS) return;
+
+    // Use controller dt as the sampling dt for cost.
+    const double dt = CMD_DT;
+    const double ds = std::max(EPS, speed_s_per_sec_ * dt);
+
+    // Need enough samples for velocity/acc/jerk.
+    const int N = std::max(2, int(std::ceil(S / ds)) + 1);
+
+    double cost_v = 0.0;
+    double cost_a = 0.0;
+    double cost_j = 0.0;
+
+    Eigen::Vector3d p_prev = c.evaluate(0.0);
+    Eigen::Vector3d v_prev = Eigen::Vector3d::Zero();
+    Eigen::Vector3d a_prev = Eigen::Vector3d::Zero();
+
+    for (int i = 1; i < N; ++i)
+    {
+      double s = std::min(S, i * ds);
+      Eigen::Vector3d p = c.evaluate(s);
+
+      Eigen::Vector3d v = (p - p_prev) / dt;
+      Eigen::Vector3d a = (v - v_prev) / dt;
+      Eigen::Vector3d j = (a - a_prev) / dt;
+
+      // Integral of squared norms (scaled by dt)
+      cost_v += v.squaredNorm() * dt;
+      cost_a += a.squaredNorm() * dt;
+      cost_j += j.squaredNorm() * dt;
+
+      p_prev = p;
+      v_prev = v;
+      a_prev = a;
+
+      if (s >= S - 1e-9) break;
+    }
+
+    geometry_msgs::Vector3 msg;
+    msg.x = cost_v;
+    msg.y = cost_a;
+    msg.z = cost_j;
+    cost_pub_.publish(msg);
+
+    ROS_INFO_STREAM("[catmull][COST] cost_v=" << cost_v
+                    << " cost_a=" << cost_a
+                    << " cost_jerk=" << cost_j);
+  }
 
   // EDT
   nav_msgs::OccupancyGrid edt_map_;
