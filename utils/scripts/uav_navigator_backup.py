@@ -12,8 +12,7 @@ from geometry_msgs.msg import PoseStamped, PoseArray, Pose
 import math
 from nav_msgs.msg import OccupancyGrid
 from std_msgs.msg import Header
-
-from experiment_logger import SimpleExperimentLogger
+from experiment_logger import ExperimentLogger
 
 
 class UAVNavigator:
@@ -72,10 +71,51 @@ class UAVNavigator:
         # self.current_waypoint_index = 0  # 记录当前执行的航点索引
         self.tolerance = 0.2  # 目标点到达的误差范围
 
-        self.logger = SimpleExperimentLogger()
-        self.logger.start(planner_name=self.planner.__class__.__name__)
-
         rospy.loginfo("Drone Controller Initialized")
+
+        # ===============================
+        # Experiment logger (centralized)
+        # ===============================
+        self.exp_logger = ExperimentLogger()
+
+        # ===============================
+        # Episode state guards (avoid double-finish on shutdown)
+        # ===============================
+        self._episode_open = False
+        self._execution_started = False
+        self._episode_note = None
+
+        # ===============================
+        # Mission done guard
+        # ===============================
+        self._mission_done = False
+
+        # ===============================
+        # Trajectory record helpers
+        # ===============================
+    def _traj_record_start(self):
+        """Start trajectory command recording (if logger supports it)."""
+        if hasattr(self.exp_logger, "start_traj_record"):
+            try:
+                self.exp_logger.start_traj_record()
+            except Exception as e:
+                rospy.logwarn(f"[uav_navigator] start_traj_record failed: {e}")
+
+    def _traj_record_pose(self, stamp, xyz):
+        """Record one published command pose (if logger supports it)."""
+        if hasattr(self.exp_logger, "record_pose"):
+            try:
+                self.exp_logger.record_pose(stamp, xyz)
+            except Exception as e:
+                rospy.logwarn(f"[uav_navigator] record_pose failed: {e}")
+
+    def _traj_record_finish(self):
+        """Finish trajectory command recording (if logger supports it)."""
+        if hasattr(self.exp_logger, "finish_traj_record"):
+            try:
+                self.exp_logger.finish_traj_record()
+            except Exception as e:
+                rospy.logwarn(f"[uav_navigator] finish_traj_record failed: {e}")
 
     def odometry_callback(self, msg):
         """
@@ -221,6 +261,7 @@ class UAVNavigator:
 
         # 发布目标位置
         self.goal_pub.publish(goal)
+        self._traj_record_pose(goal.header.stamp, (goal.pose.position.x, goal.pose.position.y, goal.pose.position.z))
         # rospy.loginfo(f"UAV current position {self.current_position}")
         rospy.loginfo(f"Moving from {self.current_position}")
         rospy.loginfo(f"to Waypoint (x: {x}, y: {y}, z: {1.0})")
@@ -253,17 +294,25 @@ class UAVNavigator:
         try:
             while not rospy.is_shutdown():
 
-                # ========== 1. 更新地图（LOS → grid_map） ==========              
+                # ✅ Mission finished: stop replanning/logging and just idle
+                if self._mission_done:
+                    self.rate.sleep()
+                    continue
+
+                # ========== 1. 更新地图（LOS → grid_map） ==========
                 self.update_map_stateful()
 
                 # ========== 2. 更新 EDT 地图 ==========
                 # ⚠️ 注意：这是“重算 edt_map”，不是改 grid_map
                 self.grid_map.update_edt()
 
-                gx, gy = self.grid_map.to_grid(self.current_position[0], self.current_position[1])
-                rospy.logwarn(f"[DEBUG][AFTER EDT] start grid=({gx},{gy}) "
-                              f"grid_val={self.grid_map.grid_map[gx, gy]} "
-                              f"EDT(m)={self.grid_map.edt_map[gx, gy]}")
+                if self.current_position is not None and self.grid_map.edt_map is not None:
+                    gx, gy = self.grid_map.to_grid(self.current_position[0], self.current_position[1])
+                    rospy.logwarn(
+                        f"[DEBUG][AFTER EDT] start grid=({gx},{gy}) "
+                        f"grid_val={self.grid_map.grid_map[gx, gy]} "
+                        f"EDT(m)={self.grid_map.edt_map[gx, gy]}"
+                    )
 
                 self.publish_edt_map()
 
@@ -277,13 +326,28 @@ class UAVNavigator:
 
                     rospy.loginfo("[Navigator] Replanning...")
 
+                    # Reset local episode guards
+                    self._episode_open = False
+                    self._execution_started = False
+                    self._episode_note = None
+
+                    # Start a new experiment episode when we decide to replan
+                    self.exp_logger.start_episode(
+                        start_real=self.start_real,
+                        goal_real=self.goal_real,
+                        planner=self.planner.__class__.__name__,
+                    )
+                    self._episode_open = True
+
                     # 1. 路径规划，输出栅格坐标路径
-                    self.logger.tic()
-                    grid_path = self.plan(self.start_real, self.goal_real)
-                    planning_time = self.logger.toc()
+                    with self.exp_logger.timeit("planning_time"):
+                        grid_path = self.plan(self.start_real, self.goal_real)
 
                     if not grid_path:
                         rospy.logwarn("[Navigator] No path found.")
+                        self.exp_logger.finish_episode(success=False, note="no_path")
+                        self._episode_open = False
+                        self._execution_started = False
                         self.rate.sleep()
                         continue
 
@@ -295,6 +359,9 @@ class UAVNavigator:
 
                     if ctrl_pts_grid is None:
                         rospy.logwarn("[Navigator] extract_first_window_ctrl_points returned None.")
+                        self.exp_logger.finish_episode(success=False, note="no_ctrl_pts")
+                        self._episode_open = False
+                        self._execution_started = False
                         self.rate.sleep()
                         continue
 
@@ -306,7 +373,18 @@ class UAVNavigator:
                             self.active_goal_grid[1]
                         )
 
+                        # Fallback: skip optimizer, fly directly to the window end.
+                        # Do NOT finish the episode here — it may still succeed.
+                        self._episode_note = "fallback_direct_goal"
+
                         self.publish_waypoint(self.active_goal_real)
+
+                        # Start execution timing for fair comparison
+                        if not self._execution_started:
+                            self.exp_logger.start_execution()
+                            self._traj_record_start()
+                            self._execution_started = True
+
                         rospy.loginfo(
                             f"[Navigator] Active goal grid={self.active_goal_grid}, "
                             f"real={self.active_goal_real}")
@@ -323,16 +401,17 @@ class UAVNavigator:
                     self.active_goal_grid = ctrl_pts_grid[-1]
 
                     # 4. 轨迹优化
-                    self.logger.tic()
-                    self.publish_optimizer_ctrl_points(ctrl_pts_real)
-                    optimizing_time = self.logger.toc()
+                    with self.exp_logger.timeit("optimization_time"):
+                        self.publish_optimizer_ctrl_points(ctrl_pts_real)
 
-                    self.logger.log_segment(
-                        start_real=self.start_real,
-                        goal_real=self.active_goal_real,
-                        planning_time=planning_time,
-                        optimization_time=optimizing_time,
-                    )
+                    # Execution starts once we have sent the optimizer its control points
+                    if not self._execution_started:
+                        self.exp_logger.start_execution()
+                        self._traj_record_start()
+                        self._execution_started = True
+
+                    # 发布给 EgoPlanner / move_base
+                    # self.publish_waypoint(self.active_goal_real)
 
                     rospy.loginfo(
                         f"[Navigator] Active goal grid={self.active_goal_grid}, "
@@ -352,21 +431,59 @@ class UAVNavigator:
                     ):
                         rospy.loginfo("[Navigator] Active goal reached.")
 
-                        # 规划起点前移（✔️ 正确的位置）
+                        # ✅ Check whether FINAL mission goal is reached
+                        final_reached = self.has_reached_goal(
+                            self.goal_real[0],
+                            self.goal_real[1],
+                            1.0
+                        )
+
+                        if self._execution_started:
+                            self.exp_logger.finish_execution()
+                            self._traj_record_finish()
+                            self._execution_started = False
+
+                        note = self._episode_note
+                        self.exp_logger.finish_episode(success=True, note=note)
+                        self._episode_open = False
+                        self._episode_note = None
+
+                        # 记录通过的关键航点
                         self.start_real = self.active_goal_real
                         self.key_waypoints.append(self.active_goal_grid)
 
                         # 清空执行态
                         self.active_goal_real = None
                         self.active_goal_grid = None
-                        self.need_replan = True
+
+                        # ✅ If final goal reached: stop everything
+                        if final_reached:
+                            rospy.logwarn("[Navigator] FINAL goal reached. Mission done; stop replanning/logging.")
+                            self._mission_done = True
+                            self.need_replan = False
+                        else:
+                            self.need_replan = True
 
                 self.rate.sleep()
 
         finally:
-            self.grid_map.visualize(self.key_waypoints)
-            self.grid_map.visualize_edt(self.key_waypoints)
-            self.logger.save()
+            # If shutdown happens mid-episode, finalize once (avoid duplicate CSV rows)
+            if self._episode_open and (not self._mission_done):
+                if self._execution_started:
+                    self.exp_logger.finish_execution()
+                    self._traj_record_finish()
+                    self._execution_started = False
+
+                note = self._episode_note or "shutdown"
+                self.exp_logger.finish_episode(success=False, note=note)
+                self._episode_open = False
+                self._episode_note = None
+
+            if not self._mission_done:
+                self.grid_map.visualize(self.key_waypoints)
+                self.grid_map.visualize_edt(self.key_waypoints)
+            # print("finished..")
+
 
 if __name__ == "__main__":
     navigator = UAVNavigator()
