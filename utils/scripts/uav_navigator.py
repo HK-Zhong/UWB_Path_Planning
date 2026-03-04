@@ -69,6 +69,12 @@ class UAVNavigator:
         self._last_opt_cost_stamp = None
         rospy.Subscriber("/optimizer/cost", Vector3, self.optimizer_cost_callback)
 
+        # ===== Subscribe optimizer EDT stats =====
+        # msg.x = edt_min (m), msg.y = edt_mean (m)
+        self._last_opt_edt = None  # (edt_min, edt_mean)
+        self._last_opt_edt_stamp = None
+        rospy.Subscriber("/optimizer/edt", Vector3, self.optimizer_edt_callback)
+
         self.rate = rospy.Rate(2)  # 控制更新频率
 
         # 订阅无人机位置话题
@@ -115,6 +121,11 @@ class UAVNavigator:
         """Receive optimizer control costs (v, a, jerk)."""
         self._last_opt_cost = (float(msg.x), float(msg.y), float(msg.z))
         self._last_opt_cost_stamp = rospy.Time.now()
+
+    def optimizer_edt_callback(self, msg: Vector3):
+        """Receive optimizer EDT metrics (edt_min, edt_mean)."""
+        self._last_opt_edt = (float(msg.x), float(msg.y))
+        self._last_opt_edt_stamp = rospy.Time.now()
 
     def plan(self, start_real, end_real):
         """ 使用 A* 计算路径 """
@@ -349,6 +360,14 @@ class UAVNavigator:
                     if self._last_opt_cost is not None:
                         cost_v, cost_a, cost_j = self._last_opt_cost
 
+                    edt_min, edt_mean = (None, None)
+                    if self._last_opt_edt is not None:
+                        edt_min, edt_mean = self._last_opt_edt
+
+                    rospy.loginfo(
+                        f"[UAVNavigator] Optimizer EDT: edt_min={edt_min}, edt_mean={edt_mean}"
+                    )
+
                     self.logger.log_segment(
                         start_real=self.start_real,
                         goal_real=self.active_goal_real,
@@ -357,6 +376,8 @@ class UAVNavigator:
                         cost_v=cost_v,
                         cost_a=cost_a,
                         cost_j=cost_j,
+                        edt_min=edt_min,
+                        edt_mean=edt_mean,
                     )
 
                     rospy.loginfo(

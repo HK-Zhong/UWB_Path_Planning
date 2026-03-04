@@ -62,6 +62,7 @@ class SimpleExperimentLogger:
             planning_time,
             optimization_time,
             cost_v, cost_a, cost_j,
+            edt_min, edt_mean
     ):
         self.plan_index += 1
 
@@ -77,6 +78,8 @@ class SimpleExperimentLogger:
             "cost_v": cost_v,
             "cost_a": cost_a,
             "cost_j": cost_j,
+            "edt_min": edt_min,
+            "edt_mean": edt_mean
         }
 
         self.rows.append(row)
@@ -101,6 +104,8 @@ class SimpleExperimentLogger:
             "cost_v",
             "cost_a",
             "cost_j",
+            "edt_min",
+            "edt_mean"
         ]
 
         with open(self.csv_path, "w", newline="") as f:

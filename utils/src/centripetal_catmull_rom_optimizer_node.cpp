@@ -238,6 +238,8 @@ public:
         "/ardrone_1/command/pose", 10);
     cost_pub_ = nh.advertise<geometry_msgs::Vector3>(
         "/optimizer/cost", 10);
+    edt_pub_ = nh.advertise<geometry_msgs::Vector3>(
+        "/optimizer/edt", 10);
 
     // ---- 定时器 ----
     timer_ = nh.createTimer(
@@ -363,6 +365,7 @@ private:
     ROS_INFO("[CentripetalCatmullRom_optimizer] Curve accepted. points=%zu, totalS=%.3f",
              pts.size(), curve_->totalS());
     publishCostsForCurve(*curve_);
+    publishEdtStatsForCurve(*curve_);
   }
 
   // 查询某个世界坐标点的 EDT 值（米）。
@@ -551,6 +554,7 @@ private:
   ros::Subscriber edt_sub_;
   ros::Publisher  cmd_pub_;
   ros::Publisher  cost_pub_;
+  ros::Publisher  edt_pub_;
   ros::Timer      timer_;
 
   // Helper to compute and publish costs for a curve
@@ -608,6 +612,61 @@ private:
     ROS_INFO_STREAM("[CentripetalCatmullRom_optimizer][COST] cost_v=" << cost_v
                     << " cost_a=" << cost_a
                     << " cost_jerk=" << cost_j);
+  }
+
+  // Helper to compute and publish EDT stats (min / mean) along the curve
+  void publishEdtStatsForCurve(const CentripetalCatmullRom& c)
+  {
+    // Sample EDT along the curve using the same discretization as cost:
+    // s(t) = speed_s_per_sec_ * t, sample at controller dt.
+
+    const double S = c.totalS();
+    if (S <= EPS) return;
+
+    const double dt = CMD_DT;
+    const double ds = std::max(EPS, speed_s_per_sec_ * dt);
+    const int N = std::max(2, int(std::ceil(S / ds)) + 1);
+
+    double edt_min = std::numeric_limits<double>::infinity();
+    double edt_sum = 0.0;
+    int    edt_cnt = 0;
+
+    for (int i = 0; i < N; ++i)
+    {
+      double s = std::min(S, i * ds);
+      Eigen::Vector3d p = c.evaluate(s);
+
+      double edt_m = 0.0;
+      int raw_v = -1;
+      int gx = 0, gy = 0;
+
+      // Safety should already guarantee query success, but keep it robust.
+      if (!queryEDT(p.x(), p.y(), edt_m, raw_v, gx, gy))
+      {
+        // Treat unknown/out as 0 for stats (also indicates inconsistency)
+        edt_m = 0.0;
+      }
+
+      edt_min = std::min(edt_min, edt_m);
+      edt_sum += edt_m;
+      edt_cnt += 1;
+
+      if (s >= S - 1e-9) break;
+    }
+
+    if (edt_cnt <= 0) return;
+    const double edt_mean = edt_sum / double(edt_cnt);
+    if (!std::isfinite(edt_min)) return;
+
+    geometry_msgs::Vector3 msg;
+    msg.x = edt_min;   // min EDT along curve (m)
+    msg.y = edt_mean;  // mean EDT along curve (m)
+    msg.z = 0.0;
+    edt_pub_.publish(msg);
+
+    ROS_INFO_STREAM("[CentripetalCatmullRom_optimizer][EDT] edt_min=" << edt_min
+                    << " edt_mean=" << edt_mean
+                    << " samples=" << edt_cnt);
   }
 
   // EDT
