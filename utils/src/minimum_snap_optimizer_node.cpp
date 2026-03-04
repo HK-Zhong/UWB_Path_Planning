@@ -2,6 +2,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <geometry_msgs/Vector3.h>
 
 #include <Eigen/Dense>
 #include <tf/tf.h>
@@ -180,6 +181,60 @@ struct MinSnapTraj
 
     return Eigen::Vector3d(evalPolyD1(cx[seg]), evalPolyD1(cy[seg]), evalPolyD1(cz[seg]));
   }
+
+  // evaluate acceleration
+  Eigen::Vector3d evalAcc(double t) const
+  {
+    if (T.empty()) return Eigen::Vector3d::Zero();
+    double acc = 0.0;
+    int seg = 0;
+    for (; seg < (int)T.size(); ++seg)
+    {
+      if (t <= acc + T[seg] || seg == (int)T.size() - 1) break;
+      acc += T[seg];
+    }
+    double local = std::min(std::max(t - acc, 0.0), T[seg]);
+
+    auto evalPolyD2 = [&](const Eigen::VectorXd& c)->double{
+      double v = 0.0;
+      double tt = 1.0;
+      for (int k = 2; k <= POLY_DEG; ++k)
+      {
+        v += c(k) * double(k) * double(k - 1) * tt;
+        tt *= local;
+      }
+      return v;
+    };
+
+    return Eigen::Vector3d(evalPolyD2(cx[seg]), evalPolyD2(cy[seg]), evalPolyD2(cz[seg]));
+  }
+
+  // evaluate jerk
+  Eigen::Vector3d evalJerk(double t) const
+  {
+    if (T.empty()) return Eigen::Vector3d::Zero();
+    double acc = 0.0;
+    int seg = 0;
+    for (; seg < (int)T.size(); ++seg)
+    {
+      if (t <= acc + T[seg] || seg == (int)T.size() - 1) break;
+      acc += T[seg];
+    }
+    double local = std::min(std::max(t - acc, 0.0), T[seg]);
+
+    auto evalPolyD3 = [&](const Eigen::VectorXd& c)->double{
+      double v = 0.0;
+      double tt = 1.0;
+      for (int k = 3; k <= POLY_DEG; ++k)
+      {
+        v += c(k) * double(k) * double(k - 1) * double(k - 2) * tt;
+        tt *= local;
+      }
+      return v;
+    };
+
+    return Eigen::Vector3d(evalPolyD3(cx[seg]), evalPolyD3(cy[seg]), evalPolyD3(cz[seg]));
+  }
 };
 
 /**
@@ -207,11 +262,12 @@ public:
 
     cmd_pub_ = nh.advertise<geometry_msgs::PoseStamped>(
         "/ardrone_1/command/pose", 10);
+    cost_pub_ = nh.advertise<geometry_msgs::Vector3>("/optimizer/cost", 10, true);
 
     timer_ = nh.createTimer(ros::Duration(CMD_DT),
                             &MinimumSnapOptimizerNode::timerCb, this);
 
-    ROS_INFO("[minimum_snap_optimizer] Ready. edt_hard_min=%.3f, edt_max_range_m=%.2f, speed=%.2f, yaw_lookahead=%.2f, ignore_while_exec=%s",
+    ROS_INFO("[MinimumSnap_optimizer] Ready. edt_hard_min=%.3f, edt_max_range_m=%.2f, speed=%.2f, yaw_lookahead=%.2f, ignore_while_exec=%s",
              edt_hard_min_, edt_max_range_m_, speed_s_per_sec_, yaw_lookahead_s_,
              ignore_while_exec_ ? "true" : "false");
   }
@@ -230,19 +286,19 @@ private:
   {
     if (msg->poses.size() < 2)
     {
-      ROS_WARN("[minimum_snap_optimizer] Need >=2 ctrl points.");
+      ROS_WARN("[MinimumSnap_optimizer] Need >=2 ctrl points.");
       return;
     }
 
     if (ignore_while_exec_ && executing_)
     {
-      ROS_WARN("[minimum_snap_optimizer] executing, ignore new ctrl points.");
+      ROS_WARN("[MinimumSnap_optimizer] executing, ignore new ctrl points.");
       return;
     }
 
     if (!has_edt_)
     {
-      ROS_WARN("[minimum_snap_optimizer] No EDT map yet.");
+      ROS_WARN("[MinimumSnap_optimizer] No EDT map yet.");
       return;
     }
 
@@ -258,7 +314,7 @@ private:
     Eigen::Vector3d pN = wp.back();
     double edt0 = queryEDT(p0);
     double edtN = queryEDT(pN);
-    ROS_WARN("[minimum_snap_optimizer][CTRL] start=(%.2f,%.2f,%.2f) edt=%.3f | goal=(%.2f,%.2f,%.2f) edt=%.3f | K=%zu",
+    ROS_WARN("[MinimumSnap_optimizer][CTRL] start=(%.2f,%.2f,%.2f) edt=%.3f | goal=(%.2f,%.2f,%.2f) edt=%.3f | K=%zu",
              p0.x(), p0.y(), p0.z(), edt0,
              pN.x(), pN.y(), pN.z(), edtN,
              wp.size());
@@ -270,22 +326,23 @@ private:
     MinSnapTraj traj;
     if (!solveMinimumSnap(wp, T, traj))
     {
-      ROS_WARN("[minimum_snap_optimizer] solveMinimumSnap failed.");
+      ROS_WARN("[MinimumSnap_optimizer] solveMinimumSnap failed.");
       return;
     }
 
     // safety check
     if (!checkTrajSafety(traj))
     {
-      ROS_WARN("[minimum_snap_optimizer] Trajectory violates EDT constraint.");
+      ROS_WARN("[MinimumSnap_optimizer] Trajectory violates EDT constraint.");
       return;
     }
 
     traj_ = std::make_shared<MinSnapTraj>(traj);
     start_time_ = ros::Time::now();
     executing_ = true;
+    publishTrajectoryCost(*traj_);
 
-    ROS_INFO("[minimum_snap_optimizer] Trajectory accepted. segments=%zu, duration=%.2fs",
+    ROS_INFO("[MinimumSnap_optimizer] Trajectory accepted. segments=%zu, duration=%.2fs",
              traj_->T.size(), traj_->totalDuration());
   }
 
@@ -424,7 +481,7 @@ private:
     if ((KKT * sol - rhs).norm() > 1e-5)
     {
       // still accept in many cases; but warn
-      ROS_WARN("[minimum_snap_optimizer] KKT residual=%.3e", (KKT * sol - rhs).norm());
+      ROS_WARN("[MinimumSnap_optimizer] KKT residual=%.3e", (KKT * sol - rhs).norm());
     }
 
     x = sol.head(n);
@@ -512,7 +569,7 @@ private:
 
     if (row != neq)
     {
-      ROS_WARN("[minimum_snap_optimizer] constraint row mismatch row=%d neq=%d", row, neq);
+      ROS_WARN("[MinimumSnap_optimizer] constraint row mismatch row=%d neq=%d", row, neq);
     }
 
     Eigen::VectorXd x;
@@ -568,7 +625,7 @@ private:
       if (!isSafeByEDT(p))
       {
         double edt = queryEDT(p);
-        ROS_ERROR("[minimum_snap_optimizer][EDT TOO SMALL] t=%.2f pos=(%.2f,%.2f) edt=%.3f thr=%.3f",
+        ROS_ERROR("[MinimumSnap_optimizer][EDT TOO SMALL] t=%.2f pos=(%.2f,%.2f) edt=%.3f thr=%.3f",
                   t, p.x(), p.y(), edt, edt_hard_min_);
         return false;
       }
@@ -580,6 +637,7 @@ private:
   ros::Subscriber ctrl_sub_;
   ros::Subscriber edt_sub_;
   ros::Publisher  cmd_pub_;
+  ros::Publisher  cost_pub_;
   ros::Timer      timer_;
 
   nav_msgs::OccupancyGrid edt_map_;
@@ -597,11 +655,47 @@ private:
   ros::Time start_time_;
   bool executing_ = false;
   double last_yaw_ = 0.0;
+
+  // Publish trajectory cost (velocity, acceleration, jerk integrals)
+  void publishTrajectoryCost(const MinSnapTraj& traj)
+  {
+    // Costs are simple integral of squared derivatives over time
+    // cost_v   = ∫ ||v||^2 dt
+    // cost_a   = ∫ ||a||^2 dt
+    // cost_jerk= ∫ ||j||^2 dt
+    const double T = traj.totalDuration();
+    if (T <= 0.0) return;
+
+    double cost_v = 0.0;
+    double cost_a = 0.0;
+    double cost_j = 0.0;
+
+    // Use the same step as command publish for stable/consistent numbers
+    for (double t = 0.0; t <= T; t += CMD_DT)
+    {
+      Eigen::Vector3d v = traj.evalVel(t);
+      Eigen::Vector3d a = traj.evalAcc(t);
+      Eigen::Vector3d j = traj.evalJerk(t);
+
+      cost_v += v.squaredNorm() * CMD_DT;
+      cost_a += a.squaredNorm() * CMD_DT;
+      cost_j += j.squaredNorm() * CMD_DT;
+    }
+
+    geometry_msgs::Vector3 msg;
+    msg.x = cost_v;
+    msg.y = cost_a;
+    msg.z = cost_j;
+
+    cost_pub_.publish(msg);
+
+    ROS_INFO("[MinimumSnap_optimizer][COST] v=%.6f a=%.6f jerk=%.6f", cost_v, cost_a, cost_j);
+  }
 };
 
 int main(int argc, char** argv)
 {
-  ros::init(argc, argv, "minimum_snap_optimizer_node");
+  ros::init(argc, argv, "MinimumSnap_optimizer_node");
   MinimumSnapOptimizerNode node;
   ros::spin();
   return 0;

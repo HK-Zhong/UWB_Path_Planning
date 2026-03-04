@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/PoseArray.h>
+#include <geometry_msgs/Vector3.h>
 #include <nav_msgs/OccupancyGrid.h>
 
 #include <Eigen/Dense>
@@ -130,6 +131,9 @@ public:
     cmd_pub_ = nh.advertise<geometry_msgs::PoseStamped>(
         "/ardrone_1/command/pose", 10);
 
+    cost_pub_ = nh.advertise<geometry_msgs::Vector3>(
+        "/optimizer/cost", 10);
+
     timer_ = nh.createTimer(
         ros::Duration(CMD_DT),
         &SplineOptimizerNode::timerCallback, this);
@@ -142,6 +146,7 @@ private:
   ros::Subscriber ctrl_sub_;
   ros::Subscriber edt_sub_;
   ros::Publisher cmd_pub_;
+  ros::Publisher cost_pub_;
   ros::Timer timer_;
 
   nav_msgs::OccupancyGrid edt_map_;
@@ -186,13 +191,13 @@ private:
 
     if (executing_ && ignore_while_exec_)
     {
-      ROS_WARN("[spline] Trajectory executing, ignore ctrl points (ignore_while_exec=true).");
+      ROS_WARN("[PiecewiseCubicSpline_optimizer] Trajectory executing, ignore ctrl points (ignore_while_exec=true).");
       return;
     }
 
     if (executing_ && !ignore_while_exec_)
     {
-      ROS_WARN("[spline] Trajectory executing, replanning with new ctrl points (ignore_while_exec=false).");
+      ROS_WARN("[PiecewiseCubicSpline_optimizer] Trajectory executing, replanning with new ctrl points (ignore_while_exec=false).");
     }
 
     std::vector<Eigen::Vector3d> pts;
@@ -203,13 +208,17 @@ private:
 
     if (!checkSafety())
     {
-      ROS_WARN("[spline] Trajectory violates EDT.");
+      ROS_WARN("[PiecewiseCubicSpline_optimizer] Trajectory violates EDT.");
       return;
     }
 
     start_time_ = ros::Time::now();
     executing_ = true;
-    ROS_INFO("[spline] Trajectory accepted.");
+
+    // Publish costs once per accepted trajectory
+    publishCostsForTraj(*traj_);
+
+    ROS_INFO("[PiecewiseCubicSpline_optimizer] Trajectory accepted.");
   }
 
   bool checkSafety()
@@ -249,6 +258,60 @@ private:
     double edt = std::min(100, std::max(0, raw)) * (kMaxRange / 100.0);
 
     return edt >= edt_hard_min_;
+  }
+
+  void publishCostsForTraj(const PiecewiseCubicSpline& c)
+  {
+    // Compute simple discrete costs along execution time:
+    // v, a, jerk derived from finite differences of position.
+
+    const double T = c.duration();
+    if (T <= 1e-6) return;
+
+    // Use controller dt as the sampling dt for cost.
+    const double dt = CMD_DT;
+
+    // Need enough samples for velocity/acc/jerk.
+    const int N = std::max(2, int(std::ceil(T / dt)) + 1);
+
+    double cost_v = 0.0;
+    double cost_a = 0.0;
+    double cost_j = 0.0;
+
+    Eigen::Vector3d p_prev = c.evaluate(0.0);
+    Eigen::Vector3d v_prev = Eigen::Vector3d::Zero();
+    Eigen::Vector3d a_prev = Eigen::Vector3d::Zero();
+
+    for (int i = 1; i < N; ++i)
+    {
+      double t = std::min(T, i * dt);
+      Eigen::Vector3d p = c.evaluate(t);
+
+      Eigen::Vector3d v = (p - p_prev) / dt;
+      Eigen::Vector3d a = (v - v_prev) / dt;
+      Eigen::Vector3d j = (a - a_prev) / dt;
+
+      // Integral of squared norms (scaled by dt)
+      cost_v += v.squaredNorm() * dt;
+      cost_a += a.squaredNorm() * dt;
+      cost_j += j.squaredNorm() * dt;
+
+      p_prev = p;
+      v_prev = v;
+      a_prev = a;
+
+      if (t >= T - 1e-9) break;
+    }
+
+    geometry_msgs::Vector3 msg;
+    msg.x = cost_v;
+    msg.y = cost_a;
+    msg.z = cost_j;
+    cost_pub_.publish(msg);
+
+    ROS_INFO_STREAM("[PiecewiseCubicSpline_optimizer][COST] cost_v=" << cost_v
+                    << " cost_a=" << cost_a
+                    << " cost_jerk=" << cost_j);
   }
 
   void timerCallback(const ros::TimerEvent&)

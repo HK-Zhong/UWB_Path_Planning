@@ -63,7 +63,7 @@ class UAVNavigator:
         )
 
         # ===== Subscribe optimizer cost =====
-        self._last_opt_cost = None  # (cost_v, cost_a, cost_jerk)
+        self._last_opt_cost = None  # (cost_v, cost_a, cost_j)
         self._last_opt_cost_stamp = None
         rospy.Subscriber("/optimizer/cost", Vector3, self.optimizer_cost_callback)
 
@@ -337,9 +337,9 @@ class UAVNavigator:
                     self.publish_optimizer_ctrl_points(ctrl_pts_real)
                     optimizing_time = self.logger.toc()
 
-                    cost_v, cost_a, cost_jerk = (None, None, None)
+                    cost_v, cost_a, cost_j = (None, None, None)
                     if self._last_opt_cost is not None:
-                        cost_v, cost_a, cost_jerk = self._last_opt_cost
+                        cost_v, cost_a, cost_j = self._last_opt_cost
 
                     self.logger.log_segment(
                         start_real=self.start_real,
@@ -348,7 +348,7 @@ class UAVNavigator:
                         optimization_time=optimizing_time,
                         cost_v=cost_v,
                         cost_a=cost_a,
-                        cost_jerk=cost_jerk,
+                        cost_j=cost_j,
                     )
 
                     rospy.loginfo(

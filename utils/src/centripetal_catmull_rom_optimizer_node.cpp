@@ -244,7 +244,7 @@ public:
         ros::Duration(CMD_DT),
         &CatmullRomOptimizerNode::cmdTimer, this);
 
-    ROS_INFO("[catmull_rom_optimizer] Ready. edt_hard_min=%.3f, speed_s_per_sec=%.2f",
+    ROS_INFO("[CentripetalCatmullRom_optimizer] Ready. edt_hard_min=%.3f, speed_s_per_sec=%.2f",
              edt_hard_min_, speed_s_per_sec_);
   }
 
@@ -259,17 +259,17 @@ private:
   {
     if (msg->poses.size() < 2)
     {
-      ROS_WARN("[catmull] Need >=2 points.");
+      ROS_WARN("[CentripetalCatmullRom_optimizer] Need >=2 points.");
       return;
     }
     if (ignore_while_exec_ && executing_)
     {
-      ROS_WARN("[catmull] Executing, ignore new points.");
+      ROS_WARN("[CentripetalCatmullRom_optimizer] Executing, ignore new points.");
       return;
     }
     if (!has_edt_)
     {
-      ROS_WARN("[catmull] No EDT yet.");
+      ROS_WARN("[CentripetalCatmullRom_optimizer] No EDT yet.");
       return;
     }
 
@@ -345,14 +345,14 @@ private:
     auto cand = std::make_unique<CentripetalCatmullRom>(pts, 0.5);
     if (!cand->valid() || cand->totalS() <= EPS)
     {
-      ROS_WARN("[catmull] Curve invalid.");
+      ROS_WARN("[CentripetalCatmullRom_optimizer] Curve invalid.");
       return;
     }
 
     // 安全性检查
     if (!checkCurveSafety(*cand))
     {
-      ROS_WARN("[catmull] Curve violates EDT constraint.");
+      ROS_WARN("[CentripetalCatmullRom_optimizer] Curve violates EDT constraint.");
       return;
     }
 
@@ -360,7 +360,7 @@ private:
     start_time_ = ros::Time::now();
     executing_ = true;
 
-    ROS_INFO("[catmull] Curve accepted. points=%zu, totalS=%.3f",
+    ROS_INFO("[CentripetalCatmullRom_optimizer] Curve accepted. points=%zu, totalS=%.3f",
              pts.size(), curve_->totalS());
     publishCostsForCurve(*curve_);
   }
@@ -414,7 +414,7 @@ private:
       Eigen::Vector3d p = c.evaluate(s);
       if (!isSafeByEDT(p.x(), p.y()))
       {
-        ROS_ERROR_STREAM("[catmull][SAFETY FAIL] s=" << s
+        ROS_ERROR_STREAM("[CentripetalCatmullRom_optimizer][SAFETY FAIL] s=" << s
                          << " pos=(" << p.x() << "," << p.y() << ")"
                          << " totalS=" << S);
         return false;
@@ -435,7 +435,7 @@ private:
 
     if (gx < 0 || gy < 0 || gx >= (int)edt_map_.info.width || gy >= (int)edt_map_.info.height)
     {
-      ROS_ERROR_STREAM("[catmull][EDT OUT OF MAP] pos=(" << x << "," << y
+      ROS_ERROR_STREAM("[CentripetalCatmullRom_optimizer][EDT OUT OF MAP] pos=(" << x << "," << y
                        << ") grid=(" << gx << "," << gy << ")"
                        << " map_size=(" << edt_map_.info.width << "," << edt_map_.info.height << ")"
                        << " origin=(" << ox << "," << oy << ") res=" << res);
@@ -458,7 +458,7 @@ private:
     // Unknown cell
     if (raw_v < 0)
     {
-      ROS_ERROR_STREAM("[catmull][EDT UNKNOWN] pos=(" << x << "," << y
+      ROS_ERROR_STREAM("[CentripetalCatmullRom_optimizer][EDT UNKNOWN] pos=(" << x << "," << y
                        << ") grid=(" << gx << "," << gy << ") raw_v=" << raw_v);
       return false;
     }
@@ -474,7 +474,7 @@ private:
 
     if (edt_m < edt_hard_min_)
     {
-      ROS_ERROR_STREAM("[catmull][EDT TOO SMALL] pos=(" << x << "," << y
+      ROS_ERROR_STREAM("[CentripetalCatmullRom_optimizer][EDT TOO SMALL] pos=(" << x << "," << y
                        << ") grid=(" << gx << "," << gy << ") raw_v=" << raw_v
                        << " v=" << v << " edt_m=" << edt_m
                        << " threshold=" << edt_hard_min_);
@@ -520,7 +520,7 @@ private:
     // 如果运行中遇到不安全（地图更新导致）——可选择紧急停止
     if (has_edt_ && !isSafeByEDT(p.x(), p.y()))
     {
-      ROS_ERROR("[catmull] Unsafe point encountered during execution! Stop.");
+      ROS_ERROR("[CentripetalCatmullRom_optimizer] Unsafe point encountered during execution! Stop.");
       executing_ = false;
       return;
     }
@@ -605,7 +605,7 @@ private:
     msg.z = cost_j;
     cost_pub_.publish(msg);
 
-    ROS_INFO_STREAM("[catmull][COST] cost_v=" << cost_v
+    ROS_INFO_STREAM("[CentripetalCatmullRom_optimizer][COST] cost_v=" << cost_v
                     << " cost_a=" << cost_a
                     << " cost_jerk=" << cost_j);
   }

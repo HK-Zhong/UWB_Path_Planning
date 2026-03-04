@@ -61,7 +61,7 @@ class SimpleExperimentLogger:
             goal_real,
             planning_time,
             optimization_time,
-            cost_v, cost_a, cost_jerk,
+            cost_v, cost_a, cost_j,
     ):
         self.plan_index += 1
 
@@ -76,7 +76,7 @@ class SimpleExperimentLogger:
             "optimization_time": optimization_time,
             "cost_v": cost_v,
             "cost_a": cost_a,
-            "cost_jerk": cost_jerk,
+            "cost_j": cost_j,
         }
 
         self.rows.append(row)
@@ -100,7 +100,7 @@ class SimpleExperimentLogger:
             "optimization_time",
             "cost_v",
             "cost_a",
-            "cost_jerk",
+            "cost_j",
         ]
 
         with open(self.csv_path, "w", newline="") as f:
