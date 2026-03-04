@@ -308,10 +308,29 @@ class EDTAwareAStarPlanner(PlannerBase):
 
     # --------------------------------------------------------
     def plan(self, start_grid, goal_grid):
+        """Weighted-scaling A* (soft multi-objective).
+
+        Goal:
+          - Primary: short path (distance)
+          - Secondary: stay safer (larger EDT) but DO NOT over-dominate distance
+          - Optional: smoother turns
+
+        Hard constraints are enforced in `get_neighbors()`:
+          - unknown/obstacle forbidden
+          - edt <= edt_hard_min forbidden
+
+        Implementation idea:
+          - Use standard A* where f = g + h
+          - g accumulates a weighted sum of:
+              * distance (dominant)
+              * safety penalty (scaled to be O(1) per step near threshold)
+              * turn penalty (small)
+          - h only estimates remaining distance (admissible), so distance stays the main driver.
+        """
 
         if (
-                self.map.grid_map[start_grid] == 1
-                or self.map.grid_map[goal_grid] == 1
+            self.map.grid_map[start_grid] == 1
+            or self.map.grid_map[goal_grid] == 1
         ):
             return None
 
@@ -321,6 +340,11 @@ class EDTAwareAStarPlanner(PlannerBase):
         came_from = {}
         g_score = {start_grid: 0.0}
 
+        # --- precompute a typical step length (meters) to keep scaling intuitive
+        # 4-neigh step ~ res, diag ~ res*sqrt(2)
+        step_m_4 = float(self.map.resolution)
+        step_m_8 = float(self.map.resolution) * math.sqrt(2.0)
+
         while open_set:
             _, current = heapq.heappop(open_set)
 
@@ -328,9 +352,30 @@ class EDTAwareAStarPlanner(PlannerBase):
                 return self.reconstruct_path(came_from, current)
 
             for neighbor, move_cost in self.get_neighbors(current):
+                # ------------------------------------------------------------
+                # 1) Distance term (dominant)
+                # move_cost is in grid units (1 or sqrt(2)); convert to meters for readability
+                step_m = step_m_4 if move_cost <= 1.0 + 1e-9 else step_m_8
+                cost_dist = self.w_dist * step_m
 
-                cost_dist = self.w_dist * move_cost
-                cost_safe = self.w_safe * self.safety_cost(neighbor)
+                # ------------------------------------------------------------
+                # 2) Safety term (soft):
+                # Make a monotone decreasing penalty in (0, +inf),
+                # roughly O(1) when edt is near the hard threshold.
+                #
+                # penalty = ((edt_hard_min + eps) / (edt + eps))^p
+                #   - at edt = edt_hard_min  -> ~1
+                #   - at edt = 2*threshold  -> ~ (1/2)^p
+                #
+                edt = float(self.map.edt_map[neighbor[0], neighbor[1]])
+                ratio = (self.edt_hard_min + self.safe_epsilon) / (edt + self.safe_epsilon)
+                penalty_safe = ratio ** float(self.edt_cost_power)
+
+                # Scale safety cost by step length so that it behaves like an integral along path
+                cost_safe = self.w_safe * penalty_safe * step_m
+
+                # ------------------------------------------------------------
+                # 3) Turn term (very small, optional)
                 cost_turn = self.w_turn * self.turn_cost(came_from, current, neighbor)
 
                 tentative_g = g_score[current] + cost_dist + cost_safe + cost_turn
@@ -338,7 +383,11 @@ class EDTAwareAStarPlanner(PlannerBase):
                 if neighbor not in g_score or tentative_g < g_score[neighbor]:
                     came_from[neighbor] = current
                     g_score[neighbor] = tentative_g
-                    f_score = tentative_g + self.heuristic(neighbor, goal_grid)
+
+                    # Heuristic: remaining distance only (meters), keep it admissible
+                    h = self.w_dist * float(self.map.resolution) * self.heuristic(neighbor, goal_grid)
+
+                    f_score = tentative_g + h
                     heapq.heappush(open_set, (f_score, neighbor))
 
         return None

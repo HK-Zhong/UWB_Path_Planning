@@ -1,6 +1,9 @@
 <launch>
 
-  <!-- UAV 高层规划 -->
-  <node pkg="utils" type="uav_navigator.py" name="uav_navigator" output="screen" />
+  <node pkg="utils" type="uav_navigator.py" name="uav_navigator" output="screen">
+
+    <param name="resolution" value="0.25"/>
+
+  </node>
 
 </launch>

@@ -22,12 +22,14 @@ class UAVNavigator:
 
         rospy.init_node("uav_navigator", anonymous=True)
 
-        self.resolution = 0.5  # 栅格分辨率（米）
+        # 从 launch 参数读取分辨率（默认 0.5m）
+        self.resolution = rospy.get_param("~resolution", 0.5)
+        rospy.loginfo(f"[UAVNavigator] Grid resolution = {self.resolution} m")
 
         # 初始化
         self.grid_map = GridMap(size=50, resolution=self.resolution)
         self.grid_map.map_init()
-        self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=self.resolution)
+        self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=self.resolution * 1.5)
         # self.planner = GridAStarPlanner(self.grid_map)
         # self.planner = DijkstraPlanner(self.grid_map)
 
@@ -80,7 +82,7 @@ class UAVNavigator:
         self.logger = SimpleExperimentLogger()
         self.logger.start(planner_name=self.planner.__class__.__name__)
 
-        rospy.loginfo("Drone Controller Initialized")
+        rospy.loginfo("[UAVNavigator] Drone Controller Initialized")
 
     def odometry_callback(self, msg):
         """
@@ -203,7 +205,7 @@ class UAVNavigator:
         self.optimizer_ctrl_pub.publish(msg)
 
         rospy.loginfo(
-            "[uav_navigator] Publish B-spline ctrl points: "
+            "[UAVNavigator] Publish optimizer ctrl points: "
             f"{ctrl_pts_real[:4]}"
         )
 
@@ -232,7 +234,7 @@ class UAVNavigator:
         # 发布目标位置
         self.goal_pub.publish(goal)
         # rospy.loginfo(f"UAV current position {self.current_position}")
-        rospy.loginfo(f"Moving from {self.current_position}")
+        rospy.loginfo(f"[UAVNavigator] Moving from {self.current_position}")
         rospy.loginfo(f"to Waypoint (x: {x}, y: {y}, z: {1.0})")
 
     def update_map_stateful(self):
@@ -248,16 +250,22 @@ class UAVNavigator:
         if not self.los_data:
             return
 
-        # ===== 状态 1：任务开始前，执行一次宽更新 =====
+        # ===== 状态 1：任务开始前，执行一次宽更新，宽度为一边固定0.5m =====
         if not self._map_initialized:
-            rospy.loginfo("[update_map_stateful] Initial wide LOS update (free_expand=1)")
-            self.map_update(free_expand=1)
+            rospy.loginfo("[update_map_stateful] Initial wide LOS update...")
+            if self.resolution == 0.25:
+                self.map_update(free_expand=2)
+            else:
+                self.map_update(free_expand=1)
             self._map_initialized = True
             return
 
         # ===== 状态 2：任务执行中，持续窄更新 =====
-        self.map_update(free_expand=0)
-        rospy.loginfo("[update_map_stateful] Continuous narrow LOS update (free_expand=0)")
+        if self.resolution == 0.25:
+            self.map_update(free_expand=1)
+        else:
+            self.map_update(free_expand=0)
+        rospy.loginfo("[update_map_stateful] Continuous narrow LOS update...")
 
     def run(self):
         try:
@@ -285,7 +293,7 @@ class UAVNavigator:
                 # =================================================
                 if self.active_goal_real is None and self.need_replan:
 
-                    rospy.loginfo("[Navigator] Replanning...")
+                    rospy.loginfo("[UAVNavigator] Replanning...")
 
                     # 1. 路径规划，输出栅格坐标路径
                     self.logger.tic()
@@ -309,7 +317,7 @@ class UAVNavigator:
                         continue
 
                     if len(ctrl_pts_grid) < 4:
-                        rospy.logwarn("[Navigator] Failed to extract 4 control points. Directly flying to goal.")
+                        rospy.logwarn("[UAVNavigator] Failed to extract 4 control points. Directly flying to goal.")
                         self.active_goal_grid = ctrl_pts_grid[-1]
                         self.active_goal_real = self.grid_map.to_real(
                             self.active_goal_grid[0],
@@ -318,7 +326,7 @@ class UAVNavigator:
 
                         self.publish_waypoint(self.active_goal_real)
                         rospy.loginfo(
-                            f"[Navigator] Active goal grid={self.active_goal_grid}, "
+                            f"[UAVNavigator] Active goal grid={self.active_goal_grid}, "
                             f"real={self.active_goal_real}")
                         self.rate.sleep()
                         continue
@@ -352,7 +360,7 @@ class UAVNavigator:
                     )
 
                     rospy.loginfo(
-                        f"[Navigator] Active goal grid={self.active_goal_grid}, "
+                        f"[UAVNavigator] Active goal grid={self.active_goal_grid}, "
                         f"real={self.active_goal_real}")
 
                     self.need_replan = False
@@ -361,13 +369,13 @@ class UAVNavigator:
                 # 状态 B：正在飞 → 只判断是否到达
                 # =================================================
                 elif self.active_goal_real is not None:
-                    rospy.loginfo("[Navigator] flying ...")
+                    rospy.loginfo("[UAVNavigator] flying ...")
                     if self.has_reached_goal(
                             self.active_goal_real[0],
                             self.active_goal_real[1],
                             1.0
                     ):
-                        rospy.loginfo("[Navigator] Active goal reached.")
+                        rospy.loginfo("[UAVNavigator] Active goal reached.")
 
                         # 规划起点前移（✔️ 正确的位置）
                         self.start_real = self.active_goal_real

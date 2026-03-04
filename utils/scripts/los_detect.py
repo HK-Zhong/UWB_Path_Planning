@@ -243,7 +243,7 @@ class LOSDetector:
 if __name__ == '__main__':
     try:
         # 初始化 LOS 检测器
-        los_detector = LOSDetector(rate=1)
+        los_detector = LOSDetector(rate=2)
         # 运行 LOS 检测
         los_detector.run()
     except rospy.ROSInterruptException:

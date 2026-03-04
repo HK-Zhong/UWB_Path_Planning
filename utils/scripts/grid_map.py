@@ -174,7 +174,17 @@ class GridMap:
 
         # ===== 保存 grid_map 矩阵 =====
         np.save(npy_path, self.grid_map)
-        # np.savetxt(txt_path, self.grid_map, fmt="%d")
+
+        # ===== 保存 highlight_points（如果有） =====
+        if highlight_points:
+            hp_path = os.path.join(self.get_pic_dir(), "grid_map", f"{filename}_{ts}_highlight_points.npy")
+            np.save(hp_path, np.array(highlight_points, dtype=np.int32))
+            # 同时保存为可直接查看的 CSV
+            hp_csv_path = os.path.join(self.get_pic_dir(), "grid_map", f"{filename}_{ts}_highlight_points.csv")
+            np.savetxt(hp_csv_path, np.array(highlight_points, dtype=np.int32), fmt="%d", delimiter=",", header="gx,gy", comments="")
+            print(f"[GridMap] highlight_points saved:")
+            print(f"  - {hp_path}")
+            print(f"  - {hp_csv_path}")
 
         print(f"[GridMap] grid_map matrix saved:")
         print(f"  - {npy_path}")
@@ -212,7 +222,17 @@ class GridMap:
 
         # ===== 保存 edt_map 矩阵 =====
         np.save(npy_path, self.edt_map)
-        # np.savetxt(txt_path, self.edt_map, fmt="%.4f")
+
+        # ===== 保存 highlight_points（如果有） =====
+        if highlight_points:
+            hp_path = os.path.join(self.get_pic_dir(), "edt_map", f"{filename}_{ts}_highlight_points.npy")
+            np.save(hp_path, np.array(highlight_points, dtype=np.int32))
+            # 同时保存为可直接查看的 CSV
+            hp_csv_path = os.path.join(self.get_pic_dir(), "edt_map", f"{filename}_{ts}_highlight_points.csv")
+            np.savetxt(hp_csv_path, np.array(highlight_points, dtype=np.int32), fmt="%d", delimiter=",", header="gx,gy", comments="")
+            print(f"[GridMap] highlight_points saved:")
+            print(f"  - {hp_path}")
+            print(f"  - {hp_csv_path}")
 
         print(f"[GridMap] edt_map matrix saved:")
         print(f"  - {npy_path}")
