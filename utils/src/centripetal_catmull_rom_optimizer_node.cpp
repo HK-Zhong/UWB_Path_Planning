@@ -240,6 +240,8 @@ public:
         "/optimizer/cost", 10);
     edt_pub_ = nh.advertise<geometry_msgs::Vector3>(
         "/optimizer/edt", 10);
+    traj_info_pub_ = nh.advertise<geometry_msgs::Vector3>(
+        "/optimizer/traj_info", 10);
 
     // ---- 定时器 ----
     timer_ = nh.createTimer(
@@ -366,6 +368,7 @@ private:
              pts.size(), curve_->totalS());
     publishCostsForCurve(*curve_);
     publishEdtStatsForCurve(*curve_);
+    publishTrajInfoForCurve(*curve_);
   }
 
   // 查询某个世界坐标点的 EDT 值（米）。
@@ -555,7 +558,58 @@ private:
   ros::Publisher  cmd_pub_;
   ros::Publisher  cost_pub_;
   ros::Publisher  edt_pub_;
+  ros::Publisher  traj_info_pub_;
   ros::Timer      timer_;
+
+  // Helper to compute and publish trajectory length (meters) and execution time (seconds)
+  // for the curve under the current execution parametrization s(t)=speed_s_per_sec_*t.
+  void publishTrajInfoForCurve(const CentripetalCatmullRom& c)
+  {
+    const double S = c.totalS();
+    if (S <= EPS) return;
+
+    // We execute the curve by advancing the curve parameter with:
+    //   s(t) = speed_s_per_sec_ * t
+    // and we publish commands every CMD_DT.
+    // Therefore, the EXECUTION time can be estimated by how many CMD_DT ticks
+    // are needed to reach S with step ds = speed_s_per_sec_ * CMD_DT.
+
+    const double dt = CMD_DT;
+    const double ds = std::max(EPS, speed_s_per_sec_ * dt);
+
+    // Number of sampled points along the execution (including s=0).
+    const int N = std::max(2, int(std::ceil(S / ds)) + 1);
+
+    // Execution ticks are N-1 intervals of length dt.
+    const double traj_time_exec = double(std::max(0, N - 1)) * dt;
+
+    // Approximate geometric length by sampling positions along s using the same discretization.
+    double length_m = 0.0;
+    Eigen::Vector3d p_prev = c.evaluate(0.0);
+
+    for (int i = 1; i < N; ++i)
+    {
+      double s = std::min(S, i * ds);
+      Eigen::Vector3d p = c.evaluate(s);
+      length_m += (p - p_prev).norm();
+      p_prev = p;
+      if (s >= S - 1e-9) break;
+    }
+
+    geometry_msgs::Vector3 msg;
+    msg.x = length_m;       // trajectory length (m)
+    msg.y = traj_time_exec; // trajectory execution time (s) estimated by CMD_DT ticks
+    msg.z = 0.0;
+    traj_info_pub_.publish(msg);
+
+    ROS_INFO_STREAM("[CentripetalCatmullRom_optimizer][TRAJ] length_m=" << length_m
+                    << " traj_time_exec=" << traj_time_exec
+                    << " N=" << N
+                    << " dt=" << dt
+                    << " ds=" << ds
+                    << " totalS=" << S
+                    << " speed_s_per_sec=" << speed_s_per_sec_);
+  }
 
   // Helper to compute and publish costs for a curve
   void publishCostsForCurve(const CentripetalCatmullRom& c)

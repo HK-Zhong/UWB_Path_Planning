@@ -138,6 +138,9 @@ public:
     edt_pub_ = nh.advertise<geometry_msgs::Vector3>(
         "/optimizer/edt", 10);
 
+    traj_info_pub_ = nh.advertise<geometry_msgs::Vector3>(
+        "/optimizer/traj_info", 10);
+
     timer_ = nh.createTimer(
         ros::Duration(CMD_DT),
         &SplineOptimizerNode::timerCallback, this);
@@ -152,6 +155,7 @@ private:
   ros::Publisher cmd_pub_;
   ros::Publisher cost_pub_;
   ros::Publisher edt_pub_;
+  ros::Publisher traj_info_pub_;
   ros::Timer timer_;
 
   nav_msgs::OccupancyGrid edt_map_;
@@ -225,6 +229,9 @@ private:
 
     // Publish EDT stats once per accepted trajectory
     publishEdtStatsForTraj(*traj_);
+
+    // Publish trajectory length & execution time (aligned with CCR logic)
+    publishTrajInfoForTraj(*traj_);
 
     ROS_INFO("[PiecewiseCubicSpline_optimizer] Trajectory accepted.");
   }
@@ -351,6 +358,49 @@ private:
     ROS_INFO_STREAM("[PiecewiseCubicSpline_optimizer][EDT] edt_min=" << edt_min
                     << " edt_mean=" << edt_mean
                     << " samples=" << edt_cnt);
+  }
+
+  void publishTrajInfoForTraj(const PiecewiseCubicSpline& c)
+  {
+    const double T = c.duration();
+    if (T <= 1e-6) return;
+
+    // We execute/publish commands every CMD_DT.
+    // Therefore, the EXECUTION time can be estimated by how many CMD_DT ticks
+    // are needed to reach the end of this trajectory.
+    const double dt = CMD_DT;
+
+    // Number of sampled points along the execution (including t=0).
+    const int N = std::max(2, int(std::ceil(T / dt)) + 1);
+
+    // Execution ticks are N-1 intervals of length dt.
+    const double traj_time_exec = double(std::max(0, N - 1)) * dt;
+
+    // Approximate geometric length by sampling positions along t using the same discretization.
+    double length_m = 0.0;
+    Eigen::Vector3d p_prev = c.evaluate(0.0);
+
+    for (int i = 1; i < N; ++i)
+    {
+      const double t = std::min(T, i * dt);
+      const Eigen::Vector3d p = c.evaluate(t);
+      length_m += (p - p_prev).norm();
+      p_prev = p;
+      if (t >= T - 1e-9) break;
+    }
+
+    geometry_msgs::Vector3 msg;
+    msg.x = length_m;        // trajectory length (m)
+    msg.y = traj_time_exec;  // trajectory execution time (s) estimated by CMD_DT ticks
+    msg.z = 0.0;
+    traj_info_pub_.publish(msg);
+
+    ROS_INFO_STREAM("[PiecewiseCubicSpline_optimizer][TRAJ] length_m=" << length_m
+                    << " traj_time_exec=" << traj_time_exec
+                    << " N=" << N
+                    << " dt=" << dt
+                    << " duration_T=" << T
+                    << " speed_s_per_sec=" << speed_s_per_sec_);
   }
 
   void publishCostsForTraj(const PiecewiseCubicSpline& c)

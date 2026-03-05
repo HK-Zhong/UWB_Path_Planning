@@ -75,6 +75,12 @@ class UAVNavigator:
         self._last_opt_edt_stamp = None
         rospy.Subscriber("/optimizer/edt", Vector3, self.optimizer_edt_callback)
 
+        # ===== Subscribe optimizer trajectory info =====
+        # msg.x = traj_length_m, msg.y = traj_time_s
+        self._last_traj_info = None  # (length_m, time_s)
+        self._last_traj_info_stamp = None
+        rospy.Subscriber("/optimizer/traj_info", Vector3, self.optimizer_traj_info_callback)
+
         self.rate = rospy.Rate(2)  # 控制更新频率
 
         # 订阅无人机位置话题
@@ -126,6 +132,11 @@ class UAVNavigator:
         """Receive optimizer EDT metrics (edt_min, edt_mean)."""
         self._last_opt_edt = (float(msg.x), float(msg.y))
         self._last_opt_edt_stamp = rospy.Time.now()
+
+    def optimizer_traj_info_callback(self, msg: Vector3):
+        """Receive optimizer trajectory info (length_m, time_s)."""
+        self._last_traj_info = (float(msg.x), float(msg.y))
+        self._last_traj_info_stamp = rospy.Time.now()
 
     def plan(self, start_real, end_real):
         """ 使用 A* 计算路径 """
@@ -368,6 +379,14 @@ class UAVNavigator:
                         f"[UAVNavigator] Optimizer EDT: edt_min={edt_min}, edt_mean={edt_mean}"
                     )
 
+                    traj_len_m, traj_time_exec = (None, None)
+                    if self._last_traj_info is not None:
+                        traj_len_m, traj_time_exec = self._last_traj_info
+
+                    rospy.loginfo(
+                        f"[UAVNavigator] Optimizer TRAJ: length_m={traj_len_m}, time_s={traj_time_exec}"
+                    )
+
                     self.logger.log_segment(
                         start_real=self.start_real,
                         goal_real=self.active_goal_real,
@@ -378,6 +397,8 @@ class UAVNavigator:
                         cost_j=cost_j,
                         edt_min=edt_min,
                         edt_mean=edt_mean,
+                        traj_len_m=traj_len_m,
+                        traj_time_exec=traj_time_exec,
                     )
 
                     rospy.loginfo(
@@ -413,6 +434,7 @@ class UAVNavigator:
             self.grid_map.visualize(self.key_waypoints)
             self.grid_map.visualize_edt(self.key_waypoints)
             self.logger.save()
+
 
 if __name__ == "__main__":
     navigator = UAVNavigator()

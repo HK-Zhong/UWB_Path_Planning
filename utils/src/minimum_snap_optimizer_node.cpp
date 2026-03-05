@@ -264,6 +264,7 @@ public:
         "/ardrone_1/command/pose", 10);
     cost_pub_ = nh.advertise<geometry_msgs::Vector3>("/optimizer/cost", 10, true);
     edt_pub_  = nh.advertise<geometry_msgs::Vector3>("/optimizer/edt", 10, true);
+    traj_info_pub_ = nh.advertise<geometry_msgs::Vector3>("/optimizer/traj_info", 10, true);
 
     timer_ = nh.createTimer(ros::Duration(CMD_DT),
                             &MinimumSnapOptimizerNode::timerCb, this);
@@ -343,6 +344,7 @@ private:
     executing_ = true;
     publishTrajectoryCost(*traj_);
     publishEdtStatsForTraj(*traj_);
+    publishTrajInfoForTraj(*traj_);
 
     ROS_INFO("[MinimumSnap_optimizer] Trajectory accepted. segments=%zu, duration=%.2fs",
              traj_->T.size(), traj_->totalDuration());
@@ -640,8 +642,9 @@ private:
   ros::Subscriber edt_sub_;
   ros::Publisher  cmd_pub_;
   ros::Publisher  cost_pub_;
-  ros::Timer      timer_;
   ros::Publisher  edt_pub_;
+  ros::Publisher  traj_info_pub_;
+  ros::Timer      timer_;
 
   nav_msgs::OccupancyGrid edt_map_;
   bool has_edt_ = false;
@@ -732,6 +735,50 @@ private:
 
     ROS_INFO("[MinimumSnap_optimizer][EDT] edt_min=%.6f edt_mean=%.6f samples=%d",
              edt_min, edt_mean, edt_cnt);
+  }
+
+  // Publish trajectory info (length and execution time)
+  void publishTrajInfoForTraj(const MinSnapTraj& traj)
+  {
+    const double T = traj.totalDuration();
+    if (T <= 0.0) return;
+
+    // We execute the trajectory by publishing commands every CMD_DT.
+    // Therefore, the EXECUTION time can be estimated by how many CMD_DT ticks
+    // are needed to reach total duration T.
+
+    const double dt = CMD_DT;
+
+    // Number of sampled points along the execution (including t=0).
+    const int N = std::max(2, int(std::ceil(T / dt)) + 1);
+
+    // Execution ticks are N-1 intervals of length dt.
+    const double traj_time_exec = double(std::max(0, N - 1)) * dt;
+
+    // Approximate geometric length by sampling positions along time using the same discretization.
+    double length_m = 0.0;
+    Eigen::Vector3d p_prev = traj.eval(0.0);
+
+    for (int i = 1; i < N; ++i)
+    {
+      double t = std::min(T, i * dt);
+      Eigen::Vector3d p = traj.eval(t);
+      length_m += (p - p_prev).norm();
+      p_prev = p;
+      if (t >= T - 1e-9) break;
+    }
+
+    geometry_msgs::Vector3 msg;
+    msg.x = length_m;       // trajectory length (m)
+    msg.y = traj_time_exec; // trajectory execution time (s) estimated by CMD_DT ticks
+    msg.z = 0.0;
+    traj_info_pub_.publish(msg);
+
+    ROS_INFO_STREAM("[MinimumSnap_optimizer][TRAJ] length_m=" << length_m
+                    << " traj_time_exec=" << traj_time_exec
+                    << " N=" << N
+                    << " dt=" << dt
+                    << " totalDuration=" << T);
   }
 
 };
