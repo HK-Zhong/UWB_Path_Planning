@@ -319,7 +319,7 @@ class UAVNavigator:
                     # 2. 提取“第一段窗口”的 4 个控制点（栅格）
                     ctrl_pts_grid = self.planner.extract_first_window_ctrl_points(
                         path=grid_path,
-                        min_dist_m=3.0
+                        min_dist_m=2.5
                     )
 
                     if ctrl_pts_grid is None:

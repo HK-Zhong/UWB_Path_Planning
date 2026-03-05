@@ -263,6 +263,7 @@ public:
     cmd_pub_ = nh.advertise<geometry_msgs::PoseStamped>(
         "/ardrone_1/command/pose", 10);
     cost_pub_ = nh.advertise<geometry_msgs::Vector3>("/optimizer/cost", 10, true);
+    edt_pub_  = nh.advertise<geometry_msgs::Vector3>("/optimizer/edt", 10, true);
 
     timer_ = nh.createTimer(ros::Duration(CMD_DT),
                             &MinimumSnapOptimizerNode::timerCb, this);
@@ -341,6 +342,7 @@ private:
     start_time_ = ros::Time::now();
     executing_ = true;
     publishTrajectoryCost(*traj_);
+    publishEdtStatsForTraj(*traj_);
 
     ROS_INFO("[MinimumSnap_optimizer] Trajectory accepted. segments=%zu, duration=%.2fs",
              traj_->T.size(), traj_->totalDuration());
@@ -639,6 +641,7 @@ private:
   ros::Publisher  cmd_pub_;
   ros::Publisher  cost_pub_;
   ros::Timer      timer_;
+  ros::Publisher  edt_pub_;
 
   nav_msgs::OccupancyGrid edt_map_;
   bool has_edt_ = false;
@@ -691,6 +694,46 @@ private:
 
     ROS_INFO("[MinimumSnap_optimizer][COST] v=%.6f a=%.6f jerk=%.6f", cost_v, cost_a, cost_j);
   }
+
+    // Publish EDT stats (min/mean) along trajectory
+  void publishEdtStatsForTraj(const MinSnapTraj& traj)
+  {
+    // Sample EDT along the trajectory using the same discretization as cost:
+    // sample at controller dt.
+
+    const double T = traj.totalDuration();
+    if (T <= 0.0) return;
+
+    double edt_min = std::numeric_limits<double>::infinity();
+    double edt_sum = 0.0;
+    int    edt_cnt = 0;
+
+    for (double t = 0.0; t <= T; t += CMD_DT)
+    {
+      Eigen::Vector3d p = traj.eval(t);
+
+      // queryEDT() already handles out-of-map/unknown as 0.0
+      double edt_m = queryEDT(p);
+
+      edt_min = std::min(edt_min, edt_m);
+      edt_sum += edt_m;
+      edt_cnt += 1;
+    }
+
+    if (edt_cnt <= 0) return;
+    const double edt_mean = edt_sum / double(edt_cnt);
+    if (!std::isfinite(edt_min)) return;
+
+    geometry_msgs::Vector3 msg;
+    msg.x = edt_min;   // min EDT along trajectory (m)
+    msg.y = edt_mean;  // mean EDT along trajectory (m)
+    msg.z = 0.0;
+    edt_pub_.publish(msg);
+
+    ROS_INFO("[MinimumSnap_optimizer][EDT] edt_min=%.6f edt_mean=%.6f samples=%d",
+             edt_min, edt_mean, edt_cnt);
+  }
+
 };
 
 int main(int argc, char** argv)

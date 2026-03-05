@@ -9,6 +9,7 @@
 #include <memory>
 #include <cmath>
 #include <algorithm>
+#include <limits>
 #include <tf/tf.h>
 
 static constexpr double CMD_DT = 0.02;   // 50Hz
@@ -134,6 +135,9 @@ public:
     cost_pub_ = nh.advertise<geometry_msgs::Vector3>(
         "/optimizer/cost", 10);
 
+    edt_pub_ = nh.advertise<geometry_msgs::Vector3>(
+        "/optimizer/edt", 10);
+
     timer_ = nh.createTimer(
         ros::Duration(CMD_DT),
         &SplineOptimizerNode::timerCallback, this);
@@ -147,6 +151,7 @@ private:
   ros::Subscriber edt_sub_;
   ros::Publisher cmd_pub_;
   ros::Publisher cost_pub_;
+  ros::Publisher edt_pub_;
   ros::Timer timer_;
 
   nav_msgs::OccupancyGrid edt_map_;
@@ -218,6 +223,9 @@ private:
     // Publish costs once per accepted trajectory
     publishCostsForTraj(*traj_);
 
+    // Publish EDT stats once per accepted trajectory
+    publishEdtStatsForTraj(*traj_);
+
     ROS_INFO("[PiecewiseCubicSpline_optimizer] Trajectory accepted.");
   }
 
@@ -258,6 +266,91 @@ private:
     double edt = std::min(100, std::max(0, raw)) * (kMaxRange / 100.0);
 
     return edt >= edt_hard_min_;
+  }
+
+  bool queryEDT(double x, double y, double& edt_m, int& raw_v, int& gx, int& gy)
+  {
+    edt_m = 0.0;
+    raw_v = -1;
+    gx = gy = 0;
+
+    if (!has_edt_) return false;
+
+    const double ox = edt_map_.info.origin.position.x;
+    const double oy = edt_map_.info.origin.position.y;
+    const double res = edt_map_.info.resolution;
+
+    gx = int((x - ox) / res);
+    gy = int((y - oy) / res);
+
+    if (gx < 0 || gy < 0 ||
+        gx >= (int)edt_map_.info.width ||
+        gy >= (int)edt_map_.info.height)
+      return false;
+
+    const int idx = gy * edt_map_.info.width + gx;
+
+    // OccupancyGrid.data is int8; negative means unknown
+    raw_v = int(edt_map_.data[idx]);
+    if (raw_v < 0) return false;
+
+    // Decode must match Python publish_edt_map(): v in [0,100] maps linearly to [0,max_range_m]
+    constexpr double kMaxRange = 5.0;
+    const int v = std::min(100, std::max(0, raw_v));
+    edt_m = double(v) * (kMaxRange / 100.0);
+    return true;
+  }
+
+  void publishEdtStatsForTraj(const PiecewiseCubicSpline& c)
+  {
+    // Sample EDT along the curve using the same discretization as cost:
+    // sample at controller dt.
+
+    const double T = c.duration();
+    if (T <= 1e-6) return;
+
+    const double dt = CMD_DT;
+    const int N = std::max(2, int(std::ceil(T / dt)) + 1);
+
+    double edt_min = std::numeric_limits<double>::infinity();
+    double edt_sum = 0.0;
+    int    edt_cnt = 0;
+
+    for (int i = 0; i < N; ++i)
+    {
+      const double t = std::min(T, i * dt);
+      const Eigen::Vector3d p = c.evaluate(t);
+
+      double edt_m = 0.0;
+      int raw_v = -1;
+      int gx = 0, gy = 0;
+
+      if (!queryEDT(p.x(), p.y(), edt_m, raw_v, gx, gy))
+      {
+        // Treat unknown/out as 0 for stats
+        edt_m = 0.0;
+      }
+
+      edt_min = std::min(edt_min, edt_m);
+      edt_sum += edt_m;
+      edt_cnt += 1;
+
+      if (t >= T - 1e-9) break;
+    }
+
+    if (edt_cnt <= 0) return;
+    const double edt_mean = edt_sum / double(edt_cnt);
+    if (!std::isfinite(edt_min)) return;
+
+    geometry_msgs::Vector3 msg;
+    msg.x = edt_min;   // min EDT along curve (m)
+    msg.y = edt_mean;  // mean EDT along curve (m)
+    msg.z = 0.0;
+    edt_pub_.publish(msg);
+
+    ROS_INFO_STREAM("[PiecewiseCubicSpline_optimizer][EDT] edt_min=" << edt_min
+                    << " edt_mean=" << edt_mean
+                    << " samples=" << edt_cnt);
   }
 
   void publishCostsForTraj(const PiecewiseCubicSpline& c)
