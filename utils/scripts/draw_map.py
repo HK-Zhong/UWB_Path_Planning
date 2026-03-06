@@ -11,54 +11,57 @@ X_MIN, X_MAX = -25.0, 25.0
 Y_MIN, Y_MAX = -25.0, 25.0
 
 # =========================
-# 2) 从 world 里“写死”的障碍物数据（后面你自己改这里就行）
-# pose: (x, y, z, roll, pitch, yaw)   -> 平面图只用 x, y, yaw
-# size: (sx, sy, sz)                  -> 平面图只用 sx, sy
+# 2) 从 indoor_environment2_obstacle.yml 里读取障碍物数据
 # =========================
-# models = [
-#     {
-#         "name": "obstacle1",
-#         "pose": (-13.0, -7.0, 2.0, 0.0, 0.0, 0.0),
-#         "size": (10.0, 6.0, 4.0),
-#     },
-#     {
-#         "name": "obstacle2",
-#         "pose": (-13.0, 7.0, 2.0, 0.0, 0.0, 0.0),
-#         "size": (10.0, 6.0, 4.0),
-#     },
-#     {
-#         "name": "obstacle3",
-#         "pose": (0.0, 0.0, 2.0, 0.0, 0.0, 0.0),
-#         "size": (4.0, 26.0, 4.0),
-#     },
-#     {
-#         "name": "obstacle4",
-#         "pose": (11.0, 0.0, 2.0, 0.0, 0.0, 0.0),
-#         "size": (10.0, 6.0, 4.0),
-#     },
-# ]
-models = [
-    {"name": "obstacle_01", "pose": (-18.0, -18.0, 0.75, 0.0, 0.0, 0.0), "size": (1.2, 0.8, 1.5)},
-    {"name": "obstacle_02", "pose": (-10.0, -20.0, 0.60, 0.0, 0.0, 0.0), "size": (0.8, 0.8, 1.2)},
-    {"name": "obstacle_03", "pose": (-5.0, -8.0, 0.90, 0.0, 0.0, 0.0), "size": (1.0, 1.6, 1.8)},
-    {"name": "obstacle_04", "pose": (-2.0, -14.0, 0.50, 0.0, 0.0, 0.0), "size": (1.6, 0.6, 1.0)},
-    {"name": "obstacle_05", "pose": (6.0, -18.0, 0.70, 0.0, 0.0, 0.0), "size": (1.4, 1.0, 1.4)},
-    {"name": "obstacle_06", "pose": (14.0, -16.0, 0.55, 0.0, 0.0, 0.0), "size": (1.0, 0.7, 1.1)},
-    {"name": "obstacle_07", "pose": (20.0, -8.0, 0.80, 0.0, 0.0, 0.0), "size": (1.8, 0.9, 1.6)},
-    {"name": "obstacle_08", "pose": (18.0, 2.0, 0.65, 0.0, 0.0, 0.0), "size": (1.1, 1.1, 1.3)},
-    {"name": "obstacle_09", "pose": (10.0, 6.0, 0.95, 0.0, 0.0, 0.0), "size": (0.9, 1.7, 1.9)},
-    {"name": "obstacle_10", "pose": (2.0, 10.0, 0.55, 0.0, 0.0, 0.0), "size": (1.5, 0.8, 1.1)},
-    {"name": "obstacle_11", "pose": (-6.0, 12.0, 0.75, 0.0, 0.0, 0.0), "size": (1.2, 1.2, 1.5)},
-    {"name": "obstacle_12", "pose": (-14.0, 10.0, 0.60, 0.0, 0.0, 0.0), "size": (0.8, 1.4, 1.2)},
-    {"name": "obstacle_13", "pose": (-20.0, 16.0, 0.70, 0.0, 0.0, 0.0), "size": (1.3, 0.9, 1.4)},
-    {"name": "obstacle_14", "pose": (-8.0, 20.0, 0.85, 0.0, 0.0, 0.0), "size": (1.7, 0.7, 1.7)},
-    {"name": "obstacle_15", "pose": (6.0, 18.0, 0.65, 0.0, 0.0, 0.0), "size": (1.0, 1.5, 1.3)},
-    {"name": "obstacle_16", "pose": (16.0, 16.0, 0.55, 0.0, 0.0, 0.0), "size": (1.1, 0.9, 1.1)},
-    {"name": "obstacle_17", "pose": (-12.0, 0.0, 0.95, 0.0, 0.0, 0.0), "size": (0.9, 0.9, 1.9)},
-    {"name": "obstacle_18", "pose": (-2.0, 2.0, 0.55, 0.0, 0.0, 0.0), "size": (1.4, 0.7, 1.1)},
-    {"name": "obstacle_19", "pose": (4.0, -2.0, 0.75, 0.0, 0.0, 0.0), "size": (1.2, 1.0, 1.5)},
-    {"name": "obstacle_20", "pose": (0.0, -6.0, 0.60, 0.0, 0.0, 0.0), "size": (0.8, 1.6, 1.2)},
-]
+OBSTACLES_YAML_PATH = "/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/indoor_environment2_obstacle.yml"
+
+
+def load_obstacle_models(yaml_path: str):
+    """Load obstacle models from obstacle YAML.
+
+    Expected format:
+      obstacles:
+        - name: obstacle_01
+          cx: ...
+          cy: ...
+          cz: ...
+          sx: ...
+          sy: ...
+          sz: ...
+
+    Returns:
+      list of dicts in the same format previously used by `models`:
+        {
+          "name": str,
+          "pose": (cx, cy, cz, 0.0, 0.0, 0.0),
+          "size": (sx, sy, sz),
+        }
+    """
+    with open(yaml_path, "r") as f:
+        data = yaml.safe_load(f)
+
+    obstacles = data.get("obstacles", []) if isinstance(data, dict) else []
+    models = []
+    for obs in obstacles:
+        if not isinstance(obs, dict):
+            continue
+        models.append({
+            "name": obs.get("name", "obstacle"),
+            "pose": (
+                float(obs["cx"]),
+                float(obs["cy"]),
+                float(obs.get("cz", 0.0)),
+                0.0,
+                0.0,
+                0.0,
+            ),
+            "size": (
+                float(obs["sx"]),
+                float(obs["sy"]),
+                float(obs.get("sz", 0.0)),
+            ),
+        })
+    return models
 
 # =========================
 # 2.5) UWB anchors (from YAML)
@@ -148,8 +151,14 @@ def main():
     ax.add_patch(border)
 
     # =========================
-    # 4) 逐个画障碍物
+    # 4) 从 YAML 读取并逐个画障碍物
     # =========================
+    try:
+        models = load_obstacle_models(OBSTACLES_YAML_PATH)
+    except Exception as e:
+        print(f"[draw_map] Failed to load obstacles from {OBSTACLES_YAML_PATH}: {e}")
+        models = []
+
     for m in models:
         x, y, z, roll, pitch, yaw = m["pose"]
         sx, sy, sz = m["size"]

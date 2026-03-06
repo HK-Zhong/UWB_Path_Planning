@@ -31,7 +31,7 @@ class UAVNavigator:
         rospy.loginfo(f"[UAVNavigator] Using map {self.map_no}, grid resolution = {self.resolution} m")
 
         # 目标位置（允许不是锚点本身，而是任意坐标点）
-        self.goal_real = (18, 5) if self.map_no == 1 else (5, 16)
+        self.goal_real = (18, 5) if self.map_no == 1 else (21, 4)
 
         # 初始化
         self.grid_map = GridMap(size=50, resolution=self.resolution, map_no=self.map_no)
@@ -423,7 +423,7 @@ class UAVNavigator:
                     # 2. 提取“第一段窗口”的 4 个控制点（栅格）
                     ctrl_pts_grid = self.planner.extract_first_window_ctrl_points(
                         path=grid_path,
-                        min_dist_m=2.5
+                        min_dist_m=4.0
                     )
 
                     if ctrl_pts_grid is None:

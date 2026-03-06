@@ -37,7 +37,7 @@ UWB_Anchors:
     -
       id: 7
       x: -8
-      y: 10
+      y: -10
       z: 0.7
     -
       id: 8
