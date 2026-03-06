@@ -1,0 +1,96 @@
+obstacles:
+  - name: obstacle_01
+    cx: -20.0
+    cy: 17.0
+    cz: 1.4
+    sx: 6.0
+    sy: 12.0
+    sz: 2.8
+
+  - name: obstacle_02
+    cx: -21.0
+    cy: 3.0
+    cz: 1.1
+    sx: 6.0
+    sy: 6.0
+    sz: 2.2
+
+  - name: obstacle_03
+    cx: -17.5
+    cy: -9.0
+    cz: 1.3
+    sx: 5.0
+    sy: 8.0
+    sz: 2.6
+
+  - name: obstacle_04
+    cx: -8.5
+    cy: 7.5
+    cz: 1.6
+    sx: 7.0
+    sy: 13.0
+    sz: 3.2
+
+  - name: obstacle_05
+    cx: -3.5
+    cy: -6.0
+    cz: 0.9
+    sx: 11.0
+    sy: 4.0
+    sz: 1.8
+
+  - name: obstacle_06
+    cx: 2.0
+    cy: 21.5
+    cz: 1.0
+    sx: 14.0
+    sy: 5.0
+    sz: 2.0
+
+  - name: obstacle_07
+    cx: -3.0
+    cy: -17.5
+    cz: 1.5
+    sx: 4.0
+    sy: 11.0
+    sz: 3.0
+
+  - name: obstacle_08
+    cx: 5.0
+    cy: 8.5
+    cz: 1.25
+    sx: 10.0
+    sy: 9.0
+    sz: 2.5
+
+  - name: obstacle_09
+    cx: 9.5
+    cy: -11.0
+    cz: 1.7
+    sx: 5.0
+    sy: 18.0
+    sz: 3.4
+
+  - name: obstacle_10
+    cx: 19.0
+    cy: 13.5
+    cz: 1.6
+    sx: 4.0
+    sy: 15.0
+    sz: 3.2
+
+  - name: obstacle_11
+    cx: 20.0
+    cy: -3.5
+    cz: 1.2
+    sx: 6.0
+    sy: 9.0
+    sz: 2.4
+
+  - name: obstacle_12
+    cx: 20.0
+    cy: -18.0
+    cz: 1.05
+    sx: 6.0
+    sy: 6.0
+    sz: 2.1

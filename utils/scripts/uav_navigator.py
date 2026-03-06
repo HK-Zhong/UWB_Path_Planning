@@ -1,7 +1,7 @@
 import sys
 import os
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))  # 添加当前脚本所在目录
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # 添加当前脚本所在目录
 
 import rospy, json
 from std_msgs.msg import String
@@ -14,6 +14,8 @@ from nav_msgs.msg import OccupancyGrid
 from std_msgs.msg import Header
 
 from experiment_logger import SimpleExperimentLogger
+import los_detect
+from geometry_msgs.msg import Point
 
 
 class UAVNavigator:
@@ -24,17 +26,32 @@ class UAVNavigator:
 
         # 从 launch 参数读取分辨率（默认 0.5m）
         self.resolution = rospy.get_param("~resolution", 0.5)
-        rospy.loginfo(f"[UAVNavigator] Grid resolution = {self.resolution} m")
+        self.map_no = rospy.get_param("~map_no", 1)
+
+        rospy.loginfo(f"[UAVNavigator] Using map {self.map_no}, grid resolution = {self.resolution} m")
+
+        # 目标位置（允许不是锚点本身，而是任意坐标点）
+        self.goal_real = (18, 5) if self.map_no == 1 else (5, 16)
 
         # 初始化
-        self.grid_map = GridMap(size=50, resolution=self.resolution)
+        self.grid_map = GridMap(size=50, resolution=self.resolution, map_no=self.map_no)
         self.grid_map.map_init()
+
+        # 复用 LOSDetector 的几何检测能力：显式传入 map_no，关闭其 ROS I/O
+        self.goal_los_helper = los_detect.LOSDetector(
+            rate=2,
+            init_ros_node=False,
+            enable_ros_io=False,
+            map_no=self.map_no,
+        )
+
+        # 在系统启动时，对 goal_real 额外执行一次 goal-anchor LOS 更新
+        self.update_goal_los_state_once()
+
         self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=self.resolution * 1.5)
         # self.planner = GridAStarPlanner(self.grid_map)
         # self.planner = DijkstraPlanner(self.grid_map)
-
-        self.goal_real = (18, 5)  # 目标位置
-        self.current_position = (-15.0, -15.0)  # 记录无人机当前位置
+        self.current_position = (-18.0, -18.0)  # 记录无人机当前位置
         self.start_real = self.current_position  # A*规划起始位置（上一次规划的目标位置）,初始为当前无人机位置
         self.los_data = []  # 存储LOS状态
         self.key_waypoints = []  # 存储关键航点
@@ -137,6 +154,82 @@ class UAVNavigator:
         """Receive optimizer trajectory info (length_m, time_s)."""
         self._last_traj_info = (float(msg.x), float(msg.y))
         self._last_traj_info_stamp = rospy.Time.now()
+
+    def update_goal_los_state_once(self):
+        """
+        在系统初始化阶段，把 goal_real 当作一个“临时观测点”，
+        计算它到所有 anchors 的 LOS 结果，并直接调用
+        self.grid_map.map_update_by_los(self.goal_real, los_data, free_expand=...)
+        对地图做一次额外更新。
+        """
+        if self.goal_real is None:
+            rospy.logwarn("[UAVNavigator] goal_real is None, skip startup goal LOS update.")
+            return
+
+        # 构造一个任意查询点（z 取与指令目标一致的 1.0m）
+        goal_point = Point()
+        goal_point.x = float(self.goal_real[0])
+        goal_point.y = float(self.goal_real[1])
+        goal_point.z = 1.0
+
+        try:
+            goal_los_data = self.goal_los_helper.check_point_los_to_anchors(goal_point)
+        except Exception as e:
+            rospy.logwarn(f"[UAVNavigator] Failed to compute startup goal LOS: {e}")
+            return
+
+        # 至少需要与一个 anchor 保持 LOS；否则给出提醒
+        connected_ids = [item["id"] for item in goal_los_data if item.get("LOS", False)]
+        if len(connected_ids) == 0:
+            rospy.logwarn("[UAVNavigator] goal_real is not LOS-connected to any anchor at startup.")
+            return
+
+        rospy.loginfo(
+            f"[UAVNavigator] Startup goal LOS-connected anchors: {connected_ids}"
+        )
+
+        # 只保留与 goal_real 距离最近的那个 LOS anchor，用于地图更新
+        anchor_pos_map = {
+            a["id"]: a["position"]
+            for a in self.goal_los_helper.uwb_anchors
+        }
+
+        gx, gy = float(self.goal_real[0]), float(self.goal_real[1])
+        best_anchor_id = None
+        best_dist = float("inf")
+
+        for aid in connected_ids:
+            pos = anchor_pos_map.get(aid, None)
+            if pos is None:
+                continue
+            dx = float(pos.x) - gx
+            dy = float(pos.y) - gy
+            dist = math.sqrt(dx * dx + dy * dy)
+            if dist < best_dist:
+                best_dist = dist
+                best_anchor_id = aid
+
+        if best_anchor_id is None:
+            rospy.logwarn("[UAVNavigator] Failed to select nearest LOS anchor for goal_real.")
+            return
+
+        filtered_goal_los_data = []
+        for item in goal_los_data:
+            filtered_goal_los_data.append({
+                "id": item["id"],
+                "LOS": (item["id"] == best_anchor_id)
+            })
+
+        rospy.loginfo(
+            f"[UAVNavigator] Startup goal uses nearest LOS anchor id={best_anchor_id}, dist={best_dist:.3f} m"
+        )
+
+        # 对 goal 的 LOS 只做一次较窄更新，避免过度扩张。
+        goal_free_expand = 2 if self.resolution == 0.25 else 1
+        self.grid_map.map_update_by_los(self.goal_real, filtered_goal_los_data, free_expand=goal_free_expand)
+        rospy.loginfo(
+            f"[UAVNavigator] Startup goal LOS update applied with free_expand={goal_free_expand}."
+        )
 
     def plan(self, start_real, end_real):
         """ 使用 A* 计算路径 """

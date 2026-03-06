@@ -3,6 +3,7 @@
   <node pkg="utils" type="uav_navigator.py" name="uav_navigator" output="screen">
 
     <param name="resolution" value="0.25"/>
+    <param name="map_no" value="2"/>
 
   </node>
 

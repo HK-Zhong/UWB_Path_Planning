@@ -1,0 +1,33 @@
+obstacles:
+
+  - name: obstacle1
+    cx: -13.0
+    cy: -7.0
+    cz: 2.0
+    sx: 10.0
+    sy: 6.0
+    sz: 4.0
+
+  - name: obstacle2
+    cx: -13.0
+    cy: 7.0
+    cz: 2.0
+    sx: 10.0
+    sy: 6.0
+    sz: 4.0
+
+  - name: obstacle3
+    cx: 0.0
+    cy: 0.0
+    cz: 2.0
+    sx: 4.0
+    sy: 26.0
+    sz: 4.0
+
+  - name: obstacle4
+    cx: 11.0
+    cy: 0.0
+    cz: 2.0
+    sx: 10.0
+    sy: 6.0
+    sz: 4.0

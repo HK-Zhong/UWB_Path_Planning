@@ -16,7 +16,7 @@ class GridMap:
     - self.edt_map  : Euclidean Distance Transform (meters), derived from grid_map
     """
 
-    def __init__(self, size=50, resolution=0.5):
+    def __init__(self, size=50, resolution=0.5, map_no=1):
         """
         size        : map size (meters)
         resolution  : grid resolution (meters)
@@ -40,20 +40,34 @@ class GridMap:
         self.edt_map = None
 
         # ---------- UWB anchors ----------
-        self.uwb_anchors_file = (
-            "/home/coolas-fly/UWB_Path_Planning/src/"
-            "UWB_Path_Planning/utils/config/UWB_Anchors.yml"
-        )
-        self.real_anchors_position = self.load_uwb_anchors()
-
         # Anchor LOS connectivity prior
-        self.uwb_los = [
-            (0, 1), (1, 2), (2, 3), (1, 4),
-            (2, 5), (3, 6), (3, 8), (0, 7),
-            (7, 9), (9, 10), (9, 11), (11, 12),
-            (12, 13), (11, 13), (8, 13),
-            (4, 5), (5, 6)
-        ]
+        if map_no == 1:
+            self.uwb_anchors_file = (
+                "/home/coolas-fly/UWB_Path_Planning/src/"
+                "UWB_Path_Planning/utils/config/UWB_Anchors.yml"
+            )
+            self.uwb_los = [
+                (0, 1), (1, 2), (2, 3), (1, 4),
+                (2, 5), (3, 6), (3, 8), (0, 7),
+                (7, 9), (9, 10), (9, 11), (11, 12),
+                (12, 13), (11, 13), (8, 13),
+                (4, 5), (5, 6)
+            ]
+        else:
+            self.uwb_anchors_file = (
+                "/home/coolas-fly/UWB_Path_Planning/src/"
+                "UWB_Path_Planning/utils/config/UWB_Anchors2.yml"
+            )
+            self.uwb_los = [
+                (0, 4), (1, 2), (1, 5), (2, 6),
+                (3, 4), (3, 8), (4, 5), (5, 6),
+                (5, 10), (6, 7), (7, 11), (8, 9),
+                (8, 15), (9, 10), (10, 12), (11, 13),
+                (12, 13), (12, 16), (14, 15), (14, 18),
+                (15, 16), (16, 17), (16, 19)
+            ]
+
+        self.real_anchors_position = self.load_uwb_anchors()
 
     # =====================================================
     # Coordinate transform
@@ -181,7 +195,8 @@ class GridMap:
             np.save(hp_path, np.array(highlight_points, dtype=np.int32))
             # 同时保存为可直接查看的 CSV
             hp_csv_path = os.path.join(self.get_pic_dir(), "grid_map", f"{filename}_{ts}_highlight_points.csv")
-            np.savetxt(hp_csv_path, np.array(highlight_points, dtype=np.int32), fmt="%d", delimiter=",", header="gx,gy", comments="")
+            np.savetxt(hp_csv_path, np.array(highlight_points, dtype=np.int32), fmt="%d", delimiter=",", header="gx,gy",
+                       comments="")
             print(f"[GridMap] highlight_points saved:")
             print(f"  - {hp_path}")
             print(f"  - {hp_csv_path}")
@@ -229,7 +244,8 @@ class GridMap:
             np.save(hp_path, np.array(highlight_points, dtype=np.int32))
             # 同时保存为可直接查看的 CSV
             hp_csv_path = os.path.join(self.get_pic_dir(), "edt_map", f"{filename}_{ts}_highlight_points.csv")
-            np.savetxt(hp_csv_path, np.array(highlight_points, dtype=np.int32), fmt="%d", delimiter=",", header="gx,gy", comments="")
+            np.savetxt(hp_csv_path, np.array(highlight_points, dtype=np.int32), fmt="%d", delimiter=",", header="gx,gy",
+                       comments="")
             print(f"[GridMap] highlight_points saved:")
             print(f"  - {hp_path}")
             print(f"  - {hp_csv_path}")
