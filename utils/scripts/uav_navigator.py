@@ -30,8 +30,8 @@ class UAVNavigator:
 
         rospy.loginfo(f"[UAVNavigator] Using map {self.map_no}, grid resolution = {self.resolution} m")
 
-        # 目标位置（允许不是锚点本身，而是任意坐标点）
-        self.goal_real = (18, 5) if self.map_no == 1 else (21, 4)
+        # 当前任务目标点：第一版改为运行时下发，不在启动时固定写死
+        self.goal_real = None
 
         # 初始化
         self.grid_map = GridMap(size=50, resolution=self.resolution, map_no=self.map_no)
@@ -45,8 +45,7 @@ class UAVNavigator:
             map_no=self.map_no,
         )
 
-        # 在系统启动时，对 goal_real 额外执行一次 goal-anchor LOS 更新
-        self.update_goal_los_state_once()
+        # 第一版改为运行时收到新 goal 后，再执行 goal-anchor LOS 更新
 
         self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=self.resolution * 1.5)
         # self.planner = GridAStarPlanner(self.grid_map)
@@ -58,6 +57,7 @@ class UAVNavigator:
         self.active_goal_grid = None  # 当前正在飞的航点（栅格）
         self.active_goal_real = None  # 当前正在飞的航点（真实）
         self.need_replan = True  # 是否需要重新规划
+        self.task_active = False  # 当前是否存在正在执行的任务
         self._map_initialized = False
 
         # 订阅UWB传感器数据
@@ -103,6 +103,9 @@ class UAVNavigator:
         # 订阅无人机位置话题
         rospy.Subscriber('/ardrone_1/odometry_sensor1/odometry', Odometry, self.odometry_callback)
 
+        # 运行时下发新的 goal（第一版：start 默认使用当前无人机位置）
+        rospy.Subscriber('/uav_navigator/new_goal', PoseStamped, self.goal_callback)
+
         # 预定义的航点列表
         self.waypoints = []
         # self.current_waypoint_index = 0  # 记录当前执行的航点索引
@@ -118,6 +121,43 @@ class UAVNavigator:
         回调函数，接收并保存无人机当前位置。
         """
         self.current_position = (msg.pose.pose.position.x, msg.pose.pose.position.y)
+
+    def reset_navigation_task_state(self):
+        """
+        收到新任务后，重置当前导航执行状态，但不重启节点。
+        """
+        self.start_real = self.current_position
+        self.active_goal_grid = None
+        self.active_goal_real = None
+        self.need_replan = True
+
+        # 清空上一任务残留的 optimizer 指标缓存
+        self._last_opt_cost = None
+        self._last_opt_cost_stamp = None
+        self._last_opt_edt = None
+        self._last_opt_edt_stamp = None
+        self._last_traj_info = None
+        self._last_traj_info_stamp = None
+
+    def goal_callback(self, msg: PoseStamped):
+        """
+        运行时接收新的目标点。
+        第一版约定：start 不显式下发，默认取当前无人机位置。
+        """
+        new_goal = (float(msg.pose.position.x), float(msg.pose.position.y))
+
+        if self.current_position is None:
+            rospy.logwarn("[UAVNavigator] Current position unavailable, reject new goal.")
+            return
+
+        self.goal_real = new_goal
+        self.reset_navigation_task_state()
+        self.update_goal_los_state_once()
+        self.task_active = True
+
+        rospy.loginfo(
+            f"[UAVNavigator] New goal received: goal={self.goal_real}, start={self.start_real}. Replanning enabled."
+        )
 
     def has_reached_goal(self, x, y, z):
         """
@@ -157,7 +197,7 @@ class UAVNavigator:
 
     def update_goal_los_state_once(self):
         """
-        在系统初始化阶段，把 goal_real 当作一个“临时观测点”，
+        对当前 goal_real 执行一次 goal-anchor LOS 更新，把它当作一个“临时观测点”，
         计算它到所有 anchors 的 LOS 结果，并直接调用
         self.grid_map.map_update_by_los(self.goal_real, los_data, free_expand=...)
         对地图做一次额外更新。
@@ -386,6 +426,12 @@ class UAVNavigator:
         try:
             while not rospy.is_shutdown():
 
+                # ========== 0. 无任务时常驻待命，不进行规划 ==========
+                if not self.task_active:
+                    rospy.loginfo_throttle(5.0, "[UAVNavigator] Idle. Waiting for /uav_navigator/new_goal ...")
+                    self.rate.sleep()
+                    continue
+
                 # ========== 1. 更新地图（LOS → grid_map） ==========
                 self.update_map_stateful()
 
@@ -406,7 +452,7 @@ class UAVNavigator:
                 # =================================================
                 # 状态 A：当前没有执行航点 → 允许重新规划
                 # =================================================
-                if self.active_goal_real is None and self.need_replan:
+                if self.task_active and self.goal_real is not None and self.active_goal_real is None and self.need_replan:
 
                     rospy.loginfo("[UAVNavigator] Replanning...")
 
@@ -516,14 +562,29 @@ class UAVNavigator:
                         self.start_real = self.active_goal_real
                         self.key_waypoints.append(self.active_goal_grid)
 
+                        # 判断是否到达的是最终任务目标点；若是，则回到待命状态
+                        reached_final_goal = False
+                        if self.goal_real is not None:
+                            dx_goal = self.start_real[0] - self.goal_real[0]
+                            dy_goal = self.start_real[1] - self.goal_real[1]
+                            reached_final_goal = math.sqrt(dx_goal ** 2 + dy_goal ** 2) < self.tolerance
+
                         # 清空执行态
                         self.active_goal_real = None
                         self.active_goal_grid = None
-                        self.need_replan = True
+
+                        if reached_final_goal:
+                            rospy.loginfo("[UAVNavigator] Final goal reached. Navigator returns to idle state.")
+                            self.need_replan = False
+                            self.task_active = False
+                            self.goal_real = None
+                        else:
+                            self.need_replan = True
 
                 self.rate.sleep()
 
         finally:
+            rospy.loginfo(f"[UAVNavigator] key_waypoints={self.key_waypoints} ...")
             self.grid_map.visualize(self.key_waypoints)
             self.grid_map.visualize_edt(self.key_waypoints)
             self.logger.save()

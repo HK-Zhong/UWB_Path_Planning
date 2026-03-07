@@ -254,6 +254,9 @@ public:
     nh.param("speed_s_per_sec", speed_s_per_sec_, 2.0);
     nh.param("yaw_lookahead_s", yaw_lookahead_s_, 0.3);
     nh.param("ignore_while_exec", ignore_while_exec_, true);
+    nh.param("max_yaw_rate", max_yaw_rate_, 0.6);
+    nh.param("yaw_align_tol", yaw_align_tol_, 0.20);
+    nh.param("yaw_align_timeout", yaw_align_timeout_, 2.0);
 
     ctrl_sub_ = nh.subscribe("/optimizer/ctrl_points", 1,
                              &MinimumSnapOptimizerNode::ctrlCb, this);
@@ -269,9 +272,10 @@ public:
     timer_ = nh.createTimer(ros::Duration(CMD_DT),
                             &MinimumSnapOptimizerNode::timerCb, this);
 
-    ROS_INFO("[MinimumSnap_optimizer] Ready. edt_hard_min=%.3f, edt_max_range_m=%.2f, speed=%.2f, yaw_lookahead=%.2f, ignore_while_exec=%s",
+    ROS_INFO("[MinimumSnap_optimizer] Ready. edt_hard_min=%.3f, edt_max_range_m=%.2f, speed=%.2f, yaw_lookahead=%.2f, ignore_while_exec=%s, max_yaw_rate=%.2f, yaw_align_tol=%.2f, yaw_align_timeout=%.2f",
              edt_hard_min_, edt_max_range_m_, speed_s_per_sec_, yaw_lookahead_s_,
-             ignore_while_exec_ ? "true" : "false");
+             ignore_while_exec_ ? "true" : "false",
+             max_yaw_rate_, yaw_align_tol_, yaw_align_timeout_);
   }
 
 private:
@@ -340,8 +344,14 @@ private:
     }
 
     traj_ = std::make_shared<MinSnapTraj>(traj);
-    start_time_ = ros::Time::now();
-    executing_ = true;
+
+    // Stage 1: first align yaw toward the initial path direction while holding position.
+    hold_pos_ = traj_->eval(0.0);
+    yaw_align_target_ = computeYawLookAhead(0.0);
+    yaw_align_start_time_ = ros::Time::now();
+    yaw_aligning_ = true;
+    executing_ = false;
+
     publishTrajectoryCost(*traj_);
     publishEdtStatsForTraj(*traj_);
     publishTrajInfoForTraj(*traj_);
@@ -350,11 +360,78 @@ private:
              traj_->T.size(), traj_->totalDuration());
   }
 
+  // ---------------------------
+  // Yaw helpers (for two-stage execution)
+  // ---------------------------
+  static double normalizeAngle(double a)
+  {
+    while (a > M_PI)  a -= 2.0 * M_PI;
+    while (a < -M_PI) a += 2.0 * M_PI;
+    return a;
+  }
+
+  double stepYawToward(double yaw_target)
+  {
+    double dyaw = normalizeAngle(yaw_target - last_yaw_);
+    const double max_step = max_yaw_rate_ * CMD_DT;
+    dyaw = std::max(-max_step, std::min(max_step, dyaw));
+    last_yaw_ = normalizeAngle(last_yaw_ + dyaw);
+    return last_yaw_;
+  }
+
+  double computeYawLookAhead(double t_now) const
+  {
+    if (!traj_) return last_yaw_;
+
+    double T = traj_->totalDuration();
+    double t2 = std::min(t_now + yaw_lookahead_s_, T);
+    Eigen::Vector3d p0 = traj_->eval(t_now);
+    Eigen::Vector3d p1 = traj_->eval(t2);
+
+    Eigen::Vector2d d = (p1 - p0).head<2>();
+    if (d.norm() < 1e-3) return last_yaw_;
+
+    return std::atan2(d.y(), d.x());
+  }
+
   void timerCb(const ros::TimerEvent&)
   {
-    if (!traj_ || !executing_) return;
+    if ((!yaw_aligning_ && !executing_) || !traj_) return;
 
     ros::Time now = ros::Time::now();
+
+    // Stage 1: hold position and rotate the nose toward the initial path direction.
+    if (yaw_aligning_)
+    {
+      double yaw = stepYawToward(yaw_align_target_);
+
+      tf::Quaternion q;
+      q.setRPY(0.0, 0.0, yaw);
+
+      geometry_msgs::PoseStamped cmd;
+      cmd.header.stamp = now;
+      cmd.header.frame_id = "map";
+      cmd.pose.position.x = hold_pos_.x();
+      cmd.pose.position.y = hold_pos_.y();
+      cmd.pose.position.z = hold_pos_.z();
+      cmd.pose.orientation.x = q.x();
+      cmd.pose.orientation.y = q.y();
+      cmd.pose.orientation.z = q.z();
+      cmd.pose.orientation.w = q.w();
+      cmd_pub_.publish(cmd);
+
+      const double yaw_err = std::fabs(normalizeAngle(yaw_align_target_ - last_yaw_));
+      const double align_t = (now - yaw_align_start_time_).toSec();
+      if (yaw_err <= yaw_align_tol_ || align_t >= yaw_align_timeout_)
+      {
+        yaw_aligning_ = false;
+        executing_ = true;
+        start_time_ = now;
+      }
+      return;
+    }
+
+    // Stage 2: move along the trajectory normally.
     double t = (now - start_time_).toSec();
     double T = traj_->totalDuration();
     if (t >= T)
@@ -365,18 +442,8 @@ private:
 
     Eigen::Vector3d p = traj_->eval(t);
 
-    // yaw lookahead using velocity or forward point
-    double yaw = last_yaw_;
-    {
-      double t2 = std::min(t + yaw_lookahead_s_, T);
-      Eigen::Vector3d p2 = traj_->eval(t2);
-      Eigen::Vector2d d = (p2 - p).head<2>();
-      if (d.norm() > 1e-3)
-      {
-        yaw = std::atan2(d.y(), d.x());
-        last_yaw_ = yaw;
-      }
-    }
+    double yaw_des = computeYawLookAhead(t);
+    double yaw = stepYawToward(yaw_des);
 
     tf::Quaternion q;
     q.setRPY(0.0, 0.0, yaw);
@@ -655,12 +722,19 @@ private:
   double speed_s_per_sec_ = 2.0;
   double yaw_lookahead_s_ = 0.3;
   bool ignore_while_exec_ = true;
+  double max_yaw_rate_ = 0.6;
+  double yaw_align_tol_ = 0.20;
+  double yaw_align_timeout_ = 2.0;
 
   // state
   std::shared_ptr<MinSnapTraj> traj_;
   ros::Time start_time_;
   bool executing_ = false;
   double last_yaw_ = 0.0;
+  bool yaw_aligning_ = false;
+  double yaw_align_target_ = 0.0;
+  ros::Time yaw_align_start_time_;
+  Eigen::Vector3d hold_pos_ = Eigen::Vector3d::Zero();
 
   // Publish trajectory cost (velocity, acceleration, jerk integrals)
   void publishTrajectoryCost(const MinSnapTraj& traj)

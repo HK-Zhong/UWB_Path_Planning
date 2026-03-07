@@ -222,6 +222,9 @@ public:
     pnh.param("yaw_lookahead_s", yaw_lookahead_s_, 0.20); // 在曲线参数 s 上的前视量
     pnh.param("speed_s_per_sec", speed_s_per_sec_, 2.0);  // s 参数推进速度（越大飞得越快）
     pnh.param("ignore_while_exec", ignore_while_exec_, true);
+    pnh.param("max_yaw_rate",     max_yaw_rate_,     0.6);   // rad/s
+    pnh.param("yaw_align_tol",    yaw_align_tol_,    0.20);  // rad
+    pnh.param("yaw_align_timeout", yaw_align_timeout_, 2.0); // s
 
     // ---- 订阅控制点序列（>=2） ----
     ctrl_pts_sub_ = nh.subscribe(
@@ -248,8 +251,8 @@ public:
         ros::Duration(CMD_DT),
         &CatmullRomOptimizerNode::cmdTimer, this);
 
-    ROS_INFO("[CentripetalCatmullRom_optimizer] Ready. edt_hard_min=%.3f, speed_s_per_sec=%.2f",
-             edt_hard_min_, speed_s_per_sec_);
+    ROS_INFO("[CentripetalCatmullRom_optimizer] Ready. edt_hard_min=%.3f, speed_s_per_sec=%.2f, max_yaw_rate=%.2f, yaw_align_tol=%.2f, yaw_align_timeout=%.2f",
+             edt_hard_min_, speed_s_per_sec_, max_yaw_rate_, yaw_align_tol_, yaw_align_timeout_);
   }
 
 private:
@@ -361,8 +364,13 @@ private:
     }
 
     curve_ = std::move(cand);
-    start_time_ = ros::Time::now();
-    executing_ = true;
+
+    // Stage 1: first align yaw toward the initial path direction while holding position.
+    hold_pos_ = curve_->evaluate(0.0);
+    yaw_align_target_ = computeYawLookAhead(0.0);
+    yaw_align_start_time_ = ros::Time::now();
+    yaw_aligning_ = true;
+    executing_ = false;
 
     ROS_INFO("[CentripetalCatmullRom_optimizer] Curve accepted. points=%zu, totalS=%.3f",
              pts.size(), curve_->totalS());
@@ -504,11 +512,60 @@ private:
     return std::atan2(d.y(), d.x());
   }
 
+  static double normalizeAngle(double a)
+  {
+    while (a > M_PI)  a -= 2.0 * M_PI;
+    while (a < -M_PI) a += 2.0 * M_PI;
+    return a;
+  }
+
+  double stepYawToward(double yaw_target)
+  {
+    double dyaw = normalizeAngle(yaw_target - last_yaw_);
+    const double max_step = max_yaw_rate_ * CMD_DT;
+    dyaw = std::max(-max_step, std::min(max_step, dyaw));
+    last_yaw_ = normalizeAngle(last_yaw_ + dyaw);
+    return last_yaw_;
+  }
+
   void cmdTimer(const ros::TimerEvent&)
   {
-    if (!executing_ || !curve_) return;
+    if ((!yaw_aligning_ && !executing_) || !curve_) return;
 
     ros::Time now = ros::Time::now();
+
+    // Stage 1: hold position and rotate the nose toward the initial path direction.
+    if (yaw_aligning_)
+    {
+      double yaw = stepYawToward(yaw_align_target_);
+
+      tf::Quaternion q;
+      q.setRPY(0.0, 0.0, yaw);
+
+      geometry_msgs::PoseStamped cmd;
+      cmd.header.stamp = now;
+      cmd.header.frame_id = "map";
+      cmd.pose.position.x = hold_pos_.x();
+      cmd.pose.position.y = hold_pos_.y();
+      cmd.pose.position.z = hold_pos_.z();
+      cmd.pose.orientation.x = q.x();
+      cmd.pose.orientation.y = q.y();
+      cmd.pose.orientation.z = q.z();
+      cmd.pose.orientation.w = q.w();
+      cmd_pub_.publish(cmd);
+
+      const double yaw_err = std::fabs(normalizeAngle(yaw_align_target_ - last_yaw_));
+      const double align_t = (now - yaw_align_start_time_).toSec();
+      if (yaw_err <= yaw_align_tol_ || align_t >= yaw_align_timeout_)
+      {
+        yaw_aligning_ = false;
+        executing_ = true;
+        start_time_ = now;
+      }
+      return;
+    }
+
+    // Stage 2: move along the curve normally.
     double t = (now - start_time_).toSec();
 
     // s 参数按“速度”推进：s = v_s * t
@@ -518,7 +575,7 @@ private:
     if (s >= S)
     {
       s = S;
-      executing_ = false; // 到终点就停止接受新点（或你也可以在这里悬停继续发布）
+      executing_ = false;
     }
 
     Eigen::Vector3d p = curve_->evaluate(s);
@@ -531,8 +588,9 @@ private:
       return;
     }
 
-    double yaw = computeYawLookAhead(s);
-    last_yaw_ = yaw;
+    // During execution, still limit yaw change rate to avoid aggressive head swing.
+    double yaw_des = computeYawLookAhead(s);
+    double yaw = stepYawToward(yaw_des);
 
     tf::Quaternion q;
     q.setRPY(0.0, 0.0, yaw);
@@ -737,9 +795,16 @@ private:
   double yaw_lookahead_s_ = 0.2;
   double speed_s_per_sec_ = 2.0;
   bool   ignore_while_exec_ = true;
+  double max_yaw_rate_ = 0.6;   // rad/s
+  double yaw_align_tol_ = 0.20; // rad
+  double yaw_align_timeout_ = 2.0; // s
 
-  // yaw
+  // yaw / execution stage
   double last_yaw_ = 0.0;
+  bool yaw_aligning_ = false;
+  double yaw_align_target_ = 0.0;
+  ros::Time yaw_align_start_time_;
+  Eigen::Vector3d hold_pos_ = Eigen::Vector3d::Zero();
 };
 
 int main(int argc, char** argv)
