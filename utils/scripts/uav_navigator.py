@@ -10,6 +10,7 @@ from path_searching import EDTAwareAStarPlanner, GridAStarPlanner, DijkstraPlann
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped, PoseArray, Pose, Vector3
 import math
+import time
 from nav_msgs.msg import OccupancyGrid
 from std_msgs.msg import Header
 
@@ -59,6 +60,8 @@ class UAVNavigator:
         self.need_replan = True  # 是否需要重新规划
         self.task_active = False  # 当前是否存在正在执行的任务
         self._map_initialized = False
+        self.step_counter = 0  # 从第 0 步开始计数
+        self.last_planned_path = None  # 最近一次路径规划得到的离散路径（grid）
 
         # 订阅UWB传感器数据
         rospy.Subscriber("/los_status_json", String, self.los_callback)
@@ -130,6 +133,7 @@ class UAVNavigator:
         self.active_goal_grid = None
         self.active_goal_real = None
         self.need_replan = True
+        self.last_planned_path = None
 
         # 清空上一任务残留的 optimizer 指标缓存
         self._last_opt_cost = None
@@ -138,6 +142,26 @@ class UAVNavigator:
         self._last_opt_edt_stamp = None
         self._last_traj_info = None
         self._last_traj_info_stamp = None
+
+    def save_pipeline_visualization(self):
+        """
+        简单调用 grid_map 中的 pipeline 可视化接口。
+        实际绘图逻辑放在 GridMap 中实现。
+        """
+        if self.last_planned_path is None:
+            rospy.logwarn("[UAVNavigator] last_planned_path is None, skip pipeline visualization.")
+            return
+
+        tag = f"step_{self.step_counter:03d}_{time.strftime('%Y%m%d_%H%M%S')}"
+
+        if not hasattr(self.grid_map, "save_pipeline_visualization"):
+            rospy.logwarn("[UAVNavigator] GridMap has no method 'save_pipeline_visualization'.")
+            return
+
+        self.grid_map.save_pipeline_visualization(
+            path_points=self.last_planned_path,
+            tag=tag
+        )
 
     def goal_callback(self, msg: PoseStamped):
         """
@@ -465,6 +489,7 @@ class UAVNavigator:
                         rospy.logwarn("[Navigator] No path found.")
                         self.rate.sleep()
                         continue
+                    self.last_planned_path = list(grid_path)
 
                     # 2. 提取“第一段窗口”的 4 个控制点（栅格）
                     ctrl_pts_grid = self.planner.extract_first_window_ctrl_points(
@@ -544,6 +569,9 @@ class UAVNavigator:
                         f"[UAVNavigator] Active goal grid={self.active_goal_grid}, "
                         f"real={self.active_goal_real}")
 
+                    if self.step_counter % 5 == 0:
+                        self.save_pipeline_visualization()
+
                     self.need_replan = False
 
                 # =================================================
@@ -561,6 +589,10 @@ class UAVNavigator:
                         # 规划起点前移（✔️ 正确的位置）
                         self.start_real = self.active_goal_real
                         self.key_waypoints.append(self.active_goal_grid)
+                        self.step_counter += 1
+
+                        if self.step_counter % 5 == 0:
+                            self.save_pipeline_visualization()
 
                         # 判断是否到达的是最终任务目标点；若是，则回到待命状态
                         reached_final_goal = False

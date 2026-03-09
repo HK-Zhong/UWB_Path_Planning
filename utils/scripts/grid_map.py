@@ -175,7 +175,114 @@ class GridMap:
     def get_pic_dir(self):
         d = os.path.join(os.path.dirname(__file__), "pics")
         os.makedirs(d, exist_ok=True)
+        os.makedirs(os.path.join(d, "grid_map"), exist_ok=True)
+        os.makedirs(os.path.join(d, "edt_map"), exist_ok=True)
+        os.makedirs(os.path.join(d, "pipeline"), exist_ok=True)
         return d
+
+    def _draw_path_points(self, path_points):
+        """
+        路径可视化规则：
+        - 起点、终点：红色叉
+        - 中间点：蓝色圆
+        """
+        # ===== 可调参数（路径点样式接口） =====
+        mid_color = "red"      # 中间路径点颜色
+        mid_size = 5           # 中间路径点大小
+        start_end_size = 50    # 起点终点大小
+
+        if not path_points:
+            return
+
+        if len(path_points) == 1:
+            x, y = path_points[0]
+            plt.scatter([x], [y], c="red", marker="x", s=60, linewidths=2)
+            return
+
+        start = path_points[0]
+        end = path_points[-1]
+        mid = path_points[1:-1]
+
+        if mid:
+            xs = [p[0] for p in mid]
+            ys = [p[1] for p in mid]
+            plt.scatter(xs, ys, c=mid_color, marker="o", s=mid_size)
+
+        plt.scatter([start[0]], [start[1]], c="red", marker="x", s=start_end_size, linewidths=2)
+        plt.scatter([end[0]], [end[1]], c="red", marker="x", s=start_end_size, linewidths=2)
+
+    def _save_pipeline_single_map(self, data, path_points, pic_path, npy_path, csv_path, title, cmap, add_colorbar=False):
+        np.save(npy_path, data)
+
+        if path_points:
+            np.savetxt(
+                csv_path,
+                np.array(path_points, dtype=np.int32),
+                fmt="%d",
+                delimiter=",",
+                header="gx,gy",
+                comments=""
+            )
+
+        plt.figure(figsize=(6, 6))
+        plt.imshow(data.T, cmap=cmap, origin="lower")
+
+        if add_colorbar:
+            plt.colorbar(label="distance to obstacle (m)")
+
+        self._draw_path_points(path_points)
+
+        # plt.title(title)
+        plt.tight_layout()
+        plt.savefig(pic_path, dpi=200)
+        plt.close()
+
+    def save_pipeline_visualization(self, path_points, tag):
+        """
+        保存 pipeline 可视化结果到 pics/pipeline/ 目录：
+        - 当前 grid map 图像 + 矩阵
+        - 当前 edt map 图像 + 矩阵
+        - 当前离散路径 csv
+        """
+        if self.grid_map is None or self.edt_map is None:
+            rospy.logwarn("[GridMap] grid_map or edt_map is empty, skip pipeline visualization.")
+            return
+
+        pipeline_dir = os.path.join(self.get_pic_dir(), "pipeline")
+        os.makedirs(pipeline_dir, exist_ok=True)
+
+        grid_pic = os.path.join(pipeline_dir, f"pipeline_grid_{tag}.png")
+        edt_pic = os.path.join(pipeline_dir, f"pipeline_edt_{tag}.png")
+        grid_npy = os.path.join(pipeline_dir, f"pipeline_grid_{tag}.npy")
+        edt_npy = os.path.join(pipeline_dir, f"pipeline_edt_{tag}.npy")
+        grid_csv = os.path.join(pipeline_dir, f"pipeline_grid_path_{tag}.csv")
+        edt_csv = os.path.join(pipeline_dir, f"pipeline_edt_path_{tag}.csv")
+
+        self._save_pipeline_single_map(
+            data=self.grid_map,
+            path_points=path_points,
+            pic_path=grid_pic,
+            npy_path=grid_npy,
+            csv_path=grid_csv,
+            title=f"Grid Map with Planned Path ({tag})",
+            cmap="gray_r",
+            add_colorbar=False,
+        )
+
+        self._save_pipeline_single_map(
+            data=self.edt_map,
+            path_points=path_points,
+            pic_path=edt_pic,
+            npy_path=edt_npy,
+            csv_path=edt_csv,
+            title=f"EDT Map with Planned Path ({tag})",
+            cmap="jet",
+            add_colorbar=True,
+        )
+
+        rospy.loginfo(f"[GridMap] Pipeline visualization saved:")
+        rospy.loginfo(f"  - {grid_pic}")
+        rospy.loginfo(f"  - {edt_pic}")
 
     def visualize(self, highlight_points=None, filename="grid"):
 

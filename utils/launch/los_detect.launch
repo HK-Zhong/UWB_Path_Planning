@@ -1,5 +1,5 @@
 <launch>
   <node pkg="utils" type="los_detect.py" name="los_detector" output="screen">
-      <param name="map_no" value="2"/>
+      <param name="map_no" value="1"/>
   </node>
 </launch>
