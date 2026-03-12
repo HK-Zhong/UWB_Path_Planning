@@ -9,6 +9,9 @@
     <param name="max_yaw_rate" value="1.2" />
     <param name="yaw_align_tol" value="0.12" />
     <param name="yaw_align_timeout" value="8.0" />
+    <param name="max_refine_iter" value="10" />
+    <param name="refine_step_m" value="0.10" />
+    <param name="refine_sample_ds" value="0.10" />
   </node>
 
 </launch>

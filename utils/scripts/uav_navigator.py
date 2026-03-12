@@ -494,7 +494,7 @@ class UAVNavigator:
                     # 2. 提取“第一段窗口”的 4 个控制点（栅格）
                     ctrl_pts_grid = self.planner.extract_first_window_ctrl_points(
                         path=grid_path,
-                        min_dist_m=4.0
+                        min_dist_m=3.0
                     )
 
                     if ctrl_pts_grid is None:
@@ -569,8 +569,8 @@ class UAVNavigator:
                         f"[UAVNavigator] Active goal grid={self.active_goal_grid}, "
                         f"real={self.active_goal_real}")
 
-                    if self.step_counter % 5 == 0:
-                        self.save_pipeline_visualization()
+                    # if self.step_counter % 5 == 0:
+                    #     self.save_pipeline_visualization()
 
                     self.need_replan = False
 
@@ -591,8 +591,8 @@ class UAVNavigator:
                         self.key_waypoints.append(self.active_goal_grid)
                         self.step_counter += 1
 
-                        if self.step_counter % 5 == 0:
-                            self.save_pipeline_visualization()
+                        # if self.step_counter % 5 == 0:
+                        #     self.save_pipeline_visualization()
 
                         # 判断是否到达的是最终任务目标点；若是，则回到待命状态
                         reached_final_goal = False
@@ -617,8 +617,8 @@ class UAVNavigator:
 
         finally:
             rospy.loginfo(f"[UAVNavigator] key_waypoints={self.key_waypoints} ...")
-            self.grid_map.visualize(self.key_waypoints)
-            self.grid_map.visualize_edt(self.key_waypoints)
+            # self.grid_map.visualize(self.key_waypoints)
+            # self.grid_map.visualize_edt(self.key_waypoints)
             self.logger.save()
 
 

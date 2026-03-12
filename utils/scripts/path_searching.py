@@ -308,83 +308,161 @@ class EDTAwareAStarPlanner(PlannerBase):
 
     # --------------------------------------------------------
     def plan(self, start_grid, goal_grid):
-        """Weighted-scaling A* (soft multi-objective).
+        """Weighted-scaling A* (soft multi-objective), optimized version.
 
-        Design goal (as you requested):
+        Design goal (unchanged):
           - Primary objective: shortest path (distance) dominates.
           - Secondary objective: prefer safer (larger EDT) BUT should not hijack distance.
           - Optional: mild turn smoothing.
 
-        Hard constraints are enforced in `get_neighbors()`:
-          - unknown/obstacle forbidden
-          - edt <= edt_hard_min forbidden
-
-        Key change vs the old version:
-          - Safety penalty is bounded in [0, 1] and scaled by step length (meters),
-            so it behaves like a small integral penalty rather than exploding near the goal.
+        This version keeps the same external behavior, but uses:
+          - 1D node indices instead of (x, y) tuples in the search loop
+          - NumPy arrays instead of dict/set for g-score / closed-set / parent
+          - precomputed EDT safety penalty
+          - precomputed heuristic-to-goal map
         """
 
-        if (
-            self.map.grid_map[start_grid] == 1
-            or self.map.grid_map[goal_grid] == 1
-        ):
+        grid_map = self.map.grid_map
+        edt_map = self.map.edt_map
+        grid_size = int(self.map.grid_size)
+        edt_hard_min = float(self.edt_hard_min)
+        safe_epsilon = float(self.safe_epsilon)
+        edt_cost_power = float(self.edt_cost_power)
+        w_dist = float(self.w_dist)
+        w_safe = float(self.w_safe)
+        w_turn = float(self.w_turn)
+        res = float(self.map.resolution)
+        sqrt2 = math.sqrt(2.0)
+        pi = math.pi
+
+        sx, sy = start_grid
+        gx, gy = goal_grid
+
+        if grid_map[sx, sy] == 1 or grid_map[gx, gy] == 1:
             return None
 
+        # hard EDT feasibility check for start / goal (与原 get_neighbors 约束保持一致)
+        if float(edt_map[sx, sy]) <= edt_hard_min or float(edt_map[gx, gy]) <= edt_hard_min:
+            return None
+
+        # ---------- 预计算 ----------
+        # 安全惩罚图（只算一次）
+        penalty_safe_map = ((edt_hard_min + safe_epsilon) / (edt_map.astype(np.float64) + safe_epsilon)) ** edt_cost_power
+        penalty_safe_map = np.clip(penalty_safe_map, 0.0, 1.0)
+
+        # 到 goal 的 octile heuristic 图（只算一次）
+        xs = np.arange(grid_size, dtype=np.int32)
+        ys = np.arange(grid_size, dtype=np.int32)
+        dx_map = np.abs(xs[:, None] - gx)
+        dy_map = np.abs(ys[None, :] - gy)
+        h_map = w_dist * res * (dx_map + dy_map + (sqrt2 - 2.0) * np.minimum(dx_map, dy_map))
+
+        total_nodes = grid_size * grid_size
+        inf = float("inf")
+
+        # ---------- 搜索状态（1D 索引） ----------
+        g_score = np.full(total_nodes, inf, dtype=np.float64)
+        parent_idx = np.full(total_nodes, -1, dtype=np.int32)
+        closed = np.zeros(total_nodes, dtype=np.bool_)
+
+        def to_idx(x, y):
+            return x * grid_size + y
+
+        start_idx = to_idx(sx, sy)
+        goal_idx = to_idx(gx, gy)
+
+        g_score[start_idx] = 0.0
+
+        heappush = heapq.heappush
+        heappop = heapq.heappop
+
         open_set = []
-        heapq.heappush(open_set, (0.0, start_grid))
+        heappush(open_set, (0.0, start_idx))
 
-        came_from = {}
-        g_score = {start_grid: 0.0}
-
-        res = float(self.map.resolution)
+        directions = (
+            (-1, 0, 1.0), (1, 0, 1.0), (0, -1, 1.0), (0, 1, 1.0),
+            (-1, -1, sqrt2), (-1, 1, sqrt2), (1, -1, sqrt2), (1, 1, sqrt2),
+        )
 
         while open_set:
-            _, current = heapq.heappop(open_set)
+            _, cur_idx = heappop(open_set)
 
-            if current == goal_grid:
-                return self.reconstruct_path(came_from, current)
+            if closed[cur_idx]:
+                continue
+            closed[cur_idx] = True
 
-            for neighbor, move_cost in self.get_neighbors(current):
-                # ------------------------------------------------------------
-                # 1) Distance term (dominant, in meters)
-                # move_cost is 1 or sqrt(2) in grid-units; convert to meters.
-                step_m = float(move_cost) * res
-                cost_dist = self.w_dist * step_m
+            if cur_idx == goal_idx:
+                # 直接基于 parent_idx 重建 path，避免再构造 came_from 字典
+                path = []
+                idx = cur_idx
+                while idx != -1:
+                    x = idx // grid_size
+                    y = idx % grid_size
+                    path.append((x, y))
+                    idx = int(parent_idx[idx])
+                return path[::-1]
 
-                # ------------------------------------------------------------
-                # 2) Safety term (secondary, bounded, monotone decreasing w.r.t EDT)
-                # Map EDT to a penalty in [0, 1]:
-                #   ratio = (threshold+eps)/(edt+eps)
-                #   penalty = clamp(ratio^p, 0, 1)
-                # Properties:
-                #   - at edt == threshold -> ~1
-                #   - for larger edt -> quickly decays towards 0
-                # This makes safety a *tie-breaker* unless you intentionally set w_safe huge.
-                edt = float(self.map.edt_map[neighbor[0], neighbor[1]])
-                ratio = (self.edt_hard_min + self.safe_epsilon) / (edt + self.safe_epsilon)
-                penalty_safe = ratio ** float(self.edt_cost_power)
-                if penalty_safe < 0.0:
-                    penalty_safe = 0.0
-                elif penalty_safe > 1.0:
-                    penalty_safe = 1.0
+            cx = cur_idx // grid_size
+            cy = cur_idx % grid_size
+            g_current = g_score[cur_idx]
 
-                # Scale by step length so it behaves like a path integral.
-                cost_safe = self.w_safe * penalty_safe * step_m
+            p_idx = int(parent_idx[cur_idx])
+            if p_idx != -1:
+                px = p_idx // grid_size
+                py = p_idx % grid_size
+                v1x = cx - px
+                v1y = cy - py
+                has_parent_dir = not (v1x == 0 and v1y == 0)
+                if has_parent_dir:
+                    a1 = math.atan2(v1y, v1x)
+                else:
+                    a1 = 0.0
+            else:
+                has_parent_dir = False
+                a1 = 0.0
 
-                # ------------------------------------------------------------
-                # 3) Turn term (optional, small)
-                cost_turn = self.w_turn * self.turn_cost(came_from, current, neighbor)
+            for dx, dy, move_cost in directions:
+                nx = cx + dx
+                ny = cy + dy
 
-                tentative_g = g_score[current] + cost_dist + cost_safe + cost_turn
+                if nx < 0 or nx >= grid_size or ny < 0 or ny >= grid_size:
+                    continue
 
-                if neighbor not in g_score or tentative_g < g_score[neighbor]:
-                    came_from[neighbor] = current
-                    g_score[neighbor] = tentative_g
+                if grid_map[nx, ny] == 1:
+                    continue
 
-                    # Heuristic: remaining distance ONLY (meters). Keep it admissible.
-                    h = self.w_dist * res * self.heuristic(neighbor, goal_grid)
-                    f_score = tentative_g + h
-                    heapq.heappush(open_set, (f_score, neighbor))
+                edt = float(edt_map[nx, ny])
+                if edt <= edt_hard_min:
+                    continue
+
+                n_idx = nx * grid_size + ny
+                if closed[n_idx]:
+                    continue
+
+                # 1) distance cost
+                step_m = move_cost * res
+                cost_dist = w_dist * step_m
+
+                # 2) safety cost
+                cost_safe = w_safe * float(penalty_safe_map[nx, ny]) * step_m
+
+                # 3) turn cost
+                if has_parent_dir:
+                    a2 = math.atan2(dy, dx)
+                    da = abs(a2 - a1)
+                    if da > pi:
+                        da = 2.0 * pi - da
+                    x = da / pi
+                    cost_turn = w_turn * (x * x)
+                else:
+                    cost_turn = 0.0
+
+                tentative_g = g_current + cost_dist + cost_safe + cost_turn
+                if tentative_g < g_score[n_idx]:
+                    g_score[n_idx] = tentative_g
+                    parent_idx[n_idx] = cur_idx
+                    f_score = tentative_g + float(h_map[nx, ny])
+                    heappush(open_set, (f_score, n_idx))
 
         return None
 

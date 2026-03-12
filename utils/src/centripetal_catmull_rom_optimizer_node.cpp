@@ -225,6 +225,9 @@ public:
     pnh.param("max_yaw_rate",     max_yaw_rate_,     0.6);   // rad/s
     pnh.param("yaw_align_tol",    yaw_align_tol_,    0.20);  // rad
     pnh.param("yaw_align_timeout", yaw_align_timeout_, 2.0); // s
+    pnh.param("max_refine_iter",  max_refine_iter_,  10);
+    pnh.param("refine_step_m",    refine_step_m_,    0.15);
+    pnh.param("refine_sample_ds", refine_sample_ds_, 0.10);
 
     // ---- 订阅控制点序列（>=2） ----
     ctrl_pts_sub_ = nh.subscribe(
@@ -251,8 +254,9 @@ public:
         ros::Duration(CMD_DT),
         &CatmullRomOptimizerNode::cmdTimer, this);
 
-    ROS_INFO("[CentripetalCatmullRom_optimizer] Ready. edt_hard_min=%.3f, speed_s_per_sec=%.2f, max_yaw_rate=%.2f, yaw_align_tol=%.2f, yaw_align_timeout=%.2f",
-             edt_hard_min_, speed_s_per_sec_, max_yaw_rate_, yaw_align_tol_, yaw_align_timeout_);
+    ROS_INFO("[CentripetalCatmullRom_optimizer] Ready. edt_hard_min=%.3f, speed_s_per_sec=%.2f, max_yaw_rate=%.2f, yaw_align_tol=%.2f, yaw_align_timeout=%.2f, max_refine_iter=%d, refine_step_m=%.2f, refine_sample_ds=%.2f",
+             edt_hard_min_, speed_s_per_sec_, max_yaw_rate_, yaw_align_tol_, yaw_align_timeout_,
+             max_refine_iter_, refine_step_m_, refine_sample_ds_);
   }
 
 private:
@@ -356,11 +360,17 @@ private:
       return;
     }
 
-    // 安全性检查
+    // 若初始曲线不安全，则进行基于 EDT 梯度的控制点修正并重新生成曲线。
     if (!checkCurveSafety(*cand))
     {
-      ROS_WARN("[CentripetalCatmullRom_optimizer] Curve violates EDT constraint.");
-      return;
+      ROS_WARN("[CentripetalCatmullRom_optimizer] Initial curve violates EDT constraint. Try EDT-guided refinement.");
+
+      std::vector<Eigen::Vector3d> refined_pts = pts;
+      if (!tryBuildSafeCurveWithRefinement(refined_pts, cand))
+      {
+        ROS_WARN("[CentripetalCatmullRom_optimizer] Refinement failed. Curve rejected.");
+        return;
+      }
     }
 
     curve_ = std::move(cand);
@@ -377,6 +387,109 @@ private:
     publishCostsForCurve(*curve_);
     publishEdtStatsForCurve(*curve_);
     publishTrajInfoForCurve(*curve_);
+  }
+
+  double queryEDTValue(double x, double y) const
+  {
+    double edt_m = 0.0;
+    int raw_v = -1;
+    int gx = 0, gy = 0;
+    if (!queryEDT(x, y, edt_m, raw_v, gx, gy)) return 0.0;
+    return edt_m;
+  }
+
+  Eigen::Vector2d computeEDTGradient(double x, double y) const
+  {
+    const double h = std::max(edt_map_.info.resolution, 1e-3f);
+
+    const double dx1 = queryEDTValue(x + h, y);
+    const double dx0 = queryEDTValue(x - h, y);
+    const double dy1 = queryEDTValue(x, y + h);
+    const double dy0 = queryEDTValue(x, y - h);
+
+    Eigen::Vector2d g((dx1 - dx0) / (2.0 * h),
+                      (dy1 - dy0) / (2.0 * h));
+
+    if (g.norm() < 1e-9)
+      return Eigen::Vector2d::Zero();
+
+    return g.normalized();
+  }
+
+  bool refineControlPointsByEDT(std::vector<Eigen::Vector3d>& pts) const
+  {
+    if (pts.size() < 3) return false; // 至少有中间点可修正
+
+    CentripetalCatmullRom c(pts, 0.5);
+    if (!c.valid() || c.totalS() <= EPS) return false;
+
+    const double S = c.totalS();
+    const double ds = std::max(0.05, refine_sample_ds_);
+
+    std::vector<Eigen::Vector2d> delta_xy(pts.size(), Eigen::Vector2d::Zero());
+    int unsafe_count = 0;
+
+    for (double s = 0.0; s <= S + 1e-9; s += ds)
+    {
+      Eigen::Vector3d p = c.evaluate(s);
+      double edt_m = queryEDTValue(p.x(), p.y());
+      if (edt_m >= edt_hard_min_) continue;
+
+      Eigen::Vector2d grad = computeEDTGradient(p.x(), p.y());
+      if (grad.norm() < 1e-9) continue;
+
+      const int seg_idx = std::min(std::max(int(std::floor((s / std::max(S, EPS)) * double(pts.size() - 1))), 0), int(pts.size()) - 2);
+
+      // 仅修正中间控制点，首尾点固定。
+      if (seg_idx > 0)
+        delta_xy[seg_idx] += 0.5 * refine_step_m_ * grad;
+      if (seg_idx + 1 < int(pts.size()) - 1)
+        delta_xy[seg_idx + 1] += 0.5 * refine_step_m_ * grad;
+
+      unsafe_count++;
+    }
+
+    if (unsafe_count == 0) return false;
+
+    for (size_t i = 1; i + 1 < pts.size(); ++i)
+    {
+      pts[i].x() += delta_xy[i].x();
+      pts[i].y() += delta_xy[i].y();
+    }
+
+    return true;
+  }
+
+  bool tryBuildSafeCurveWithRefinement(std::vector<Eigen::Vector3d>& pts,
+                                       std::unique_ptr<CentripetalCatmullRom>& out_curve)
+  {
+    for (int iter = 0; iter < max_refine_iter_; ++iter)
+    {
+      auto cand = std::make_unique<CentripetalCatmullRom>(pts, 0.5);
+      if (!cand->valid() || cand->totalS() <= EPS)
+        return false;
+
+      if (checkCurveSafety(*cand))
+      {
+        ROS_INFO_STREAM("[CentripetalCatmullRom_optimizer] EDT-guided refinement succeeded at iter=" << iter);
+        out_curve = std::move(cand);
+        return true;
+      }
+
+      if (!refineControlPointsByEDT(pts))
+      {
+        ROS_WARN_STREAM("[CentripetalCatmullRom_optimizer] EDT-guided refinement made no progress at iter=" << iter);
+        return false;
+      }
+    }
+
+    auto final_cand = std::make_unique<CentripetalCatmullRom>(pts, 0.5);
+    if (final_cand && final_cand->valid() && final_cand->totalS() > EPS && checkCurveSafety(*final_cand))
+    {
+      out_curve = std::move(final_cand);
+      return true;
+    }
+    return false;
   }
 
   // 查询某个世界坐标点的 EDT 值（米）。
@@ -798,6 +911,9 @@ private:
   double max_yaw_rate_ = 0.6;   // rad/s
   double yaw_align_tol_ = 0.20; // rad
   double yaw_align_timeout_ = 2.0; // s
+  int    max_refine_iter_ = 10;
+  double refine_step_m_ = 0.15;
+  double refine_sample_ds_ = 0.10;
 
   // yaw / execution stage
   double last_yaw_ = 0.0;
