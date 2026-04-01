@@ -424,7 +424,7 @@ private:
     if (!c.valid() || c.totalS() <= EPS) return false;
 
     const double S = c.totalS();
-    const double ds = std::max(0.05, refine_sample_ds_);
+    const double ds = std::max(0.01, speed_s_per_sec_ * CMD_DT);
 
     std::vector<Eigen::Vector2d> delta_xy(pts.size(), Eigen::Vector2d::Zero());
     int unsafe_count = 0;
@@ -435,8 +435,17 @@ private:
       double edt_m = queryEDTValue(p.x(), p.y());
       if (edt_m >= edt_hard_min_) continue;
 
+      // Debug: unsafe point detected during refinement sampling
+      ROS_WARN_STREAM("[CentripetalCatmullRom_optimizer][REFINE] unsafe sample at s=" << s
+                      << " pos=(" << p.x() << "," << p.y() << ") edt=" << edt_m);
+
       Eigen::Vector2d grad = computeEDTGradient(p.x(), p.y());
-      if (grad.norm() < 1e-9) continue;
+      if (grad.norm() < 1e-9)
+      {
+        ROS_WARN_STREAM("[CentripetalCatmullRom_optimizer][REFINE] zero EDT gradient at pos=("
+                        << p.x() << "," << p.y() << "), skip.");
+        continue;
+      }
 
       const int seg_idx = std::min(std::max(int(std::floor((s / std::max(S, EPS)) * double(pts.size() - 1))), 0), int(pts.size()) - 2);
 
@@ -534,7 +543,7 @@ private:
 
     // 用 s 参数均匀采样（注意：s 是曲线参数，不是时间；这里只是做安全性覆盖采样）
     // 若你希望更严，可把步长改小一些
-    const double ds = std::max(0.05, speed_s_per_sec_ * SAMPLE_DT);
+    const double ds = std::max(0.01, speed_s_per_sec_ * CMD_DT);
 
     for (double s = 0.0; s <= S + 1e-9; s += ds)
     {
