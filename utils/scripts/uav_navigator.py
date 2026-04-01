@@ -51,6 +51,7 @@ class UAVNavigator:
         self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=self.resolution * 1.5)
         # self.planner = GridAStarPlanner(self.grid_map)
         # self.planner = DijkstraPlanner(self.grid_map)
+
         self.current_position = (-18.0, -18.0)  # 记录无人机当前位置
         self.start_real = self.current_position  # A*规划起始位置（上一次规划的目标位置）,初始为当前无人机位置
         self.los_data = []  # 存储LOS状态
@@ -617,8 +618,8 @@ class UAVNavigator:
 
         finally:
             rospy.loginfo(f"[UAVNavigator] key_waypoints={self.key_waypoints} ...")
-            # self.grid_map.visualize(self.key_waypoints)
-            # self.grid_map.visualize_edt(self.key_waypoints)
+            self.grid_map.visualize(self.key_waypoints)
+            self.grid_map.visualize_edt(self.key_waypoints)
             self.logger.save()
 
 
