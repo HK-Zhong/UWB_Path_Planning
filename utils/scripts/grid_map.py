@@ -53,7 +53,7 @@ class GridMap:
                 (12, 13), (11, 13), (8, 13),
                 (4, 5), (5, 6), (10, 12)
             ]
-        else:
+        elif map_no == 2:
             self.uwb_anchors_file = (
                 "/home/coolas-fly/UWB_Path_Planning/src/"
                 "UWB_Path_Planning/utils/config/UWB_Anchors2.yml"
@@ -65,6 +65,16 @@ class GridMap:
                 (8, 15), (9, 10), (10, 12), (11, 13),
                 (12, 13), (12, 16), (14, 15), (14, 18),
                 (15, 16), (16, 17), (16, 19)
+            ]
+
+        elif map_no == 3:
+            self.uwb_anchors_file = (
+                "/home/coolas-fly/UWB_Path_Planning/src/"
+                "UWB_Path_Planning/utils/config/UWB_Anchors3.yml"
+            )
+            self.uwb_los = [
+                (1, 0),(1, 2),(1, 3),(1, 4),
+                (0, 3), (2, 4)
             ]
 
         self.real_anchors_position = self.load_uwb_anchors()

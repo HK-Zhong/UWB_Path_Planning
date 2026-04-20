@@ -1,0 +1,17 @@
+obstacles:
+
+  - name: obstacle1
+    cx: 1.5
+    cy: 1.5
+    cz: 0.75
+    sx: 1.5
+    sy: 1.5
+    sz: 1.5
+
+  - name: obstacle2
+    cx: -1.5
+    cy: -1.5
+    cz: 0.75
+    sx: 1.5
+    sy: 1.5
+    sz: 1.5

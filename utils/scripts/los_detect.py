@@ -26,9 +26,13 @@ class LOSDetector:
             self.uwb_anchors_file = '/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/UWB_Anchors.yml'
             self.obstacle_file = '/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/indoor_environment1_obstacle.yml'
 
-        else:
+        elif self.map_no == 2:
             self.uwb_anchors_file = '/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/UWB_Anchors2.yml'
             self.obstacle_file = '/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/indoor_environment2_obstacle.yml'
+
+        elif self.map_no == 3:
+            self.uwb_anchors_file = '/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/UWB_Anchors3.yml'
+            self.obstacle_file = '/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/indoor_environment3_obstacle.yml'
 
         self.drone_topic = '/ardrone_1/odometry_sensor1/position'
         self.current_drone_position = Point(0, 0, 0)  # 无人机当前位置

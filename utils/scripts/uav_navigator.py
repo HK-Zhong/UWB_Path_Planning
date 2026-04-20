@@ -35,7 +35,11 @@ class UAVNavigator:
         self.goal_real = None
 
         # 初始化
-        self.grid_map = GridMap(size=50, resolution=self.resolution, map_no=self.map_no)
+        if self.map_no == 1 or self.map_no == 2:
+            self.grid_map = GridMap(size=50, resolution=self.resolution, map_no=self.map_no)
+        elif self.map_no == 3:
+            self.grid_map = GridMap(size=8, resolution=0.2, map_no=self.map_no)
+
         self.grid_map.map_init()
 
         # 复用 LOSDetector 的几何检测能力：显式传入 map_no，关闭其 ROS I/O
@@ -48,7 +52,7 @@ class UAVNavigator:
 
         # 第一版改为运行时收到新 goal 后，再执行 goal-anchor LOS 更新
 
-        self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=self.resolution * 1.5)
+        self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=0.1)
         # self.planner = GridAStarPlanner(self.grid_map)
         # self.planner = DijkstraPlanner(self.grid_map)
 
@@ -290,7 +294,7 @@ class UAVNavigator:
         )
 
         # 对 goal 的 LOS 只做一次较窄更新，避免过度扩张。
-        goal_free_expand = 2 if self.resolution == 0.25 else 1
+        goal_free_expand = 1 if self.resolution == 0.25 else 1
         self.grid_map.map_update_by_los(self.goal_real, filtered_goal_los_data, free_expand=goal_free_expand)
         rospy.loginfo(
             f"[UAVNavigator] Startup goal LOS update applied with free_expand={goal_free_expand}."
@@ -434,7 +438,7 @@ class UAVNavigator:
         if not self._map_initialized:
             rospy.loginfo("[update_map_stateful] Initial wide LOS update...")
             if self.resolution == 0.25:
-                self.map_update(free_expand=2)
+                self.map_update(free_expand=1)
             else:
                 self.map_update(free_expand=1)
             self._map_initialized = True
@@ -442,7 +446,7 @@ class UAVNavigator:
 
         # ===== 状态 2：任务执行中，持续窄更新 =====
         if self.resolution == 0.25:
-            self.map_update(free_expand=1)
+            self.map_update(free_expand=0)
         else:
             self.map_update(free_expand=0)
         rospy.loginfo("[update_map_stateful] Continuous narrow LOS update...")
@@ -495,7 +499,7 @@ class UAVNavigator:
                     # 2. 提取“第一段窗口”的 4 个控制点（栅格）
                     ctrl_pts_grid = self.planner.extract_first_window_ctrl_points(
                         path=grid_path,
-                        min_dist_m=3.0
+                        min_dist_m=1.0
                     )
 
                     if ctrl_pts_grid is None:
@@ -570,7 +574,7 @@ class UAVNavigator:
                         f"[UAVNavigator] Active goal grid={self.active_goal_grid}, "
                         f"real={self.active_goal_real}")
 
-                    # if self.step_counter % 5 == 0:
+                    # if self.step_counter % 1 == 0:
                     #     self.save_pipeline_visualization()
 
                     self.need_replan = False
@@ -592,7 +596,7 @@ class UAVNavigator:
                         self.key_waypoints.append(self.active_goal_grid)
                         self.step_counter += 1
 
-                        # if self.step_counter % 5 == 0:
+                        # if self.step_counter % 1 == 0:
                         #     self.save_pipeline_visualization()
 
                         # 判断是否到达的是最终任务目标点；若是，则回到待命状态
