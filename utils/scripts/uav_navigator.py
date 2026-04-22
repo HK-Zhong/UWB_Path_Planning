@@ -52,8 +52,8 @@ class UAVNavigator:
 
         # 第一版改为运行时收到新 goal 后，再执行 goal-anchor LOS 更新
 
-        self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=0.1)
-        # self.planner = GridAStarPlanner(self.grid_map)
+        # self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=0.1)
+        self.planner = GridAStarPlanner(self.grid_map)
         # self.planner = DijkstraPlanner(self.grid_map)
 
         self.current_position = (-18.0, -18.0)  # 记录无人机当前位置
@@ -499,7 +499,7 @@ class UAVNavigator:
                     # 2. 提取“第一段窗口”的 4 个控制点（栅格）
                     ctrl_pts_grid = self.planner.extract_first_window_ctrl_points(
                         path=grid_path,
-                        min_dist_m=1.0
+                        min_dist_m=3.0
                     )
 
                     if ctrl_pts_grid is None:

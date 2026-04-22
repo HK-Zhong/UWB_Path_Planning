@@ -1,6 +1,6 @@
 <launch>
-  <node pkg="utils" type="catmull_rom_optimizer_node" name="catmull_rom_optimizer_node" output="screen">
-<!--   <node pkg="utils" type="minimum_snap_optimizer_node" name="minimum_snap_optimizer_node" output="screen"> -->
+<!--   <node pkg="utils" type="catmull_rom_optimizer_node" name="catmull_rom_optimizer_node" output="screen"> -->
+  <node pkg="utils" type="minimum_snap_optimizer_node" name="minimum_snap_optimizer_node" output="screen">
 <!--   <node pkg="utils" type="piecewise_cubic_spline_optimizer_node" name="piecewise_cubic_spline_optimizer_node" output="screen"> -->
     <param name="edt_hard_min" value="0.0" />
     <param name="speed_s_per_sec" value="1.2" />
@@ -13,5 +13,17 @@
     <param name="refine_step_m" value="0.10" />
     <param name="refine_sample_ds" value="0.10" />
   </node>
+
+<!--   <node pkg="utils" type="ego_optimizer_node" name="ego_optimizer_node" output="screen"> -->
+<!--     <param name="edt_hard_min" value="0.0" /> -->
+<!--     <param name="speed_u_per_sec" value="1.3" /> -->
+<!--     <param name="opt_iters" value="25" /> -->
+<!--     <param name="step_size" value="0.10" /> -->
+<!--     <param name="w_smooth" value="1.2" /> -->
+<!--     <param name="w_ref" value="2.0" /> -->
+<!--     <param name="w_safe" value="1.6" /> -->
+<!--     <param name="safe_band" value="0.45" /> -->
+<!--     <param name="max_ctrl_shift" value="0.22" /> -->
+<!--   </node> -->
 
 </launch>

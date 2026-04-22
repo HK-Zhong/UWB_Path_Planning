@@ -73,8 +73,7 @@ class GridMap:
                 "UWB_Path_Planning/utils/config/UWB_Anchors3.yml"
             )
             self.uwb_los = [
-                (1, 0),(1, 2),(1, 3),(1, 4),
-                (0, 3), (2, 4)
+                (1, 0), (1, 2), (1, 3), (1, 4), (4, 3)
             ]
 
         self.real_anchors_position = self.load_uwb_anchors()
@@ -197,9 +196,9 @@ class GridMap:
         - 中间点：蓝色圆
         """
         # ===== 可调参数（路径点样式接口） =====
-        mid_color = "red"      # 中间路径点颜色
-        mid_size = 5           # 中间路径点大小
-        start_end_size = 50    # 起点终点大小
+        mid_color = "red"  # 中间路径点颜色
+        mid_size = 5  # 中间路径点大小
+        start_end_size = 50  # 起点终点大小
 
         if not path_points:
             return
@@ -221,7 +220,8 @@ class GridMap:
         plt.scatter([start[0]], [start[1]], c="red", marker="x", s=start_end_size, linewidths=2)
         plt.scatter([end[0]], [end[1]], c="red", marker="x", s=start_end_size, linewidths=2)
 
-    def _save_pipeline_single_map(self, data, path_points, pic_path, npy_path, csv_path, title, cmap, add_colorbar=False):
+    def _save_pipeline_single_map(self, data, path_points, pic_path, npy_path, csv_path, title, cmap,
+                                  add_colorbar=False):
         np.save(npy_path, data)
 
         if path_points:

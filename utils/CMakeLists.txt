@@ -67,6 +67,14 @@ target_link_libraries(minimum_snap_optimizer_node
   ${catkin_LIBRARIES}
 )
 
+add_executable(ego_optimizer_node
+  src/ego_optimizer_node.cpp
+)
+
+target_link_libraries(ego_optimizer_node
+  ${catkin_LIBRARIES}
+)
+
 add_executable(test_start_goal_node
   src/test_start_goal_node.cpp
 )

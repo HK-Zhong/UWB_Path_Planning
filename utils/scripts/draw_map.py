@@ -7,13 +7,13 @@ import yaml
 # =========================
 # 1) 你的地图范围（50m x 50m）
 # =========================
-X_MIN, X_MAX = -25.0, 25.0
-Y_MIN, Y_MAX = -25.0, 25.0
+X_MIN, X_MAX = -4.0, 4.0
+Y_MIN, Y_MAX = -4.0, 4.0
 
 # =========================
 # 2) 从 indoor_environment2_obstacle.yml 里读取障碍物数据
 # =========================
-OBSTACLES_YAML_PATH = "/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/indoor_environment1_obstacle.yml"
+OBSTACLES_YAML_PATH = "/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/indoor_environment3_obstacle.yml"
 
 
 def load_obstacle_models(yaml_path: str):
@@ -66,7 +66,7 @@ def load_obstacle_models(yaml_path: str):
 # =========================
 # 2.5) UWB anchors (from YAML)
 # =========================
-ANCHORS_YAML_PATH = "/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/UWB_Anchors.yml"
+ANCHORS_YAML_PATH = "/home/coolas-fly/UWB_Path_Planning/src/UWB_Path_Planning/utils/config/UWB_Anchors3.yml"
 
 
 def load_uwb_anchors(yaml_path: str):

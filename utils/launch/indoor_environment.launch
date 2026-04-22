@@ -1,5 +1,5 @@
 <launch>
-  <arg name="world_name" default="indoor_environment3"/>
+  <arg name="world_name" default="indoor_environment2"/>
   <arg name="enable_logging" default="false"/>
   <arg name="enable_ground_truth" default="true"/>
   <arg name="paused" value="false"/>
@@ -25,8 +25,8 @@
       <arg name="enable_logging" value="$(arg enable_logging)" />
       <arg name="enable_ground_truth" value="$(arg enable_ground_truth)" />
       <arg name="log_file" value="ardrone1"/>
-      <arg name="x" value="-3"/>
-      <arg name="y" value="-2"/>
+      <arg name="x" value="15"/>
+      <arg name="y" value="20"/>
       <arg name="z" value="1.0"/>
       <arg name="yaw" value="3.14159"/>
     </include>
@@ -37,7 +37,7 @@
     </node>
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
     <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
-    <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen" args="-3 -2 1 90 5"/>
+    <node name="waypoint_publisher" pkg="rotors_gazebo" type="waypoint_publisher" output="screen" args="15 20 1 270 5"/>
   </group>
 
 </launch>
