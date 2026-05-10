@@ -4,7 +4,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # 添加当前脚本所在目录
 
 import rospy, json
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from grid_map import GridMap
 from path_searching import EDTAwareAStarPlanner, GridAStarPlanner, DijkstraPlanner
 from nav_msgs.msg import Odometry
@@ -52,8 +52,8 @@ class UAVNavigator:
 
         # 第一版改为运行时收到新 goal 后，再执行 goal-anchor LOS 更新
 
-        # self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=0.1)
-        self.planner = GridAStarPlanner(self.grid_map)
+        self.planner = EDTAwareAStarPlanner(self.grid_map, edt_hard_min=0.2)
+        # self.planner = GridAStarPlanner(self.grid_map)
         # self.planner = DijkstraPlanner(self.grid_map)
 
         self.current_position = (-18.0, -18.0)  # 记录无人机当前位置
@@ -64,6 +64,9 @@ class UAVNavigator:
         self.active_goal_real = None  # 当前正在飞的航点（真实）
         self.need_replan = True  # 是否需要重新规划
         self.task_active = False  # 当前是否存在正在执行的任务
+        self.segment_done = False  # 当前局部轨迹是否执行完成（由 optimizer 显式反馈）
+        self.use_optimizer_done = rospy.get_param("~use_optimizer_done", True)  # 是否优先使用 /optimizer/traj_done
+        self.optimizer_done_timeout = rospy.get_param("~optimizer_done_timeout", 1.0)  # done 信号容忍超时（秒）
         self._map_initialized = False
         self.step_counter = 0  # 从第 0 步开始计数
         self.last_planned_path = None  # 最近一次路径规划得到的离散路径（grid）
@@ -106,6 +109,10 @@ class UAVNavigator:
         self._last_traj_info_stamp = None
         rospy.Subscriber("/optimizer/traj_info", Vector3, self.optimizer_traj_info_callback)
 
+        # ===== Subscribe optimizer done signal =====
+        self._last_traj_done_stamp = None
+        rospy.Subscriber("/optimizer/traj_done", Bool, self.optimizer_done_callback)
+
         self.rate = rospy.Rate(2)  # 控制更新频率
 
         # 订阅无人机位置话题
@@ -139,6 +146,8 @@ class UAVNavigator:
         self.active_goal_real = None
         self.need_replan = True
         self.last_planned_path = None
+        self.segment_done = False
+        self._last_traj_done_stamp = None
 
         # 清空上一任务残留的 optimizer 指标缓存
         self._last_opt_cost = None
@@ -147,6 +156,36 @@ class UAVNavigator:
         self._last_opt_edt_stamp = None
         self._last_traj_info = None
         self._last_traj_info_stamp = None
+    def is_current_segment_finished(self):
+        """
+        双兼容模式：
+        1) 若启用 use_optimizer_done，则优先使用 /optimizer/traj_done；
+        2) 若未启用，或 done 信号长期未更新，则回退到旧逻辑：
+           判断是否到达 active_goal_real。
+        """
+        # ===== 优先使用 optimizer done =====
+        if self.use_optimizer_done:
+            if self.segment_done:
+                return True
+
+            # 如果启用了 done 模式，但长期没有收到 done 更新，则自动回退到旧逻辑
+            if self._last_traj_done_stamp is not None:
+                dt = (rospy.Time.now() - self._last_traj_done_stamp).to_sec()
+                if dt <= self.optimizer_done_timeout:
+                    return False
+            else:
+                # 从未收到过 done，直接允许回退
+                pass
+
+        # ===== 回退：旧后端的到达判据 =====
+        if self.active_goal_real is not None:
+            return self.has_reached_goal(
+                self.active_goal_real[0],
+                self.active_goal_real[1],
+                1.0
+            )
+
+        return False
 
     def save_pipeline_visualization(self):
         """
@@ -223,6 +262,12 @@ class UAVNavigator:
         """Receive optimizer trajectory info (length_m, time_s)."""
         self._last_traj_info = (float(msg.x), float(msg.y))
         self._last_traj_info_stamp = rospy.Time.now()
+
+    def optimizer_done_callback(self, msg: Bool):
+        """Receive optimizer segment-done signal."""
+        self.segment_done = bool(msg.data)
+        self._last_traj_done_stamp = rospy.Time.now()
+        rospy.loginfo(f"[UAVNavigator] Optimizer done signal received: {self.segment_done}")
 
     def update_goal_los_state_once(self):
         """
@@ -499,7 +544,7 @@ class UAVNavigator:
                     # 2. 提取“第一段窗口”的 4 个控制点（栅格）
                     ctrl_pts_grid = self.planner.extract_first_window_ctrl_points(
                         path=grid_path,
-                        min_dist_m=3.0
+                        min_dist_m=2.0
                     )
 
                     if ctrl_pts_grid is None:
@@ -578,37 +623,49 @@ class UAVNavigator:
                     #     self.save_pipeline_visualization()
 
                     self.need_replan = False
+                    self.segment_done = False
+                    self._last_traj_done_stamp = None
 
                 # =================================================
-                # 状态 B：正在飞 → 只判断是否到达
+                # 状态 B：正在飞 → 双兼容模式
+                #   - 新后端：优先靠 /optimizer/traj_done
+                #   - 旧后端：回退到“到达 active_goal_real”判据
                 # =================================================
                 elif self.active_goal_real is not None:
                     rospy.loginfo("[UAVNavigator] flying ...")
-                    if self.has_reached_goal(
-                            self.active_goal_real[0],
-                            self.active_goal_real[1],
-                            1.0
-                    ):
-                        rospy.loginfo("[UAVNavigator] Active goal reached.")
 
-                        # 规划起点前移（✔️ 正确的位置）
-                        self.start_real = self.active_goal_real
+                    if self.is_current_segment_finished():
+                        if self.use_optimizer_done and self.segment_done:
+                            rospy.loginfo("[UAVNavigator] Current segment done (triggered by /optimizer/traj_done).")
+                        else:
+                            rospy.loginfo("[UAVNavigator] Current segment done (fallback by reaching active_goal_real).")
+
+                        # 若使用 done 模式且当前段确由 optimizer done 结束，则以下一段结束时的真实位置作为新起点；
+                        # 否则保持旧逻辑，仍以前一段局部目标点作为下一段起点。
+                        if self.use_optimizer_done and self.segment_done:
+                            self.start_real = self.current_position
+                        else:
+                            self.start_real = self.active_goal_real
+
                         self.key_waypoints.append(self.active_goal_grid)
                         self.step_counter += 1
 
                         # if self.step_counter % 1 == 0:
                         #     self.save_pipeline_visualization()
 
-                        # 判断是否到达的是最终任务目标点；若是，则回到待命状态
                         reached_final_goal = False
                         if self.goal_real is not None:
-                            dx_goal = self.start_real[0] - self.goal_real[0]
-                            dy_goal = self.start_real[1] - self.goal_real[1]
-                            reached_final_goal = math.sqrt(dx_goal ** 2 + dy_goal ** 2) < self.tolerance
+                            reached_final_goal = self.has_reached_goal(
+                                self.goal_real[0],
+                                self.goal_real[1],
+                                1.0
+                            )
 
-                        # 清空执行态
+                        # 清空当前执行态
                         self.active_goal_real = None
                         self.active_goal_grid = None
+                        self.segment_done = False
+                        self._last_traj_done_stamp = None
 
                         if reached_final_goal:
                             rospy.loginfo("[UAVNavigator] Final goal reached. Navigator returns to idle state.")

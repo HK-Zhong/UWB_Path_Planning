@@ -33,6 +33,7 @@
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/Vector3.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <std_msgs/Bool.h>
 
 #include <Eigen/Dense>
 #include <algorithm>
@@ -159,11 +160,18 @@ public:
 
     traj_info_pub_ = nh.advertise<geometry_msgs::Vector3>(
         "/optimizer/traj_info", 10);
+    traj_done_pub_ = nh.advertise<std_msgs::Bool>(
+        "/optimizer/traj_done", 10, true);
 
     // ---- 定时器 ----
     timer_ = nh.createTimer(
         ros::Duration(CMD_DT),
         &EgoOptimizerNode::cmdTimer, this);
+
+    // 启动时默认发布“未完成”，避免旧状态残留
+    std_msgs::Bool init_done_msg;
+    init_done_msg.data = false;
+    traj_done_pub_.publish(init_done_msg);
 
     ROS_INFO("[ego_optimizer_node] Ready. edt_hard_min=%.3f, opt_iters=%d, step_size=%.3f, speed_u_per_sec=%.3f",
              edt_hard_min_, opt_iters_, step_size_, speed_u_per_sec_);
@@ -196,9 +204,9 @@ private:
       return;
     }
 
-    if (ignore_while_exec_ && executing_)
+    if (ignore_while_exec_ && (executing_ || yaw_aligning_))
     {
-      ROS_WARN("[ego_optimizer_node] Executing, ignore new points.");
+      ROS_WARN("[ego_optimizer_node] Executing or aligning, ignore new points.");
       return;
     }
 
@@ -256,6 +264,10 @@ private:
     }
 
     spline_ = std::move(cand);
+    // 新轨迹接收成功后，显式发布“当前段尚未完成”
+    std_msgs::Bool done_msg;
+    done_msg.data = false;
+    traj_done_pub_.publish(done_msg);
 
     // 4) yaw 对齐阶段
     hold_pos_ = spline_->evaluate(0.0);
@@ -512,7 +524,23 @@ private:
     if (u >= U)
     {
       u = U;
+
+      // 先把轨迹末端点真实发出去，确保最后一个姿态命令被执行
+      Eigen::Vector3d p_end = spline_->evaluate(u);
+      double yaw_end = stepYawToward(computeYawLookAhead(std::max(0.0, U - 1e-3)));
+      publishPoseCommand(p_end, yaw_end, now);
+
       executing_ = false;
+      yaw_aligning_ = false;
+      hold_pos_ = p_end;
+
+      // 显式通知前端：当前局部轨迹执行完成
+      std_msgs::Bool done_msg;
+      done_msg.data = true;
+      traj_done_pub_.publish(done_msg);
+
+      ROS_INFO("[ego_optimizer_node] Current local trajectory finished. Publish /optimizer/traj_done = true.");
+      return;
     }
 
     Eigen::Vector3d p = spline_->evaluate(u);
@@ -521,6 +549,12 @@ private:
     {
       ROS_ERROR("[ego_optimizer_node] Unsafe point encountered during execution! Stop.");
       executing_ = false;
+      yaw_aligning_ = false;
+
+      // 异常停止时也通知前端，避免系统一直卡住
+      std_msgs::Bool done_msg;
+      done_msg.data = true;
+      traj_done_pub_.publish(done_msg);
       return;
     }
 
@@ -661,6 +695,7 @@ private:
   ros::Publisher cost_pub_;
   ros::Publisher edt_pub_;
   ros::Publisher traj_info_pub_;
+  ros::Publisher traj_done_pub_;
   ros::Timer timer_;
 
   // EDT
