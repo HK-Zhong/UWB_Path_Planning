@@ -12,6 +12,8 @@ install/
 # VSCode
 .vscode/
 
+.idea
+
 # Bags
 **/*.bag
 
